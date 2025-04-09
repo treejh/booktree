@@ -9,9 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.awt.print.Book;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +22,7 @@ import lombok.experimental.SuperBuilder;
 @Table(name="blogs")
 @Getter
 @Setter
-@AllArgsConstructor
+@AllArgsConstructor //회원 팔로우 역할
 @NoArgsConstructor
 @SuperBuilder
 @ToString
@@ -32,8 +31,5 @@ public class Blog extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-
-
 
 }
