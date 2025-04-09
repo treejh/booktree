@@ -69,7 +69,7 @@ public class BlogService {
 
     //수정을 요청한 사람이, 블로그의 주인이 맞는지 확인
     public void validationBlogOwner(Long getBlogUserId, Long userId){
-        if(userId.equals(getBlogUserId)){
+        if(!userId.equals(getBlogUserId)){
             throw new BusinessLogicException(ExceptionCode.USER_NOT_BLOG_OWNER);
         }
     }
