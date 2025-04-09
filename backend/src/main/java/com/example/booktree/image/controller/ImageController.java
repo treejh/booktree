@@ -18,17 +18,16 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/images")
 public class ImageController {
- 
     private final ImageService imageService;
 
     @PostMapping
     public ResponseEntity<List<String>> uploadFile(List<MultipartFile> multipartFiles){
+        return ResponseEntity.ok(imageService.saveImages(multipartFiles));
+    }
 
-    }
- 
-    @DeleteMapping
-    public ResponseEntity<String> deleteFile(@RequestParam String fileName){
-        s3Uploader.deleteFile(fileName);
-        return ResponseEntity.ok(fileName);
-    }
+//    @DeleteMapping
+//    public ResponseEntity<String> deleteFile(@RequestParam String fileName){
+//        s3Uploader.deleteFile(fileName);
+//        return ResponseEntity.ok(fileName);
+//    }
 }

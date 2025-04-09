@@ -22,7 +22,7 @@ public class ImageService {
     private final S3Uploader s3Uploader;
 
 
-    private List<String> saveImages(List<MultipartFile> multipartFiles){
+    public List<String> saveImages(List<MultipartFile> multipartFiles){
         List<String> imagePathList = new ArrayList<>();
         multipartFiles.forEach(image->{
             try {
