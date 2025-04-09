@@ -17,31 +17,31 @@ import org.springframework.web.bind.annotation.*;
 public class BlogController {
 
     private final BlogService blogService;
-
-    // Create
-    @PostMapping
-    public ResponseEntity postMember(@Valid @RequestBody BlogDto.Post post) {
-
-        //return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    // Read
-    @GetMapping
-    public ResponseEntity getMember(@Positive @RequestParam long memberId) {
-
-        //return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    // Update
-    @PatchMapping
-    public ResponseEntity patchMember(@RequestBody BlogDto.Patch patch) {
-
-        //return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    // Delete
-    @DeleteMapping
-    public ResponseEntity deleteBlog(@Positive @RequestParam long ProjectId) {
-        //return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+//
+//    // Create
+//    @PostMapping
+//    public ResponseEntity postMember(@Valid @RequestBody BlogDto.Post post) {
+//
+//        //return new ResponseEntity<>(response, HttpStatus.CREATED);
+//    }
+//
+//    // Read
+//    @GetMapping
+//    public ResponseEntity getMember(@Positive @RequestParam long memberId) {
+//
+//        //return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
+//
+//    // Update
+//    @PatchMapping
+//    public ResponseEntity patchMember(@RequestBody BlogDto.Patch patch) {
+//
+//        //return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
+//
+//    // Delete
+//    @DeleteMapping
+//    public ResponseEntity deleteBlog(@Positive @RequestParam long ProjectId) {
+//        //return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//    }
 }
