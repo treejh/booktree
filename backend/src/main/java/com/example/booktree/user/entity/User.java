@@ -41,7 +41,6 @@ public class User extends Auditable {
 
 
     @NotNull
-    @NotBlank
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
@@ -75,7 +74,8 @@ public class User extends Auditable {
     private String refreshToken;
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    // @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL) // 오류나서 추가
     List<Category> categoryList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)

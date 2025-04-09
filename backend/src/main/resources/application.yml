@@ -8,27 +8,26 @@ spring:
     active: dev
     include: secret
   datasource:
-    url: jdbc:h2:./db_dev;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://localhost:3306/booktree_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: booktree_user
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
         default_batch_fetch_size: 100
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
 logging:
   level:
-    com.ll.blog: DEBUG
+    com.example.booktree: DEBUG
     org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.hibernate.orm.jdbc.extract: TRACE
-    org.springframework.transaction.interceptor: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 custom:
   dev:
     cookieDomain: localhost

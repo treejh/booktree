@@ -4,6 +4,7 @@ package com.example.booktree.like_comment.entity;
 import com.example.booktree.auditable.Auditable;
 import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.post.entity.Post;
+import com.example.booktree.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,7 +37,13 @@ public class LikeComment extends Auditable {
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
+//오류나서추가
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
 
-    
+
+
+
 }
