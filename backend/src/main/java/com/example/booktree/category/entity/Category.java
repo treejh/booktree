@@ -2,7 +2,7 @@ package com.example.booktree.category.entity;
 
 
 import com.example.booktree.auditable.Auditable;
-import com.example.booktree.post.entity.Post;
+import com.example.booktree.blog.dto.BoardDto.Post;
 import com.example.booktree.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
