@@ -1,6 +1,8 @@
 package com.example.booktree.image.service;
 
 
+import com.example.booktree.exception.BusinessLogicException;
+import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.image.entity.Image;
 import com.example.booktree.image.repository.ImageRepository;
 import com.example.booktree.utils.S3Uploader;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -41,5 +45,15 @@ public class ImageService {
 
 
         return imagePathList;
+    }
+
+    public String deleteFile(String fileName){
+        s3Uploader.deleteFile(fileName);
+        return fileName;
+    }
+
+    public Image getImage(Long imageId){
+        return imageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.IMAGE_NOT_FOUND));
     }
 }
