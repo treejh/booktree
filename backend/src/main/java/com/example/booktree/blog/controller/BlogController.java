@@ -46,10 +46,10 @@ public class BlogController {
     }
 
     // Delete
-    @DeleteMapping("/{blogId}")
-    public ResponseEntity deleteBlog(@RequestBody BlogRequestDto blogRequestDto
-                                    ,@PathVariable("blogId") Long blogId) {
-        blogService.deleteBlog(blogRequestDto,blogId);
+    @DeleteMapping("/{userId}/{blogId}")
+    public ResponseEntity deleteBlog(@PathVariable("userId")Long userId,
+                                     @PathVariable("blogId") Long blogId) {
+        blogService.deleteBlog(userId,blogId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

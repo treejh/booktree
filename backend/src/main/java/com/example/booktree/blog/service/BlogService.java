@@ -57,10 +57,10 @@ public class BlogService {
     }
 
     // Delete
-    public void deleteBlog(BlogRequestDto blogRequestDto, Long blogId) {
+    public void deleteBlog(Long userId, Long blogId) {
         //검증
         Blog findBlog = findBlogByBlogId(blogId);
-        validationBlogOwner(blogRequestDto.getUser_id(),blogId);
+        validationBlogOwner(userId,blogId);
 
         blogRepository.delete(findBlog);
     }
@@ -89,7 +89,6 @@ public class BlogService {
         Optional<Blog> blog = blogRepository.findById(blogId);
         return blog.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
     }
-
 
 
 
