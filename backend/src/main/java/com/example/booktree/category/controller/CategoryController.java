@@ -6,6 +6,7 @@ import com.example.booktree.category.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +26,11 @@ public class CategoryController {
             description = "유저의 ID를 통해 유저가 등록한 모든 카테고리를 반환하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<List<AllCategoryResponseDto>> getAllCategory(@RequestParam Long userId) {
+    public ResponseEntity<?>  getAllCategory(@RequestBody Long userId) {
 
         // 인가 로직
-
-        List<AllCategoryResponseDto> userCategories = categoryService.findAllcategory(userId);
-
-        return ResponseEntity.ok(userCategories);
+        List<AllCategoryResponseDto> response = categoryService.findAllcategory(userId);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/deletecategory/{categoryId}")
@@ -43,9 +42,8 @@ public class CategoryController {
     public ResponseEntity<?> deleteCategory(@RequestParam Long categoryId, @RequestBody Long userId) {
 
         // 인가 로직
-
-        categoryService.deleteCategory(categoryId);
-        return ResponseEntity.ok("카테고리가 삭제되었습니다.");
+        categoryService.deleteCategory(categoryId, userId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping("/modcategory/{categoryId}")
@@ -57,9 +55,8 @@ public class CategoryController {
     public ResponseEntity<?> modCategory(@RequestParam Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
 
         // 인가 로직
-
-        categoryService.modCategory(categoryId, createCategoryRequestDto.getCategoryName());
-        return ResponseEntity.ok("카테고리가 수정되었습니다.");
+        categoryService.modCategory(categoryId, createCategoryRequestDto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/cretaecategory")
@@ -70,7 +67,7 @@ public class CategoryController {
     )
     public ResponseEntity<?> createCategory(@RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
 
-        categoryService.createCategory(createCategoryRequestDto.getUserid(),createCategoryRequestDto.getCategoryName());
+        categoryService.createCategory(createCategoryRequestDto);
         return ResponseEntity.ok("카테고리가 생성되었습니다.");
     }
 
