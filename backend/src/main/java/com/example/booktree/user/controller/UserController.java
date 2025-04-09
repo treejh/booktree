@@ -24,7 +24,7 @@ public class UserController {
 
         log.info("컨트롤러가 들어왔습니다.");
         userService.register(dto);
-        return ResponseEntity.ok("회원가입이 완료되었습니다.");
+        return ResponseEntity.ok("회원가입이 완료되었습니다!");
     }
 
 
