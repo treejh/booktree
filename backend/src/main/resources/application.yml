@@ -1,6 +1,10 @@
 server:
   port: 8090
 spring:
+#  sql:
+#    init:
+#      mode: always
+#      data-locations: classpath:data.sql
   output:
     ansi:
       enabled: ALWAYS
