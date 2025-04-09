@@ -1,6 +1,7 @@
 package com.example.booktree.image.controller;
 
 import com.example.booktree.image.service.ImageService;
+import com.example.booktree.utils.S3Uploader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,28 +16,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/image")
+@RequestMapping("/api/images")
 public class ImageController {
  
     private final ImageService imageService;
 
-
     @PostMapping
     public ResponseEntity<List<String>> uploadFile(List<MultipartFile> multipartFiles){
-        List<String> imageNameList = new ArrayList<>();
-        multipartFiles.forEach(image->{
-            try {
-                imageNameList.add(imageService.uploadFile(image));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-         return ResponseEntity.ok(imageNameList);
+
     }
  
     @DeleteMapping
     public ResponseEntity<String> deleteFile(@RequestParam String fileName){
-        imageService.deleteFile(fileName);
+        s3Uploader.deleteFile(fileName);
         return ResponseEntity.ok(fileName);
     }
 }
