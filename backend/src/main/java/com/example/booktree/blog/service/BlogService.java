@@ -54,6 +54,7 @@ public class BlogService {
         findBlog.setModifiedAt(LocalDateTime.now());
 
         return blogRepository.save(findBlog);
+
     }
 
     // Delete
@@ -89,7 +90,6 @@ public class BlogService {
         Optional<Blog> blog = blogRepository.findById(blogId);
         return blog.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
     }
-
 
 
     }
