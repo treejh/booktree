@@ -1,9 +1,12 @@
 package com.example.booktree.category.service;
 
+import com.example.booktree.category.dto.request.CreateCategoryRequestDto;
 import com.example.booktree.category.dto.response.AllCategoryResponseDto;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
-import com.example.booktree.user.entity.User;
+import com.example.booktree.exception.BusinessLogicException;
+import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,24 +20,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CategoryService {
     public final CategoryRepository categoryRepository;
-//    public final UserRepository userRepository;
+    public final UserService userService;
 
     @Transactional
     public List<AllCategoryResponseDto> findAllcategory(Long userId){
-//        List<Category> categories = categoryRepository.findByUser(userRepository.findById(userId));
+        // User 정보를 통해 카테고리들 불러오기
+        List<Category> categories = categoryRepository.findByUser(userService.findById(userId));
 
-
-        // 테스트를 위한 셈플 데이터
-        User user = new User();
-        user.setId(userId);
-        user.setEmail("example@example.com");
-        user.setPassword("password123");
-        user.setPhoneNumber("010-1234-5678");
-        user.setUsername("exampleUser");
-
-
-        List<Category> categories = categoryRepository.findByUser(user);
-
+        // 응답 dto로 변환
         List<AllCategoryResponseDto> lstDto = categories.stream()
                 .map(category -> AllCategoryResponseDto.builder()
                         .id(category.getId())
@@ -44,34 +37,50 @@ public class CategoryService {
                         .build())
                 .collect(Collectors.toList());
 
+        // 전송
         return lstDto;
     }
 
-    public void deleteCategory(Long categoryId){
+    public void deleteCategory(Long categoryId, Long userId){
+
+        // 카테고리 Id 로 찾은 userId 와 로그인된 유저 Id 가 맞는지 비교 후 삭제
+        Category category = findById(categoryId);
+        if(!category.getUser().getId().equals(userId)){
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_CATEGORY_OWNER);
+        }
+        // 삭제
         categoryRepository.deleteById(categoryId);
     }
 
-    public void modCategory(Long categoryId, String name){
-        Category category = categoryRepository.findById(categoryId).get();
-        category.setName(name);
+    public void modCategory(Long categoryId, CreateCategoryRequestDto createCategoryRequestDto){
+
+        // 카테고리 id로 찾은 userId와 로그인된 유저 Id가 맞는지 비교
+        Category category = findById(categoryId);
+
+        // userId 변경에 따라 변경 필요
+        if(!category.getUser().getId().equals(createCategoryRequestDto.getUserId())){
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_CATEGORY_OWNER);
+        }
+
+        // 카테고리 이름 재설정
+        category.setName(createCategoryRequestDto.getCategoryName());
+
+        // 저장
         categoryRepository.save(category);
     }
 
-    public void createCategory(Long userId, String name){
-        // 테스트를 위한 셈플 데이터
-        User user = new User();
-        user.setId(userId);
-        user.setEmail("example@example.com");
-        user.setPassword("password123");
-        user.setPhoneNumber("010-1234-5678");
-        user.setUsername("exampleUser");
+    public void createCategory(CreateCategoryRequestDto createCategoryRequestDto){
 
-        Category category = new Category();
-        category.setName(name);
-//        category.setUser(userRepository.findById(userId));
-        category.setUser(user);
+        // dto -> entity 변환
+        Category category = createCategoryRequestDto.toEntity();
+
+        // 유저 설정 (Security에 따라 로직 변경 필요)
+        category.setUser(userService.findById(createCategoryRequestDto.getUserId()));
+
         categoryRepository.save(category);
     }
 
-
+    public Category findById(Long categoryId){
+        return categoryRepository.findById(categoryId).orElseThrow(()->new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+    }
 }
