@@ -1,8 +1,6 @@
-package com.example.booktree.follow.entity;
-
+package com.example.booktree.role.entity;
 
 import com.example.booktree.auditable.Auditable;
-import com.example.booktree.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,32 +12,23 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name="follows")
+@Table(name="roles")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class Follow extends Auditable {
+public class Role extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @NotNull
     @NotBlank
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "follower_id", nullable = false)
-    private User follower;
+    @Column(nullable = false, length = 20)
+    private String role;
 
 
-    @NotNull
-    @NotBlank
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "followed_id", nullable = false)
-    private User followed;
-
-    
 }
