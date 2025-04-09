@@ -2,6 +2,7 @@ package com.example.booktree.blog.entity;
 
 
 import com.example.booktree.auditable.Auditable;
+
 import com.example.booktree.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -18,7 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name="blogs")
@@ -48,10 +50,5 @@ public class Blog extends Auditable {
     @Column(length = 255)
     private String notice; // 공지사항
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt; // 생성날짜
-
-    @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt; // 수정날짜
 
 }
