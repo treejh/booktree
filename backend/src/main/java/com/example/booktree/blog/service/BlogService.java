@@ -1,6 +1,10 @@
 package com.example.booktree.blog.service;
 
-
+import com.example.booktree.blog.entity.Blog;
+import com.example.booktree.blog.repository.BlogRepository;
+import com.example.booktree.blog.repository.BlogRepository;
+import com.example.booktree.exception.BusinessLogicException;
+import com.example.booktree.exception.ExceptionCode;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,12 +37,12 @@ public class BlogService {
             //Blog findBlog = verifiedBlog(blog.getProjectId());
             //Optional.ofNullable(blog.getMemberId()).ifPresent(findBlog::setMemberId);
             //Optional.ofNullable(blog.getRecruitmentSize()).ifPresent(findBlog::setRecruitmentSize);
-            return blogRepository.save(findBlog);
+            return blogRepository.save(blog);
         }
 
         // Delete
         public void deleteBlog(long ProjectId) {
-             blog = verifiedBlog(ProjectId);
+            Blog blog = verifiedBlog(ProjectId);
             blogRepository.delete(blog);
         }
 

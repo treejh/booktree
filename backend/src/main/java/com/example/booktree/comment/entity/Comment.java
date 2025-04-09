@@ -51,7 +51,7 @@ public class Comment extends Auditable {
     @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<LikeComment> likeCommentList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "reply", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<Reply> replyList = new ArrayList<>();
 
 
