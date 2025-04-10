@@ -4,12 +4,10 @@ import com.example.booktree.comment.dto.CommentDto;
 import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.comment.repository.CommentRepository;
 import com.example.booktree.post.entity.Post;
-//import com.example.booktree.post.repository.PostRepository;
+import com.example.booktree.post.repository.PostRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.example.booktree.post.repository.PostRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,12 +64,16 @@ public class CommentService {
 
     // Comment 엔티티를 Response DTO로 변환하는 헬퍼 메서드
     private CommentDto.Response mapToResponse(Comment comment) {
+        Long postId = Optional.ofNullable(comment.getPost())
+                .map(post -> post.getId())
+                .orElse(null);
         return new CommentDto.Response(
                 comment.getId(),
                 comment.getContent(),
-                comment.getPost() != null ? comment.getPost().getId() : null,
+                postId,
                 comment.getCreatedAt(),
                 comment.getModifiedAt()
         );
     }
+
 }
