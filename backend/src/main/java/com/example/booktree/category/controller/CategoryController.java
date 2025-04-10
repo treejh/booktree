@@ -2,6 +2,7 @@ package com.example.booktree.category.controller;
 
 import com.example.booktree.category.dto.request.CreateCategoryRequestDto;
 import com.example.booktree.category.dto.response.AllCategoryResponseDto;
+import com.example.booktree.category.dto.response.PostByCategoryResponseDto;
 import com.example.booktree.category.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +27,7 @@ public class CategoryController {
             description = "유저의 ID를 통해 유저가 등록한 모든 카테고리를 반환하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?>  getAllCategory(@RequestBody Long userId) {
+    public ResponseEntity<?>  getAllCategory(@RequestParam Long userId) {
 
         // 인가 로직
         List<AllCategoryResponseDto> response = categoryService.findAllcategory(userId);
@@ -39,7 +40,7 @@ public class CategoryController {
             description = "인가된 유저의 ID를 통해 특정 카테고리를 삭제하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> deleteCategory(@PathVariable Long categoryId, @RequestBody Long userId) {
+    public ResponseEntity<?> deleteCategory(@PathVariable Long categoryId, @RequestParam Long userId) {
 
         // 인가 로직
         categoryService.deleteCategory(categoryId, userId);
@@ -71,4 +72,15 @@ public class CategoryController {
         return ResponseEntity.ok("카테고리가 생성되었습니다.");
     }
 
+    @GetMapping("/categories/{categoryId}/posts")
+    @Operation(
+            summary = "카테고리별 게시글 찾기 기능",
+            description = "유저 아이디와 카테고리 작성자 ID를 비교 후 게시글 정보를 가공해 사용자에게 제공하는 메서드",
+            tags = "카테고리 관리 컨트롤러"
+    )
+    public ResponseEntity<?> getPosts(@PathVariable Long categoryId, @RequestParam Long userId) {
+
+        List<PostByCategoryResponseDto> response = categoryService.getPostByCategory(categoryId, userId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
 }
