@@ -14,7 +14,8 @@ public enum ExceptionCode {
     POST_NOT_FOUND(404,"카테고리를 찾을 수 없습니다. "),
     IMAGE_NOT_FOUND(404,"이미지를 찾을 수 없습니다."),
     ROLE_NOT_FOUND(404, "존재하지 않은 역할입니다."),
-    ALREADY_HAS_EMAIL(404,"이미 존재하는 이메일입니다.");
+    ALREADY_HAS_EMAIL(404,"이미 존재하는 이메일입니다."),
+    ALREADY_HAS_PHONENUMBER(404,"이미 존재하는 전화번호입니다.");
     ;
 
 
