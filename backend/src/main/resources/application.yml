@@ -1,6 +1,10 @@
 server:
   port: 8090
 spring:
+#  sql:
+#    init:
+#      mode: always
+#      data-locations: classpath:data.sql
   output:
     ansi:
       enabled: ALWAYS
@@ -43,5 +47,4 @@ custom:
     cookieDomain: "${custom.dev.cookieDomain}"
     frontUrl: "${custom.dev.frontUrl}"
     backUrl: "${custom.dev.backUrl}"
-
 
