@@ -1,10 +1,13 @@
 package com.example.booktree.jwt.filter;
 
+import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.JwtExceptionCode;
 import com.example.booktree.jwt.token.JwtAuthenticationToken;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.role.entity.Role;
 import com.example.booktree.security.CustomUserDetails;
+import com.example.booktree.user.entity.User;
+import com.example.booktree.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -87,6 +90,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email = claims.getSubject();
         Long userId = claims.get("userId", Long.class);
         String username = claims.get("username", String.class);
+
+        // 유저가 삭제되었는지 확인
 
         //roles 정보를 꺼내서 Spring Security가 이해할 수 있는 권한 객체 리스트로 변환
         List<GrantedAuthority> grantedAuthorities = getGrantedAuthority(claims);

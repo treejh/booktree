@@ -49,6 +49,7 @@ public class UserController {
                 ,user.getEmail(),user.getRole().getRole().name());
 
         user.setRefreshToken(refreshToken);
+        userService.saveUser(user);
 
         Cookie accessTokenCookie = new Cookie("accessToken",accessToken);
         accessTokenCookie.setHttpOnly(true);
@@ -59,13 +60,6 @@ public class UserController {
 
         response.addCookie(accessTokenCookie);
 
-
-
-        UserLoginResponseDto loginResponseDto=UserLoginResponseDto.builder()
-                .accessToken(accessToken)
-                .userId(user.getId())
-                .email(user.getEmail())
-                .build();
 
         UserLoginResponseDto userLoginResponseDto  = new UserLoginResponseDto(user,accessToken);
 

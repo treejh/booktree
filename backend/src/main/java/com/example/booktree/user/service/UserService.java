@@ -27,6 +27,10 @@ public class UserService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
 
+    public void saveUser(User user){
+        userRepository.save(user);
+    }
+
 
     public User createUser(UserPostRequestDto userPostRequestDto){
         //이메일, 전화번호, 역할 검증

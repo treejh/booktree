@@ -3,6 +3,7 @@ package com.example.booktree.config;
 
 import com.example.booktree.jwt.filter.JwtAuthenticationFilter;
 import com.example.booktree.jwt.util.JwtTokenizer;
+import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

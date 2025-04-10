@@ -30,6 +30,7 @@ public class TokenService {
             throw new IllegalArgumentException("Token is missing");  // 토큰이 없으면 예외 처리
         }
 
+
         return jwtTokenizer.getEmailFromToken(token);
     }
 

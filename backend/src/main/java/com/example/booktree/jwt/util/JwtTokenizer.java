@@ -21,7 +21,8 @@ public class JwtTokenizer {
 
 
     //토큰 만료 시간이 달라지면 안되기 때문에 static으로 사용해야 한다.
-    public static final Long ACCESS_TOKEN_EXPIRE_COUNT = 5 * 60 * 60 * 1000L;
+    public static final Long ACCESS_TOKEN_EXPIRE_COUNT = 30 * 60 * 1000L;  // 30분
+
     public static final Long REFRESH_TOKEN_EXPIRE_COUNT = 5 * 60 * 60 * 1000L;
 
     // Refresh Token 유효기간: 1일 (24시간 * 60분 * 60초 * 1000ms)
@@ -87,12 +88,29 @@ public class JwtTokenizer {
 
     //받은 토큰에서 데이터 받는 메서드
     public Claims parseToken(String token, byte[] secretKey){
-        return Jwts.parserBuilder()
+
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey(secretKey))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+
+        // 만료 시간 체크
+        checkTokenExpiration(claims);
+
+
+        return claims;
+
     }
+    private void checkTokenExpiration(Claims claims) {
+        Date expiration = claims.getExpiration();
+        System.out.println("현재시간 확인!!: " + new Date());
+        System.out.println("만료시간 확인 !!!  "+ expiration);
+        if (expiration != null && expiration.before(new Date())) {
+            throw new IllegalArgumentException("토큰이 만료되었습니다.");
+        }
+    }
+
 
 
     public String getEmailFromToken(String token){
@@ -119,6 +137,8 @@ public class JwtTokenizer {
         }
 
     }
+
+
     public Long getUserIdFromToken(String token){
         if(token == null || token.isBlank()){
             throw new IllegalArgumentException("JWT 토큰이 없습니다.");
