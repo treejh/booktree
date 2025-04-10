@@ -13,6 +13,7 @@ INSERT INTO categories (id, name, user_id) VALUES
                                                (1, '카테고리1', 1),
                                                (2, '카테고리2', 1),
                                                (3, '카테고리3', 1),
+<<<<<<< HEAD
 <<<<<<< HEAD:Backend/src/main/resources/data.sql
                                                (4, '카테고리4', 1);
 
@@ -79,3 +80,6 @@ INSERT INTO posts (
              1                 -- category_id (외래키)
          );
 
+=======
+                                               (4, '카테고리4', 1);
+>>>>>>> a2898a1dc91d88e82b94876201af27b0f92ac097

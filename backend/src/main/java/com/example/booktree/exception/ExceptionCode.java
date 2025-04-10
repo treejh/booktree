@@ -15,6 +15,7 @@ public enum ExceptionCode {
     ;
 
 
+
 //    BOARD_NOT_FOUND(404, "Board not found"),
 //     USER_NOT_FOUND(404, "User not found"),
 //     CATEGORY_NOT_FOUND(404, "Category not found"),
