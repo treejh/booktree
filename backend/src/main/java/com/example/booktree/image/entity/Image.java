@@ -21,7 +21,7 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name="replies")
+@Table(name="images")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -41,7 +41,7 @@ public class Image extends Auditable {
 
 
     @ManyToOne
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "post_id",nullable = false)
     private Post post;
 
 
