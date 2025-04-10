@@ -80,6 +80,30 @@ INSERT INTO posts (
              1                 -- category_id (외래키)
          );
 
-=======
-                                               (4, '카테고리4', 1);
->>>>>>> a2898a1dc91d88e82b94876201af27b0f92ac097
+
+-- 포스트
+INSERT INTO posts (
+    main_category_id,
+    blog_id,
+    user_id,
+    category_id,
+    title,
+    content,
+    author,
+    book,
+    created_at,
+    last_modified_at,
+    view
+) VALUES (
+             1, -- main_category_id
+             1, -- blog_id
+             1, -- user_id
+             1, -- category_id
+             '예제 제목',
+             '예제 콘텐츠입니다. 여기에 본문 내용이 들어갑니다.',
+             '홍길동',
+             '어린 왕자',
+             NOW(), -- created_at
+             NOW(), -- modified_at
+             0 -- view
+         );

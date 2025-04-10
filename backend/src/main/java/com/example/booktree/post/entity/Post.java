@@ -64,11 +64,9 @@ public class Post extends Auditable {
     @Column(nullable = false)
     private String content;
 
-    @NotBlank
     @Column(length = 100)
     private String author;
 
-    @NotBlank
     @Column(length = 100)
     private String book;
 
@@ -82,8 +80,8 @@ public class Post extends Auditable {
     private Long view = 0L; //조회수
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "category_id")
+    private Category category; //개인 카테고리
 
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)

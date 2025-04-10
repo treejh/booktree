@@ -10,10 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,29 +33,29 @@ public class PostController {
     }
 
     // Read
-    //내 블로그는 하나밖에 없다는 가정하에 유저 아이디로 가져옴
     @GetMapping
-    public ResponseEntity getPostByUserId(@Positive @RequestParam Long postId) {
-        PostResponseDto response = new PostResponseDto(postService.findPostByPostId(postId));
+    public ResponseEntity getPost(@Positive @RequestParam Long postId) {
+
+        PostResponseDto response = new PostResponseDto(postService.findPostById(postId));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 
-    // Update
-    @PatchMapping("/{postId}")
-    public ResponseEntity patchPost(@RequestBody PostRequestDto postRequestDto
-            , @PathVariable("postId") Long postId) {
-        PostResponseDto response = new PostResponseDto(postService.updatePost(postRequestDto,postId));
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    // Update
+//    @PatchMapping("/{postId}")
+//    public ResponseEntity patchPost(@RequestBody PostRequestDto postRequestDto
+//            , @PathVariable("postId") Long postId) {
+//        PostResponseDto response = new PostResponseDto(postService.updatePost(postId));
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 
-    // Delete
-    @DeleteMapping("/{userId}/{postId}")
-    public ResponseEntity deletePost(@PathVariable("userId")Long userId,
-                                     @PathVariable("postId") Long postId) {
-        postService.deletePost(userId,postId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+//    // Delete
+//    @DeleteMapping("/{userId}/{postId}")
+//    public ResponseEntity deletePost(@PathVariable("userId")Long userId,
+//                                     @PathVariable("postId") Long postId) {
+//        postService.deletePost(userId,postId);
+//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//    }
 
     
 }

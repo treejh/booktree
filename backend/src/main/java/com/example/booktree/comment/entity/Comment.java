@@ -36,8 +36,11 @@ import org.springframework.data.annotation.LastModifiedDate;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class Comment  extends Auditable {
+public class Comment extends Auditable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank
     @Column(nullable = false)
