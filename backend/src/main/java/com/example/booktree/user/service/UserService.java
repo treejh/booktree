@@ -48,10 +48,10 @@ public class UserService {
 
     public String login(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("이메일이 존재하지 않습니다"));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.EMAIL_NOT_FOUND));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("비밀번호가 일치하지 않습니다");
+            throw new BusinessLogicException(ExceptionCode.PASSWORD_NOT_MATCH);
         }
 
         return jwtUtil.generateToken(email);

@@ -1,5 +1,6 @@
 package com.example.booktree.jwt;
 
+import com.example.booktree.user.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,32 +21,31 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         String token = request.getHeader("Authorization");
+
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
 
-
-
             if (jwtUtil.validateToken(token)) {
-
                 String email = jwtUtil.getEmailFromToken(token);
 
-
-                UserDetails userDetails = User.withUsername(email)
-                        .password("")
-                        .roles("USER")
-                        .build();
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
+
         chain.doFilter(request, response);
     }
-}
+
+
 }

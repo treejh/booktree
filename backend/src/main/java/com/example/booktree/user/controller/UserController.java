@@ -1,5 +1,6 @@
 package com.example.booktree.user.controller;
 
+import com.example.booktree.user.CustomUserDetails;
 import com.example.booktree.user.dto.LoginRequestDto;
 import com.example.booktree.user.dto.UserRegisterRequestDto;
 import com.example.booktree.user.service.UserService;
@@ -30,22 +31,22 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto dto, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto dto, @AuthenticationPrincipal CustomUserDetails userDetails) {
         String token = userService.login(dto.getEmail(), dto.getPassword());
-        log.info(userDetails + "님이 로그인하셨네요");
+
         return ResponseEntity.ok(token);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String bearerToken, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String bearerToken, @AuthenticationPrincipal CustomUserDetails userDetails) {
         String token = bearerToken.replace("Bearer ", "");
         userService.logout(token);
-        log.info(userDetails + "님이 로그아웃하셨네요");
+        //log.info(userDetails + "님이 로그아웃하셨네요");
         return ResponseEntity.ok("로그아웃 성공");
     }
 
     @GetMapping("/whoami")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails != null) {
             String username = userService.getCurrentUsername(userDetails);
             log.info("현재 로그인한 유저: " + username);
