@@ -4,13 +4,10 @@ package com.example.booktree.reply.entity;
 import com.example.booktree.auditable.Auditable;
 import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.like_reply.entity.LikeReply;
-import com.example.booktree.post.entity.Post;
 import com.example.booktree.user.entity.User;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
