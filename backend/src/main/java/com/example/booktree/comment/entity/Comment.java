@@ -43,7 +43,6 @@ public class Comment extends Auditable {
     @Column(nullable = false)
     private String content;
 
-
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
@@ -53,9 +52,5 @@ public class Comment extends Auditable {
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<Reply> replyList = new ArrayList<>();
-
-
-
-
 
 }
