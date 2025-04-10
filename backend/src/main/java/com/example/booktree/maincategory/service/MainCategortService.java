@@ -45,6 +45,8 @@ public class MainCategortService {
         // 권한 체크 필요
         MainCategory mainCategory = mainCategoryRepository.findById(mainCategoryId)
                 .orElseThrow(()->new BusinessLogicException(ExceptionCode.MAINCATEGORY_NOT_FOUNT));
+        mainCategory.setName(requestDto.getName());
+        mainCategoryRepository.save(mainCategory);
     }
 
     // delete
