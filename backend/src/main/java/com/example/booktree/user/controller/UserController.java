@@ -4,8 +4,10 @@ package com.example.booktree.user.controller;
 import com.example.booktree.blog.dto.request.BlogRequestDto;
 import com.example.booktree.role.entity.Role;
 import com.example.booktree.user.dto.request.UserRequestDto;
+import com.example.booktree.user.dto.response.UserResponseDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
+import com.example.booktree.user.service.UserService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -22,24 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserRepository userRepository ;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity postMember(@Valid @RequestBody UserRequestDto userRequestDto) {
-        Role role = new Role(1L,"USER");
-        User user = User.builder()
-                .email(userRequestDto.getEmail())
-                .password(userRequestDto.getPassword())
-                .phoneNumber(userRequestDto.getPhoneNumber())
-                .role(role)
-                .createdAt(LocalDateTime.now())
-                .modifiedAt(LocalDateTime.now())
-                .username("test").build();
-
-
-        userRepository.save(user);
-
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        UserResponseDto response = new UserResponseDto(userService.createUser(userRequestDto));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+
 
 }
