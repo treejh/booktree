@@ -3,6 +3,7 @@ package com.example.booktree.blog.entity;
 
 import com.example.booktree.auditable.Auditable;
 
+import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -36,7 +37,7 @@ public class Blog extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
 
