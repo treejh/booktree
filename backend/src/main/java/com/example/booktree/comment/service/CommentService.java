@@ -65,7 +65,7 @@ public class CommentService {
     // Comment 엔티티를 Response DTO로 변환하는 헬퍼 메서드
     private CommentDto.Response mapToResponse(Comment comment) {
         Long postId = Optional.ofNullable(comment.getPost())
-                .map(Post::getId)
+                .map(post -> post.getId())
                 .orElse(null);
         return new CommentDto.Response(
                 comment.getId(),
