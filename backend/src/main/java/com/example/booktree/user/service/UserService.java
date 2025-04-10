@@ -2,8 +2,8 @@ package com.example.booktree.user.service;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-import com.example.booktree.user.Repository.UserRepository;
 import com.example.booktree.user.entity.User;
+import com.example.booktree.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
