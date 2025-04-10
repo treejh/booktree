@@ -5,17 +5,13 @@ import com.example.booktree.auditable.Auditable;
 import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.like_reply.entity.LikeReply;
 import com.example.booktree.post.entity.Post;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.example.booktree.user.entity.User;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,13 +33,18 @@ public class Reply extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
+    @Column(nullable = false)
+    private String content;
 
     @ManyToOne
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @OneToMany(mappedBy = "reply", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<LikeReply> likeReplyList = new ArrayList<>();
-
-
 }
