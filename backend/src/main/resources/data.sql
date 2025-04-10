@@ -80,6 +80,3 @@ INSERT INTO posts (
              1                 -- category_id (외래키)
          );
 
-=======
-                                               (4, '카테고리4', 1);
->>>>>>> a2898a1dc91d88e82b94876201af27b0f92ac097
