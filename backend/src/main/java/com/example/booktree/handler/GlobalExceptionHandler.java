@@ -14,6 +14,17 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(BusinessLogicException.class)
+    public ResponseEntity<String> handleBusinessLogicException(BusinessLogicException e) {
+        // 콘솔에만 로그 출력
+        log.info("예외 발생 : " + e.getExceptionCode().getMessage());
+
+        // 클라이언트(curl 등)에는 메시지만 응답
+        return ResponseEntity
+                .status((int) e.getExceptionCode().getStatus()) // 예외 코드에 맞는 상태코드
+                .body(e.getExceptionCode().getMessage());
+    }
+
 
 
 }
