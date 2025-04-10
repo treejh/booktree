@@ -1,6 +1,5 @@
 package com.example.booktree.maincategory.service;
 
-import com.example.booktree.category.dto.response.AllCategoryResponseDto;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.maincategory.dto.request.CreateMainCaterequestDto;
@@ -10,9 +9,7 @@ import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +49,7 @@ public class MainCategortService {
 
     // delete
     public void deleteMainCate(Long mainCategoryId){
-        
+
         // 마찬가지 권한 체크
         mainCategoryRepository.deleteById(mainCategoryId);
     }

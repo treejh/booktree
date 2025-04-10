@@ -8,7 +8,6 @@ import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.service.UserService;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
