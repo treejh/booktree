@@ -42,6 +42,9 @@ dependencies {
     //swagger 의존성
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
 
+    //S3 의존성
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+
 
     implementation ("org.springframework.boot:spring-boot-starter-validation")
 }
