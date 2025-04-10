@@ -36,13 +36,9 @@ public class LikeComment extends Auditable {
     @ManyToOne
     @JoinColumn(name = "comment_id")
     private Comment comment;
-
-
+    
+    // 좋아용
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-
-
-    
 }
