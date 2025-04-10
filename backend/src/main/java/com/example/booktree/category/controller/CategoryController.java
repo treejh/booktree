@@ -39,7 +39,7 @@ public class CategoryController {
             description = "인가된 유저의 ID를 통해 특정 카테고리를 삭제하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> deleteCategory(@RequestParam Long categoryId, @RequestBody Long userId) {
+    public ResponseEntity<?> deleteCategory(@PathVariable Long categoryId, @RequestBody Long userId) {
 
         // 인가 로직
         categoryService.deleteCategory(categoryId, userId);
@@ -52,7 +52,7 @@ public class CategoryController {
             description = "인가된 유저의 ID를 통해 특정 카테고리를 수정하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> modCategory(@RequestParam Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
+    public ResponseEntity<?> modCategory(@PathVariable Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
 
         // 인가 로직
         categoryService.modCategory(categoryId, createCategoryRequestDto);
