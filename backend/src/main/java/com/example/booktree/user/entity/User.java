@@ -2,6 +2,7 @@ package com.example.booktree.user.entity;
 
 
 import com.example.booktree.auditable.Auditable;
+import com.example.booktree.blog.entity.Blog;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.like_comment.entity.LikeComment;
 import com.example.booktree.like_reply.entity.LikeReply;
@@ -41,8 +42,7 @@ public class User extends Auditable {
 
 
     @NotNull
-    @NotBlank
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
 
@@ -73,6 +73,11 @@ public class User extends Auditable {
 
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    List<Blog> blogList = new ArrayList<>();
+
+
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
