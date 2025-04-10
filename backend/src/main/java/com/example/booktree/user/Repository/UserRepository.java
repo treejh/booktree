@@ -1,4 +1,4 @@
-package com.example.booktree.user.repository;
+package com.example.booktree.user.Repository;
 
 import com.example.booktree.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
