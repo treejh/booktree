@@ -46,8 +46,8 @@ public class MainCategoryController {
 
     @PatchMapping("/updatemaincate/{mainCategoryId}")
     @Operation(
-            summary = "메인 카테고리 삭제 기능",
-            description = "권한에 따라 메인 카테고리를 삭제하는 메서드",
+            summary = "메인 카테고리 수정 기능",
+            description = "권한에 따라 메인 카테고리를 수정하는 메서드",
             tags = "메인카테고리 관리 컨트롤러"
     )
     public ResponseEntity<?> updateMainCategory(@RequestParam Long mainCategoryId,@RequestBody CreateMainCaterequestDto createMainCaterequestDto){
@@ -57,8 +57,8 @@ public class MainCategoryController {
 
     @DeleteMapping("/deletemaincate/{mainCategoryId}")
     @Operation(
-            summary = "메인 카테고리 수정 기능",
-            description = "권한에 따라 메인 카테고리를 수정하는 메서드",
+            summary = "메인 카테고리 삭제 기능",
+            description = "권한에 따라 메인 카테고리를 삭제하는 메서드",
             tags = "메인카테고리 관리 컨트롤러"
     )
     public ResponseEntity<?> deleteMainCategory(@RequestParam Long mainCategoryId){
