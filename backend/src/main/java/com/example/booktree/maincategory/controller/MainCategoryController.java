@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/maincategory")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Tag(name = "메인카테고리 관리 컨트롤러")
 public class MainCategoryController {
 
     public final MainCategortService mainCategortService;
 
-    @GetMapping("/allmaincate")
+    @GetMapping("/maincategory/allmaincate")
     @Operation(
             summary = "모든 메인 카테고리 조회 기능",
             description = "모든 메인 카테고리 조회 메서드",
@@ -32,7 +32,7 @@ public class MainCategoryController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/createmaincate")
+    @PostMapping("/maincategory/createmaincate")
     @Operation(
             summary = "메인 카테고리 생성 기능",
             description = "권한에 따라 메인 카테고리를 생성하는 메서드",
@@ -44,7 +44,7 @@ public class MainCategoryController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PatchMapping("/updatemaincate/{mainCategoryId}")
+    @PatchMapping("/maincategory/updatemaincate/{mainCategoryId}")
     @Operation(
             summary = "메인 카테고리 수정 기능",
             description = "권한에 따라 메인 카테고리를 수정하는 메서드",
@@ -55,7 +55,7 @@ public class MainCategoryController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("/deletemaincate/{mainCategoryId}")
+    @DeleteMapping("/maincategory/deletemaincate/{mainCategoryId}")
     @Operation(
             summary = "메인 카테고리 삭제 기능",
             description = "권한에 따라 메인 카테고리를 삭제하는 메서드",
