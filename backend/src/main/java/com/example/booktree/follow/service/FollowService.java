@@ -12,6 +12,7 @@ import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -25,6 +26,7 @@ public class FollowService {
     public final UserService userService;
 
     // 모든 팔로우 정보 제공
+    @Transactional(readOnly = true)
     public List<AllFollowListResponseDto> getAllFollowerList(Long userId) {
 
         List<Follow> follows = followRepository.findByFollower_Id(userId);
@@ -44,6 +46,7 @@ public class FollowService {
     }
 
     // 모든 팔로잉 정보 제공
+    @Transactional(readOnly = true)
     public List<AllFollowListResponseDto> getAllFollowedList(Long userId) {
 
         List<Follow> follows = followRepository.findByFollowed_Id(userId);
@@ -98,6 +101,7 @@ public class FollowService {
     }
 
     // 언팔로우
+    @Transactional
     public void unFollow(UnFollowRequestDto unFollowRequestDto) {
         followRepository.deleteByFollower_IdAndFollowed_Id(unFollowRequestDto.getFollowerId(), unFollowRequestDto.getFolloweeId());
     }
