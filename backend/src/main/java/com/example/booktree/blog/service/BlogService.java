@@ -24,7 +24,7 @@ public class BlogService {
     public Blog createBlog(BlogRequestDto blogRequestDto) {
         //블로그 가지고 있는지 확인
         validationBlog(blogRequestDto.getUser_id());
-        User user = userService.findUserById(blogRequestDto.getUser_id());
+        User user = userService.findById(blogRequestDto.getUser_id());
         Blog blog = Blog.builder()
                 .name(blogRequestDto.getName())
                 .user(user)
