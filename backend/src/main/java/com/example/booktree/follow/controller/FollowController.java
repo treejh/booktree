@@ -62,7 +62,7 @@ public class FollowController {
     }
 
     // 팔로워, 팔로잉 숫자
-    @GetMapping("/getfollwcount/{userId}")
+    @GetMapping("/getfollowcount/{userId}")
     @Operation(
             summary = "팔로워, 팔로잉 숫자 제공 기능",
             description = "로그인한 ID를 기반으로 팔로워, 팔로잉하는 유저들의 수를 제공하는 메서드",
