@@ -16,7 +16,7 @@ public class ReplyDto {
     public static class Post {
         private Long commentId;  // 부모 댓글의 ID
         private Long userId;     // 대댓글 작성자 ID
-        private String content;  // 대댓글 내용
+        private String content;
     }
 
     // 대댓글 수정
