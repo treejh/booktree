@@ -12,7 +12,6 @@ import lombok.Setter;
 @Setter
 public class BlogRequestDto {
 
-    private Long user_id;
     private String name;
     private String profile;
     private String notice;

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/blogs")
+@RequestMapping("/api/v1/blogs")
 @Validated
 @AllArgsConstructor
 public class BlogController {
@@ -46,10 +46,9 @@ public class BlogController {
     }
 
     // Delete
-    @DeleteMapping("/{userId}/{blogId}")
-    public ResponseEntity deleteBlog(@PathVariable("userId")Long userId,
-                                     @PathVariable("blogId") Long blogId) {
-        blogService.deleteBlog(userId,blogId);
+    @DeleteMapping("/delete/{blogId}")
+    public ResponseEntity deleteBlog(@PathVariable("blogId") Long blogId) {
+        blogService.deleteBlog(blogId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
