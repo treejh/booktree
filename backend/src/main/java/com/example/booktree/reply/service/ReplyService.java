@@ -7,23 +7,19 @@ import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.comment.repository.CommentRepository;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class ReplyService {
 
     private final ReplyRepository replyRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
-
-    public ReplyService(ReplyRepository replyRepository, CommentRepository commentRepository, UserRepository userRepository) {
-        this.replyRepository = replyRepository;
-        this.commentRepository = commentRepository;
-        this.userRepository = userRepository;
-    }
 
     // 대댓글 생성
     @Transactional
