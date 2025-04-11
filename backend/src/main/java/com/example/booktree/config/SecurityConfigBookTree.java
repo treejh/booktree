@@ -31,18 +31,16 @@ public class SecurityConfigBookTree {
         http
                 .headers(headers -> headers.frameOptions().disable()) // H2 console 용
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/blogs/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN") // /api/blogs에 대한 접근은 인증이 필요 (확인용)
                         .requestMatchers(
                                 "/api/oauth/**",
                                 "/oauth",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/**",
                                 "/h2-console/**"
                         ).permitAll()
-                        .anyRequest()
-                        .authenticated())
-
+                        .requestMatchers("/api/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session

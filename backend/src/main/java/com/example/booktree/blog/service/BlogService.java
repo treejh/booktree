@@ -29,8 +29,9 @@ public class BlogService {
     public Blog createBlog(BlogRequestDto blogRequestDto) {
         //블로그 가지고 있는지 확인
         Long userId = tokenService.getIdFromToken();
-        //가지고 오는지 확인
 
+
+        //가지고 오는지 확인
         validationBlog(userId);
         User user = userService.findById(userId);
         Blog blog = Blog.builder()
@@ -68,9 +69,15 @@ public class BlogService {
 
     @Transactional
     // Delete
-    public void deleteBlog(Long userId, Long blogId) {
-        //검증
+    public void deleteBlog(Long blogId) {
+        Long userId = tokenService.getIdFromToken();
+
         Blog findBlog = findBlogByBlogId(blogId);
+
+        if(!userId.equals(findBlog.getUser().getId())){
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_BLOG_OWNER);
+        }
+
         validationBlogOwner(userId,blogId);
 
         blogRepository.delete(findBlog);
@@ -89,6 +96,7 @@ public class BlogService {
     //블로그가 존재하는지 확인
     public void validationBlog(Long userId) {
         Optional<Blog> blogOptional = blogRepository.findByUserId(userId);
+
         if (blogOptional.isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_HAS_BLOG);
         }
