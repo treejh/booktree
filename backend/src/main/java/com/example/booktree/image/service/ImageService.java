@@ -6,9 +6,8 @@ import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.image.dto.request.ImageRequestDto;
 import com.example.booktree.image.entity.Image;
 import com.example.booktree.image.repository.ImageRepository;
-import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
-import com.example.booktree.post.service.PostService;
+import com.example.booktree.post.entity.Post;
 import com.example.booktree.utils.S3Uploader;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -16,11 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -34,9 +29,6 @@ public class ImageService {
 
     public List<String> saveImages(List<MultipartFile> multipartFiles){
         List<String> imagePathList = new ArrayList<>();
-        if (multipartFiles == null || multipartFiles.isEmpty()) {
-            return imagePathList;  // 빈 리스트 리턴
-        }
         multipartFiles.forEach(image->{
             try {
                 s3Uploader.uploadFile(image);
@@ -49,27 +41,11 @@ public class ImageService {
         return imagePathList;
     }
 
-
-    public void convertStringToImage(List<String> urlList, Post post){
-        for(int i=0;i<urlList.size();i++){
-            Image image = Image.builder()
-                    .imageUrl(urlList.get(i))
-                    .post(post)
-                    .createdAt(LocalDateTime.now())
-                    .modifiedAt(LocalDateTime.now())
-                    .build();
-
-            imageRepository.save(image);
-        }
-
-
-    }
-
     //포스트에 이미지 저장
     public List<Image> saveImagesToPost(ImageRequestDto imageRequestDto){
         Post post = postRepository.findById(imageRequestDto.getPostId())
-                .orElseThrow(()->new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
-       //System.out.println(imageRequestDto.getImages().get(0));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+        System.out.println(imageRequestDto.getImages().get(0));
         List<String> saveImages = saveImages(imageRequestDto.getImages());
         List<Image> resultImages = new ArrayList<>();
 
@@ -100,8 +76,7 @@ public class ImageService {
 
 
     public List<Image> uploadPostImage(Long postId, List<MultipartFile> multipartFiles) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(()->new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).get();
         List<Image> postImageList = post.getImageList();
 
 

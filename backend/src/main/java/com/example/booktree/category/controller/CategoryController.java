@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/category")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Tag(name = "카테고리 관리 컨트롤러")
 public class CategoryController {
 
     public final CategoryService categoryService;
 
-    @GetMapping("/allcategory")
+    @GetMapping("/category/allcategory")
     @Operation(
             summary = "유저의 모든 카테고리 찾기 기능",
             description = "유저의 ID를 통해 유저가 등록한 모든 카테고리를 반환하는 메서드",
@@ -33,33 +33,33 @@ public class CategoryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/deletecategory/{categoryId}")
+    @DeleteMapping("/category/deletecategory/{categoryId}")
     @Operation(
             summary = "카테고리 삭제 기능",
             description = "인가된 유저의 ID를 통해 특정 카테고리를 삭제하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> deleteCategory(@RequestParam Long categoryId, @RequestBody Long userId) {
+    public ResponseEntity<?> deleteCategory(@PathVariable Long categoryId, @RequestBody Long userId) {
 
         // 인가 로직
         categoryService.deleteCategory(categoryId, userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/modcategory/{categoryId}")
+    @PatchMapping("/category/modcategory/{categoryId}")
     @Operation(
             summary = "카테고리 수정 기능",
             description = "인가된 유저의 ID를 통해 특정 카테고리를 수정하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> modCategory(@RequestParam Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
+    public ResponseEntity<?> modCategory(@PathVariable Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
 
         // 인가 로직
         categoryService.modCategory(categoryId, createCategoryRequestDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/cretaecategory")
+    @PostMapping("/category/cretaecategory")
     @Operation(
             summary = "카테고리 생성 기능",
             description = "입력된 내용을 바탕으로 카테고리 생성 메서드",

@@ -16,7 +16,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -25,8 +24,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Table(name="comments")
@@ -46,7 +43,6 @@ public class Comment extends Auditable {
     @Column(nullable = false)
     private String content;
 
-
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
@@ -56,8 +52,5 @@ public class Comment extends Auditable {
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<Reply> replyList = new ArrayList<>();
-
-
-
 
 }
