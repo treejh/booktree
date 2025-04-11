@@ -50,6 +50,10 @@ public class SecurityConfigBookTree {
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .cors(cors -> cors.configurationSource(configurationSource()))
+                //oauth2 로그인
+//                .oauth2Login(
+//                        oauth2Login->
+//                )
                 .logout(logout -> logout
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID"));
