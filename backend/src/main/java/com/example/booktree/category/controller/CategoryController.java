@@ -59,7 +59,6 @@ public class CategoryController {
     public ResponseEntity<?> modCategory(@PathVariable Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
         Long userId = tokenService.getIdFromToken();
         String name = createCategoryRequestDto.getCategoryName();
-        // 인가 로직
         categoryService.modCategory(categoryId, userId, name);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -83,8 +82,9 @@ public class CategoryController {
             description = "유저 아이디와 카테고리 작성자 ID를 비교 후 게시글 정보를 가공해 사용자에게 제공하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> getPosts(@PathVariable Long categoryId, @RequestParam Long userId) {
+    public ResponseEntity<?> getPosts(@PathVariable Long categoryId) {
 
+        Long userId= tokenService.getIdFromToken();
         List<PostByCategoryResponseDto> response = categoryService.getPostByCategory(categoryId, userId);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }

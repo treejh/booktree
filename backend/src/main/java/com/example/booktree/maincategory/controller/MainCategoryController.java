@@ -3,6 +3,7 @@ package com.example.booktree.maincategory.controller;
 import com.example.booktree.maincategory.dto.request.CreateMainCaterequestDto;
 import com.example.booktree.maincategory.dto.response.AllMainCategoryResponseDto;
 import com.example.booktree.maincategory.service.MainCategortService;
+import com.example.booktree.user.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 public class MainCategoryController {
 
     public final MainCategortService mainCategortService;
+    public final TokenService tokenService;
 
     @GetMapping("/get/allmaincate")
     @Operation(
