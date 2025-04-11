@@ -62,18 +62,18 @@ public class CategoryService {
     }
 
     // update
-    public void modCategory(Long categoryId, CreateCategoryRequestDto createCategoryRequestDto){
+    public void modCategory(Long categoryId,Long userId, String name){
 
         // 카테고리 id로 찾은 userId와 로그인된 유저 Id가 맞는지 비교
         Category category = findById(categoryId);
 
         // userId 변경에 따라 변경 필요
-        if(!category.getUser().getId().equals(createCategoryRequestDto.getUserId())){
+        if(!category.getUser().getId().equals(userId)){
             throw new BusinessLogicException(ExceptionCode.USER_NOT_CATEGORY_OWNER);
         }
 
         // 카테고리 이름 재설정
-        category.setName(createCategoryRequestDto.getCategoryName());
+        category.setName(name);
 
         // 저장
         categoryRepository.save(category);
@@ -81,13 +81,13 @@ public class CategoryService {
 
 
     // create
-    public void createCategory(CreateCategoryRequestDto createCategoryRequestDto){
+    public void createCategory(CreateCategoryRequestDto createCategoryRequestDto,Long userId){
 
         // dto -> entity 변환
         Category category = createCategoryRequestDto.toEntity();
 
         // 유저 설정 (Security에 따라 로직 변경 필요)
-        category.setUser(userService.findById(createCategoryRequestDto.getUserId()));
+        category.setUser(userService.findById(userId));
 
         categoryRepository.save(category);
     }
