@@ -665,25 +665,3 @@ INSERT INTO categories (id, name, user_id) VALUES
                                                (3, '카테고리3', 1),
 <<<<<<< HEAD:Backend/src/main/resources/data.sql
                                                (4, '카테고리4', 1) [42001-232]
-2025-04-10 20:56:34.776422+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "delete role [*]rom id =1"; expected "., FROM"; SQL statement:
-delete role rom id =1 [42001-232]
-2025-04-10 20:56:52.148555+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ROLE" not found; SQL statement:
-DELETE FROM role WHERE id = 1 [42102-232]
-2025-04-10 20:56:53.706475+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ROLE" not found; SQL statement:
-DELETE FROM role WHERE id = 1 [42102-232]
-2025-04-10 20:56:58.593053+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ROLE" not found; SQL statement:
-DELETE FROM ROLE WHERE id = 1 [42102-232]
-2025-04-10 20:57:09.450195+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "ROLE" not found; SQL statement:
-DELETE FROM ROLE WHERE ID = 1 [42102-232]
-2025-04-10 20:58:57.826878+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]=======\000d\000a                                               (4, '카테고리4', 1)"; SQL statement:
-=======
-                                               (4, '카테고리4', 1) [42000-232]
-2025-04-10 20:58:57.829530+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]>>>>>>> a2898a1dc91d88e82b94876201af27b0f92ac097"; SQL statement:
->>>>>>> a2898a1dc91d88e82b94876201af27b0f92ac097 [42000-232]
