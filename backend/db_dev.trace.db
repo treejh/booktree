@@ -665,9 +665,3 @@ INSERT INTO categories (id, name, user_id) VALUES
                                                (3, '카테고리3', 1),
 <<<<<<< HEAD:Backend/src/main/resources/data.sql
                                                (4, '카테고리4', 1) [42001-232]
-2025-04-11 11:38:52.586991+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]SEUSERS LECT * FROM USERS"; expected "SAVEPOINT, SCRIPT, SHUTDOWN"; SQL statement:
-SEUSERS LECT * FROM USERS [42001-232]
-2025-04-11 13:54:21.583688+09:00 jdbc[3]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "INSERT INTO users (id,role_id, email, password, phone_number, username) VALUES (1, 1, 'test@example.com', 'test@!2!!123', '010-8574-5678', 'exampleUser'), (2, 1, 'test1@example.com', 'test@!2!!123', '010-2355-5678', 'exampleUser1'), (3, 1, 'test2@example.com', 'test@!2!!123', '010-2355-5679', 'exampleUser3'), (4, 1, 'test3@example.com', 'test@!2!!123', '010-2355-1238', 'exampleUser4'), [*]"; expected "ROW (, (, DEFAULT, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS"; SQL statement:
-INSERT INTO users (id,role_id, email, password, phone_number, username) VALUES (1, 1, 'test@example.com', 'test@!2!!123', '010-8574-5678', 'exampleUser'), (2, 1, 'test1@example.com', 'test@!2!!123', '010-2355-5678', 'exampleUser1'), (3, 1, 'test2@example.com', 'test@!2!!123', '010-2355-5679', 'exampleUser3'), (4, 1, 'test3@example.com', 'test@!2!!123', '010-2355-1238', 'exampleUser4'),  [42001-232]

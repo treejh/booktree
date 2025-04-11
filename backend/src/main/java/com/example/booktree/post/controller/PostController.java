@@ -2,9 +2,11 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,5 +71,35 @@ public class PostController {
         );
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
+
+
+
+
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createPost(@RequestBody @Valid PostRequestDto dto) {
+        postService.createPost(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body("게시글이 성공적으로 작성되었습니다.");
+    }
+
+
+
+    @PatchMapping("/patch/{postId}")
+    public ResponseEntity<?> updatePost(@PathVariable("postId") Long postId,
+                                        @RequestBody @Valid PostRequestDto postRequestDto) {
+        postService.updatePost(postId, postRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId) {
+        postService.deletePost(postId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 
 }
