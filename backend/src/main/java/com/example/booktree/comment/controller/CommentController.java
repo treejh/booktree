@@ -31,7 +31,7 @@ public class CommentController {
     }
 
     // 댓글 수정
-    @PutMapping("/update/{commentId}")
+    @PatchMapping("/update/{commentId}")
     public ResponseEntity<CommentDto.Response> updateComment(@PathVariable Long commentId,
                                                              @RequestBody CommentDto.Patch dto) {
         dto.setCommentId(commentId);
