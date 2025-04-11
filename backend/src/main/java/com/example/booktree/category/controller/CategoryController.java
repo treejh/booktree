@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/category")
+@RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
 @Tag(name = "카테고리 관리 컨트롤러")
 public class CategoryController {
@@ -37,7 +37,7 @@ public class CategoryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/delete/deletecategory/{categoryId}")
+    @DeleteMapping("/delete/{categoryId}")
     @Operation(
             summary = "카테고리 삭제 기능",
             description = "인가된 유저의 ID를 통해 특정 카테고리를 삭제하는 메서드",
@@ -50,7 +50,7 @@ public class CategoryController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PatchMapping("/patch/modcategory/{categoryId}")
+    @PatchMapping("/patch/{categoryId}")
     @Operation(
             summary = "카테고리 수정 기능",
             description = "인가된 유저의 ID를 통해 특정 카테고리를 수정하는 메서드",
@@ -63,7 +63,7 @@ public class CategoryController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/create/cretaecategory")
+    @PostMapping("/create/")
     @Operation(
             summary = "카테고리 생성 기능",
             description = "입력된 내용을 바탕으로 카테고리 생성 메서드",

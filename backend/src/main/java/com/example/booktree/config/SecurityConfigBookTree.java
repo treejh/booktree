@@ -29,7 +29,7 @@ public class SecurityConfigBookTree {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .headers(headers -> headers.frameOptions().disable()) // H2 console 용
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // H2 console 용
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/api/oauth/**",
@@ -37,9 +37,10 @@ public class SecurityConfigBookTree {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
-                                "/api/users/**"
+                                "/api/users/**",
+                                "/api/v1/post/**"
                         ).permitAll()
-                        .requestMatchers("/api/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/v1/post/create", "/api/v1/post/patch", "/api/v1/post/delete").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
 

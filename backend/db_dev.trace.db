@@ -665,6 +665,3 @@ INSERT INTO categories (id, name, user_id) VALUES
                                                (3, '카테고리3', 1),
 <<<<<<< HEAD:Backend/src/main/resources/data.sql
                                                (4, '카테고리4', 1) [42001-232]
-2025-04-11 11:38:52.586991+09:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]SEUSERS LECT * FROM USERS"; expected "SAVEPOINT, SCRIPT, SHUTDOWN"; SQL statement:
-SEUSERS LECT * FROM USERS [42001-232]
