@@ -55,4 +55,9 @@ public class MainCategortService {
         // 마찬가지 권한 체크
         mainCategoryRepository.deleteById(mainCategoryId);
     }
+
+    // 유효성 검사
+    public boolean validateMainCate(Long mainCategoryId){
+        return mainCategoryRepository.existsById(mainCategoryId);
+    }
 }
