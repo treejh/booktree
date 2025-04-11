@@ -1,12 +1,14 @@
 INSERT INTO ROLES (id, role, created_at, last_modified_AT)
-VALUES (1, 'ROLE_USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+VALUES (1, 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO ROLES (id, role, created_at, last_modified_AT)
+VALUES (2, 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- 사용자 추가
 INSERT INTO users (id,role_id, email, password, phone_number, username) VALUES
-                                                                         (1, 1, 'example@example.com', 'password123', '010-1234-5678', 'exampleUser'),
-                                                                         (2, 1, 'example1@example.com', 'password123', '010-1234-5678', 'exampleUser1'),
-                                                                         (3, 1, 'example2@example.com', 'password123', '010-1234-5678', 'exampleUser2'),
-                                                                         (4, 1, 'example3@example.com', 'password123', '010-1234-5678', 'exampleUser3');
+                                                                         (1, 1, 'example@example.com', 'password123', '010-8574-5678', 'exampleUser'),
+                                                                         (2, 1, 'example1@example.com', 'password123', '010-2355-5678', 'exampleUser1'),
+                                                                         (3, 1, 'example2@example.com', 'password123', '010-2354-5678', 'exampleUser2'),
+                                                                         (4, 1, 'example3@example.com', 'password123', '010-2356-5678', 'exampleUser3');
 
 -- 카테고리 추가
 INSERT INTO categories (id, name, user_id) VALUES

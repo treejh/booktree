@@ -665,6 +665,3 @@ INSERT INTO categories (id, name, user_id) VALUES
                                                (3, '카테고리3', 1),
 <<<<<<< HEAD:Backend/src/main/resources/data.sql
                                                (4, '카테고리4', 1) [42001-232]
-2025-04-10 22:16:28.707197+09:00 jdbc[3]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "INSERT INTO main_categories ( id, name, created_at, last_modified_at ) VALUES ( 1, '소설', NOW(), NOW() ), ( 2, '자기개발서', NOW(), NOW() ), ( 3, '공부/자격', NOW(), NOW() ), ( 4, '에세이/일상', NOW(), NOW() ), ( 5, '실용/취미', NOW(), NOW() ), ( 6, 'IT/컴퓨터', NOW(), NOW() ), [*]"; expected "ROW (, (, DEFAULT, INTERSECTS (, NOT, EXISTS, UNIQUE, INTERSECTS"; SQL statement:
-INSERT INTO main_categories ( id, name, created_at, last_modified_at ) VALUES ( 1, '소설', NOW(), NOW() ), ( 2, '자기개발서', NOW(), NOW() ), ( 3, '공부/자격', NOW(), NOW() ), ( 4, '에세이/일상', NOW(), NOW() ), ( 5, '실용/취미', NOW(), NOW() ), ( 6, 'IT/컴퓨터', NOW(), NOW() ),  [42001-232]
