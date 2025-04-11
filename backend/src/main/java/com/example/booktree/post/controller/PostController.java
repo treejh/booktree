@@ -1,61 +1,73 @@
 package com.example.booktree.post.controller;
 
-
-import com.example.booktree.post.dto.request.PostRequestDto;
+import com.example.booktree.exception.BusinessLogicException;
+import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.dto.response.PostResponseDto;
+import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/posts")
-@Validated
-@AllArgsConstructor
+@RequestMapping("/api/v1/post")
+@RequiredArgsConstructor
 public class PostController {
+
     private final PostService postService;
 
 
-    @PostMapping
-    public ResponseEntity postPost(@Valid @RequestBody PostRequestDto postRequestDto) {
-        PostResponseDto response = new PostResponseDto(postService.createPost(postRequestDto));
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+    // 카테고리 별 최신순 글 가지고 오기
+    @GetMapping("/get/maincategory/{maincategoryId}/{value}")
+    public ResponseEntity<?> getPostByMaincCategory(@PathVariable Long maincategoryId,
+                                                    @RequestParam(name = "page", defaultValue = "1") int page,
+                                                    @RequestParam(name="size", defaultValue = "8") int size,
+                                                    @PathVariable int value) {
 
-    // Read
-    @GetMapping
-    public ResponseEntity getPost(@Positive @RequestParam Long postId) {
+        String type = "createdAt";
+        if(value == 1){
+            type = "createdAt";
+        }else if(value == 2){
+            type = "view";
+        }else {
+            throw new BusinessLogicException(ExceptionCode.MAINCATEGORY_NOT_FOUNT);
+        }
+        // 추천 순
 
-        PostResponseDto response = new PostResponseDto(postService.findPostById(postId));
+        Page<Post> postPage = postService.getPost(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, type)), maincategoryId);
+        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+                        .title(post.getTitle())
+                        .createdAt(post.getCreatedAt())
+                        .modifiedAt(post.getModifiedAt())
+                        .postId(post.getId())
+                        .viewCount(post.getView())
+                        .build()
+                );
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    // 카테고리 별 조회수순으로 글 가지고 오기
+    @GetMapping("/get/maincategory/{maincategoryId}/view")
+    public ResponseEntity<?> getPostByViews(@PathVariable Long maincategoryId,
+                                                    @RequestParam(name = "page", defaultValue = "1") int page,
+                                                    @RequestParam(name="size", defaultValue = "6") int size
+                                                    ) {
+        // 추천 순
+        Page<Post> postPage = postService.getPostByViews(PageRequest.of(page -1, size), maincategoryId);
 
-//    // Update
-//    @PatchMapping("/{postId}")
-//    public ResponseEntity patchPost(@RequestBody PostRequestDto postRequestDto
-//            , @PathVariable("postId") Long postId) {
-//        PostResponseDto response = new PostResponseDto(postService.updatePost(postId));
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
+        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .postId(post.getId())
+                .viewCount(post.getView())
+                .build()
+        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
-//    // Delete
-//    @DeleteMapping("/{userId}/{postId}")
-//    public ResponseEntity deletePost(@PathVariable("userId")Long userId,
-//                                     @PathVariable("postId") Long postId) {
-//        postService.deletePost(userId,postId);
-//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//    }
-
-    
 }

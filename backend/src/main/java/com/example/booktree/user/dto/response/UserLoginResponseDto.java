@@ -20,12 +20,10 @@ public class UserLoginResponseDto {
     private String username;
     private String email;
     private Long userId;
-    private String accessToken;
 
     public UserLoginResponseDto(User user, String accessToken){
         this.username=user.getUsername();
         this.email = user.getEmail();
         this.userId = user.getId();
-        this.accessToken = accessToken;
     }
 }
