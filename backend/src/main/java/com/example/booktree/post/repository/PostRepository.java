@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
@@ -17,4 +18,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.mainCategory.id = :mainCategoryId")
     Page<Post> findByMainCategoryId(@Param("mainCategoryId") Long mainCategoryId, Pageable pageable);
 
+    @Query("SELECT p FROM Post p WHERE p.mainCategory.id = :mainCategoryId AND p.createdAt >= :oneWeekAgo ORDER BY p.view DESC")
+    Page<Post> findTopPostsByViewsInLastWeek(@Param("mainCategoryId") Long mainCategoryId,
+                                             @Param("oneWeekAgo") LocalDateTime oneWeekAgo,
+                                             Pageable pageable);
 }
