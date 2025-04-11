@@ -40,4 +40,4 @@ out/
 application-secret.yml
 
 db_dev.trace.db
-*.mv.db
+db_dev.*

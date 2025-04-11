@@ -2,6 +2,7 @@ package com.example.booktree.user.service;
 
 
 import com.example.booktree.jwt.util.JwtTokenizer;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,20 @@ public class TokenService {
         if (StringUtils.hasText(authorization) && authorization.startsWith("Bearer ")) {
             return authorization.substring(7); // "Bearer " 뒤의 토큰 값 추출
         }
+
+        //쿠키에 있는지 확인
+        Cookie[] cookies = httpServletRequest.getCookies();
+        if(cookies!=null){
+            for(Cookie cookie : cookies){
+                if("accessToken".equals(cookie.getName())){
+                    return cookie.getValue();
+                }
+            }
+        }
+
         return null;
+
+
     }
 
     public String getEmailFromToken(){

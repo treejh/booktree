@@ -1,10 +1,27 @@
 server:
-  port: 9999
+  port: 8090
 spring:
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data.sql
+#  sql:
+#    init:
+#      mode: always
+#      data-locations: classpath:data.sql
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            clientId: ON_SECRET
+            scope: profile_nickname, profile_image
+            client-name: Kakao
+            authorization-grant-type: authorization_code
+            redirect-uri: "${custom.site.backUrl}/{action}/oauth2/code/{registrationId}"
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
   output:
     ansi:
       enabled: ALWAYS
@@ -22,9 +39,8 @@ spring:
     driver-class-name: org.h2.Driver
   jpa:
     open-in-view: false
-    defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create #update
+      ddl-auto: update
     properties:
       hibernate:
         default_batch_fetch_size: 100
