@@ -61,6 +61,9 @@ dependencies {
     // Gson - JSON 메시지를 다루기 위한 라이브러리
     implementation("com.google.code.gson:gson")
 
+    //Oauth2
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+
 
 
 
