@@ -4,9 +4,12 @@ package com.example.booktree.user.service;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.role.repository.RoleRepository;
+import com.example.booktree.user.dto.request.UserPasswordRequestDto;
+import com.example.booktree.user.dto.request.UserPhoneNumberRequestDto;
 import com.example.booktree.user.dto.request.UserPostRequestDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
+import com.example.booktree.utils.CreateRandomNumber;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
 
     public User findById(Long userId) {
@@ -39,7 +43,7 @@ public class UserService {
         // username 비어있으면 랜덤 UUID 일부로 생성
         String username = userPostRequestDto.getUsername();
         if (username == null || username.trim().isEmpty()) {
-            username = "bookTree_" + UUID.randomUUID().toString().substring(0, 8);
+            username = "bookTree_" + CreateRandomNumber.randomNumber();
         }
 
         User user = User.builder()
@@ -55,14 +59,79 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User findByUserEmail(String email){
+    public User findUserByEmail(String email){
         return userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        
+    }
+
+    //임시 비밀번호 발급 - 이메일로 비밀번호
+    public String findPasswordByEmail(String email){
+
+        User user = findUserByEmail(email);
+        String randomPassword = CreateRandomNumber.randomNumber();
+        user.setPassword(randomPassword);
+        return randomPassword;
+    }
+
+    //임시 비밀번호 발급 - 핸드폰 번호로 비밀번호
+    public String findPasswordByPhoneNumber(String phoneNumber){
+
+        User user = findUserByPhoneNumber(phoneNumber);
+        String randomPassword = CreateRandomNumber.randomNumber();
+        user.setPassword(randomPassword);
+        return randomPassword;
+    }
+
+
+    //아이디 찾기 - 비밀번호로
+    public String findEmailByPassword(UserPasswordRequestDto.findEmailByPw password){
+        User user = findUserByPassword(password.getPassword());
+
+        return user.getEmail();
+    }
+
+    //아이디 찾기 - 핸드폰 번호로
+    public String findEmailByPhoneNumber(UserPhoneNumberRequestDto userPhoneNumberRequestDto){
+        User user = findUserByPhoneNumber(userPhoneNumberRequestDto.getPhoneNumber());
+        return user.getEmail();
+    }
+
+
+
+
+    public User findUserByPhoneNumber(String phoneNumber){
+        return userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     }
 
+    public User findUserByPassword(String passWord){
+        return userRepository.findByPassword(passWord)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+    }
+
+
     public boolean validPassword(String dtoPassword, String userPassword){
         return passwordEncoder.matches(dtoPassword,userPassword);
+    }
+
+    public void pwValidation(String beforePassword, String currentPassword){
+        if (!passwordEncoder.matches(beforePassword, currentPassword)) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);
+        }
+    }
+
+    public User ownerValidation(Long userId){
+        User user = findById(userId);
+
+
+        if (!userId.equals(user.getId())) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_OWNER);
+        }
+
+        return user;
     }
 
 
@@ -96,4 +165,5 @@ public class UserService {
                 });
 
     }
+    
 }
