@@ -1,7 +1,8 @@
 package com.example.booktree.post.service;
 
 import com.example.booktree.blog.entity.Blog;
-import com.example.booktree.blog.repository.BlogRepository;
+
+import com.example.booktree.blog.service.BlogService;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.exception.BusinessLogicException;
@@ -13,28 +14,38 @@ import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.repository.UserRepository;
 import com.example.booktree.user.service.TokenService;
+import com.example.booktree.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import com.example.booktree.image.entity.Image;
+import com.example.booktree.image.repository.ImageRepository;
+import com.example.booktree.utils.S3Uploader;
+
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
+    private final S3Uploader s3Uploader;
     private final PostRepository postRepository;
     private final MainCategortService mainCategortService;
     private final TokenService tokenService;
-    private final UserRepository userRepository;
-    private final BlogRepository blogRepository;
+    private final UserService userService;
+    private final BlogService blogService;
     private final CategoryRepository categoryRepository;
     private final MainCategoryRepository mainCategoryRepository;
+    private final ImageRepository imageRepository;
+
+
 
     public List<Post> getPostByCategory(Long categoryId) {
         return postRepository.findByCategoryId(categoryId);
@@ -64,21 +75,18 @@ public class PostService {
 
 
 
-
-
     @Transactional
     public void createPost(PostRequestDto dto) {
 
         Long userId = tokenService.getIdFromToken();
-
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
-
-
-        Blog blog = blogRepository.findById(dto.getBlogId())
-                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
-
+        User user = userService.findById(userId);
+        if (user == null) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+        Blog blog = blogService.findBlogByBlogId(dto.getBlogId());
+        if (blog == null) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
         MainCategory mainCategory = mainCategoryRepository.findById(dto.getMainCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MAINCATEGORY_NOT_FOUNT));
 
@@ -87,7 +95,6 @@ public class PostService {
             category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         }
-
 
         Post post = Post.builder()
                 .title(dto.getTitle())
@@ -103,6 +110,18 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
+
+        // 이미지 업로드
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            List<String> uploadedImageUrls = s3Uploader.autoImagesUploadAndDelete(new ArrayList<>(), dto.getImages());
+
+            for (String imageUrl : uploadedImageUrls) {
+                Image image = new Image();
+                image.setPost(post);
+                image.setImageUrl(imageUrl);
+                imageRepository.save(image); // 이미지 저장
+            }
+        }
     }
 
 
@@ -123,6 +142,26 @@ public class PostService {
         post.setBook(dto.getBook());
         post.setModifiedAt(LocalDateTime.now());
 
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            List<String> currentImageUrls = new ArrayList<>();
+            for (Image image : post.getImageList()) {
+                currentImageUrls.add(image.getImageUrl());
+            }
+
+            List<String> uploadedImageUrls = s3Uploader.autoImagesUploadAndDelete(currentImageUrls, dto.getImages());
+
+
+            imageRepository.deleteAll(post.getImageList());
+            post.getImageList().clear();
+
+
+            for (String imageUrl : uploadedImageUrls) {
+                Image newImage = new Image();
+                newImage.setPost(post);
+                newImage.setImageUrl(imageUrl);
+                imageRepository.save(newImage); // 새 이미지 저장
+            }
+        }
 
     }
 
@@ -137,9 +176,12 @@ public class PostService {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_POST_OWNER);
         }
 
+        for (Image image : post.getImageList()) {
+            s3Uploader.deleteFile(image.getImageUrl());
+        }
+
+        imageRepository.deleteAll(post.getImageList());
         postRepository.delete(post);
     }
-
-
 
 }

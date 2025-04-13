@@ -665,3 +665,28 @@ INSERT INTO categories (id, name, user_id) VALUES
                                                (3, '카테고리3', 1),
 <<<<<<< HEAD:Backend/src/main/resources/data.sql
                                                (4, '카테고리4', 1) [42001-232]
+2025-04-13 18:07:06.520998+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "POST" not found; SQL statement:
+UPDATE post
+SET view = 5
+WHERE id = 27 [42102-232]
+2025-04-13 18:07:07.531897+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "POST" not found; SQL statement:
+UPDATE post
+SET view = 5
+WHERE id = 27 [42102-232]
+2025-04-13 18:29:23.410872+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "IMGAES" not found; SQL statement:
+SELECT * FROM IMGAES WHERE post_id = 27 [42102-232]
+2025-04-13 18:38:42.820868+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM POSTS  [*]SELECT * FROM IMAGES WHERE post_id = 28"; SQL statement:
+SELECT * FROM POSTS  SELECT * FROM IMAGES WHERE post_id = 28 [42000-232]
+2025-04-13 19:41:50.264703+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "show [*]* from POSTS where id = 29"; SQL statement:
+show * from POSTS where id = 29 [42000-232]
+2025-04-13 19:42:01.671782+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "show [*]* from IMAGES where id = 29"; SQL statement:
+show * from IMAGES where id = 29 [42000-232]
+2025-04-13 19:42:02.190366+09:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "show [*]* from IMAGES where id = 29"; SQL statement:
+show * from IMAGES where id = 29 [42000-232]
