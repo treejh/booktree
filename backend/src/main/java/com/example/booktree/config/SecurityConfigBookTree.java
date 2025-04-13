@@ -36,10 +36,9 @@ public class SecurityConfigBookTree {
                                 "/oauth",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/h2-console/**",
-                                "/api/users/**",
-                                "/api/v1/post/**"
+                                "/h2-console/**"
                         ).permitAll()
+                        .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login").permitAll()
                         .requestMatchers("/api/v1/post/create", "/api/v1/post/patch", "/api/v1/post/delete").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
