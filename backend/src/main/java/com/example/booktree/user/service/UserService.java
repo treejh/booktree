@@ -114,6 +114,16 @@ public class UserService {
     }
 
 
+    public void deleteUserById(Long userId){
+        User user = ownerValidation(userId);
+
+        userRepository.delete(user);
+    }
+
+
+
+
+
     public User updatePw(UserPasswordRequestDto userPasswordRequestDto){
         Long userId = tokenService.getIdFromToken();
         User user = ownerValidation(userId);

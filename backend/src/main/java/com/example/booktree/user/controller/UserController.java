@@ -79,14 +79,14 @@ public class UserController {
 
     // Update
     @PatchMapping("/patch/pw")
-    public ResponseEntity patchPw(@RequestBody UserPasswordRequestDto userPasswordRequestDto) {
+    public ResponseEntity patchPw(@Valid @RequestBody UserPasswordRequestDto userPasswordRequestDto) {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePw(userPasswordRequestDto));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // Update
     @PatchMapping("/patch/phoneNumber")
-    public ResponseEntity patchPhoneNumber(@RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
+    public ResponseEntity patchPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePhoneNumber(userPhoneNumberRequestDto));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -98,8 +98,15 @@ public class UserController {
     public ResponseEntity deleteBlog() {
         userService.deleteUser();
         return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
-
     }
+
+    // Delete
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity deleteBlog(@Positive @PathVariable("userId") Long userId) {
+        userService.deleteUserById(userId);
+        return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity login(HttpServletResponse response, @RequestBody UserLoginRequestDto userLoginRequestDto){
