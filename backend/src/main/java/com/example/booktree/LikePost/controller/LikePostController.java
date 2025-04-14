@@ -4,12 +4,15 @@ package com.example.booktree.LikePost.controller;
 import com.example.booktree.LikePost.dto.request.LikePostRequestDto;
 import com.example.booktree.LikePost.dto.response.LikePostResponseDto;
 import com.example.booktree.LikePost.service.LikePostService;
+import com.example.booktree.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/v1/like")
+@RequestMapping("/api/v1/likepost")
 @RequiredArgsConstructor
 public class LikePostController {
 
@@ -37,7 +40,7 @@ public class LikePostController {
         LikePostResponseDto responseDto = new LikePostResponseDto(
                 postId,
                 (long) likeCount,
-                !hasLiked // 현재는 반대로 바뀌었으니까!
+                !hasLiked // 현재는 반대로 바뀌었으니까
         );
 
         return ResponseEntity.ok(responseDto);
@@ -59,6 +62,17 @@ public class LikePostController {
 
         return ResponseEntity.ok(responseDto);
     }
+
+
+    /**
+     * 좋아요를 누른 유저들의 목록 조회
+     */
+    @GetMapping("/{postId}/users")
+    public ResponseEntity<List<User>> getUsersWhoLikedPost(@PathVariable Long postId) {
+        List<User> users = likePostService.getUsersWhoLikedPost(postId);
+        return ResponseEntity.ok(users);
+    }
+
 
 
 }

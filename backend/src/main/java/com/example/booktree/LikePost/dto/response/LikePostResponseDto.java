@@ -9,5 +9,5 @@ public class LikePostResponseDto {
 
     private Long postId;
     private Long likeCount;
-    private boolean liked; // true = 좋아요 누름, false = 좋아요 취소
+    private boolean liked; // true = 좋아요 클릭 false = 좋아요 취소
 }

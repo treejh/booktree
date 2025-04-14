@@ -21,7 +21,9 @@ public enum ExceptionCode {
     ALREADY_LIKED(404, "이미 좋아요를 누른 상태입니다."),
 
 
-    S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다.");
+    S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다."),
+    CANNOT_LIKE_OWN_POST(405, "자신이 작성한 게시글에는 좋아요를 누를 수 없습니다."),
+    USER_NOT_LOGGED_IN(403, "아직 로그인 상태가 아니어서 좋아요를 누를 권한이 없습니다.");
     ;
 
 
