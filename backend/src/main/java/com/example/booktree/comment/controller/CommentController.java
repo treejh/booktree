@@ -2,16 +2,18 @@ package com.example.booktree.comment.controller;
 
 import com.example.booktree.comment.dto.CommentDto;
 import com.example.booktree.comment.service.CommentService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/comments")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CommentController {
 
     private final CommentService commentService;
@@ -23,11 +25,15 @@ public class CommentController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 댓글 조회: /api/v1/comments/get?postId={postId}
+    // 댓글 조회: /api/v1/comments/get?postId=1&page=1&size=10
     @GetMapping("/get")
-    public ResponseEntity<List<CommentDto.Response>> getComments(@RequestParam("postId") Long postId) {
-        List<CommentDto.Response> responses = commentService.getCommentsByPostId(postId);
-        return new ResponseEntity<>(responses, HttpStatus.OK);
+    public ResponseEntity<Page<CommentDto.Response>> getComments(
+            @RequestParam("postId") Long postId,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<CommentDto.Response> response = commentService.getCommentsByPostId(postId, pageRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // 댓글 수정
