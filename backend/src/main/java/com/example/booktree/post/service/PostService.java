@@ -193,7 +193,6 @@ public class PostService {
     @Transactional
     public Page<Post> getPostsFromFollowing(){
         Long userId = tokenService.getIdFromToken();
-        User user = userService.findById(userId);
 
         Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
 
@@ -214,5 +213,12 @@ public class PostService {
 
 
 
+
+
+    // 게시글 좋아요에 service주입용 추가
+    public Post findById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+    }
 
 }
