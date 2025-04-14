@@ -32,7 +32,10 @@ public class ReplyService {
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + dto.getCommentId()));
         // 토큰에서 현재 로그인한 사용자의 이메일을 추출하고, 해당 사용자 조회
         String userEmail = tokenService.getEmailFromToken();
-        User user = userService.findByUserEmail(userEmail);
+        User user = userService.findUserByEmail(userEmail);
+        // 제 역할 부분은 아니라서 만지기가 조심스러운데
+        // User user = userService.findByUserEmail(userEmail); 로 되어있던거 실행하려니 오류나서
+        // findByUserEmail -> findUserByEmail 로 변경하겠습니다
 
         Reply reply = Reply.builder()
                 .content(dto.getContent())

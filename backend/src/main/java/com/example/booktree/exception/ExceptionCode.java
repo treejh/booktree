@@ -17,13 +17,15 @@ public enum ExceptionCode {
     ALREADY_HAS_EMAIL(404,"이미 존재하는 이메일입니다."),
     ALREADY_HAS_PHONENUMBER(404,"이미 존재하는 전화번호입니다."),
     USER_NOT_POST_OWNER(403, "해당 게시글의 소유자가 아닙니다."),
+    USER_NOT_OWNER(404, "해당 유저의 소유자가 아닙니다."),
     LIKE_NOT_FOUND(404, "해당 유저가 해당 게시물에 좋아요를 누른 기록이 없습니다."),
     ALREADY_LIKED(404, "이미 좋아요를 누른 상태입니다."),
-
+    INVALID_PASSWORD(404, "비밀번호가 일치하지 않습니다."),
 
     S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다."),
     CANNOT_LIKE_OWN_POST(405, "자신이 작성한 게시글에는 좋아요를 누를 수 없습니다."),
-    USER_NOT_LOGGED_IN(403, "아직 로그인 상태가 아니어서 좋아요를 누를 권한이 없습니다.");
+    USER_NOT_LOGGED_IN(403, "아직 로그인 상태가 아니어서 좋아요를 누를 권한이 없습니다."),
+
     ;
 
 
