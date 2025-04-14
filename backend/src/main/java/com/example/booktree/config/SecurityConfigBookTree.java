@@ -40,7 +40,7 @@ public class SecurityConfigBookTree {
                                 "/api/users/**",
                                 "/api/v1/post/**"
                         ).permitAll()
-                        .requestMatchers("/api/v1/post/create", "/api/v1/post/patch", "/api/v1/post/delete").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch/**", "/api/v1/posts/delete/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
 
