@@ -42,9 +42,10 @@ public class SecurityConfigBookTree {
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
                                 "/api/users"
+
                         ).permitAll()
                         .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch/**", "/api/v1/posts/delete/**", "/api/v1/likeposts/click/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login", "/api/v1/likeposts/**").permitAll()
+                        .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login", "/api/v1/likeposts/**", "/api/v1/posts/get/**").permitAll()
                         .anyRequest().authenticated()
                 )// "/api/v1/posts"
                 .oauth2Login(
