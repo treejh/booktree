@@ -39,11 +39,12 @@ public class CustomOAuth2AuthenticationSuccessHandler extends SavedRequestAwareA
      //토큰 으로 쿠키 발급
      tokenService.makeAuthCookies(user);
      String redirectUrl = request.getParameter("state");
-     System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
+     //System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
+
 
      //프론트 주소로 redirect
      response.sendRedirect(redirectUrl);
-     System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
+     //System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
 
     }
 }

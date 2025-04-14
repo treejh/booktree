@@ -3,6 +3,7 @@ package com.example.booktree.post.controller;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.dto.request.PostRequestDto;
+import com.example.booktree.post.dto.response.PostFollowingPageDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
@@ -92,6 +93,18 @@ public class PostController {
     }
 
 
+    @GetMapping("/get/likePost/{postId}")
+    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
+        postService.deletePost(postId);
+        return ResponseEntity.noContent().build();
+    }
 
+    @GetMapping("/get/followingPost")
+    public ResponseEntity<?> getFollowingPost() {
+        Page<Post> listPost = postService.getPostsFromFollowing();
+        Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 }
