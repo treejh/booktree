@@ -1,6 +1,8 @@
 package com.example.booktree.jwt.util;
 
+import com.example.booktree.oauth.domain.SecurityUser;
 import com.example.booktree.role.entity.Role;
+import com.example.booktree.user.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -8,8 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 
@@ -159,6 +165,30 @@ public class JwtTokenizer {
         }
 
     }
+
+
+
+    //시큐리티에서 정보 얻어오기
+    public User getUser(){
+        return Optional.ofNullable(
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+        )
+                .map(Authentication::getPrincipal)
+                .filter(principal -> principal instanceof SecurityUser)
+                .map(principal -> (SecurityUser)principal)
+                .map(securityUser -> User
+                        .builder()
+                        .id(securityUser.getId())
+                        .username(securityUser.getUsername())
+                        .email(securityUser.getEmail())
+                        .build())
+                .orElse(null);
+    }
+
+
+
 }
 
 

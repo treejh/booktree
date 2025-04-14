@@ -2,30 +2,24 @@ package com.example.booktree.like_comment.controller;
 
 import com.example.booktree.like_comment.dto.LikeCommentDto;
 import com.example.booktree.like_comment.service.LikeCommentService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/like-comments")
-@AllArgsConstructor
+@RequestMapping("/api/v1/like-comments")
+@RequiredArgsConstructor
 public class LikeCommentController {
 
     private final LikeCommentService likeCommentService;
 
-    // 댓글 좋아요 생성 엔드포인트
-    @PostMapping
-    public ResponseEntity<LikeCommentDto.Response> createLike(@RequestBody LikeCommentDto.Post dto) {
-        LikeCommentDto.Response response = likeCommentService.createLike(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    // 좋아요 : /api/v1/like-comments/create
+    @PostMapping("/create")
+    public ResponseEntity<LikeCommentDto.Response> toggleLike(@RequestBody LikeCommentDto.Post dto) {
+        LikeCommentDto.Response response = likeCommentService.toggleLike(dto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // 댓글 좋아요 삭제 엔드포인트
-    @DeleteMapping
-    public ResponseEntity<Void> deleteLike(@RequestParam Long commentId,
-                                           @RequestParam Long userId) {
-        likeCommentService.deleteLike(commentId, userId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    //  삭제는 토글로 처리하는 방식으로 변경
 }
