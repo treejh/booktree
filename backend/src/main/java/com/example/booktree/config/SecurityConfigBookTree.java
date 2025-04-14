@@ -3,6 +3,8 @@ package com.example.booktree.config;
 
 import com.example.booktree.jwt.filter.JwtAuthenticationFilter;
 import com.example.booktree.jwt.util.JwtTokenizer;
+import com.example.booktree.oauth.handler.CustomOAuth2AuthenticationSuccessHandler;
+import com.example.booktree.oauth.resolver.CustomAuthorizationRequestResolver;
 import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +26,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfigBookTree {
 
     private final JwtTokenizer jwtTokenizer;
+    private final CustomOAuth2AuthenticationSuccessHandler customOAuth2AuthenticationSuccessHandler;
+    private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
 
 
     @Bean
@@ -43,6 +47,18 @@ public class SecurityConfigBookTree {
                         .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login", "/api/v1/likeposts/**").permitAll()
                         .anyRequest().authenticated()
                 )// "/api/v1/posts"
+                .oauth2Login(
+                        oauth2Login -> {
+                            // Configure OAuth2 login
+                            oauth2Login
+                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
+                                    .authorizationEndpoint(
+                                            authorizationEndpoint ->
+                                                    authorizationEndpoint
+                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
+                                    );
+                        }
+                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
