@@ -19,7 +19,8 @@ public enum ExceptionCode {
     USER_NOT_POST_OWNER(403, "해당 게시글의 소유자가 아닙니다."),
     USER_NOT_OWNER(404, "해당 유저의 소유자가 아닙니다."),
     INVALID_PASSWORD(404, "비밀번호가 일치하지 않습니다."),
-    S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다.");
+    S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다."),
+    INVALID_SEARCH_TYPE(404,"잘못된 검색 유형입니다.");
 
 
 

@@ -184,4 +184,16 @@ public class PostService {
         postRepository.delete(post);
     }
 
+    // 검색 기능 추가: searchType은 "title", "author", "book" 중 하나여야 합니다.
+    public Page<Post> searchPosts(String searchType, String keyword, Pageable pageable) {
+        if ("title".equalsIgnoreCase(searchType)) {
+            return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else if ("author".equalsIgnoreCase(searchType)) {
+            return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
+        } else if ("book".equalsIgnoreCase(searchType)) {
+            return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
+        } else {
+            throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE); // 예외 코드는 적절하게 정의
+        }
+    }
 }
