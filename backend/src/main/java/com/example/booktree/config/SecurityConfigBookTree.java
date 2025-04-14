@@ -38,11 +38,11 @@ public class SecurityConfigBookTree {
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
                                 "/api/users/**",
-                                "/api/v1/post/**"
+                                "/api/v1/post/get/**" //  "/api/v1/post/get/**"
                         ).permitAll()
-                        .requestMatchers("/api/v1/post/create", "/api/v1/post/patch", "/api/v1/post/delete").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch/**", "/api/v1/posts/delete/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .anyRequest().authenticated() // "/api/v1/posts"
+                ) // "/api/v1/posts"
 
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())

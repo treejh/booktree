@@ -16,7 +16,10 @@ public enum ExceptionCode {
     ROLE_NOT_FOUND(404, "존재하지 않은 역할입니다."),
     ALREADY_HAS_EMAIL(404,"이미 존재하는 이메일입니다."),
     ALREADY_HAS_PHONENUMBER(404,"이미 존재하는 전화번호입니다."),
-    USER_NOT_POST_OWNER(403, "해당 게시글의 소유자가 아닙니다.");
+    USER_NOT_POST_OWNER(403, "해당 게시글의 소유자가 아닙니다."),
+
+
+    S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다.");
     ;
 
 

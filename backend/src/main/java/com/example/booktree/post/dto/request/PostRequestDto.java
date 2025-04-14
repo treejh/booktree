@@ -17,8 +17,8 @@ public class PostRequestDto {
     @NotNull
     private Long blogId;
 
-    @NotNull
-    private Long userId;
+//    @NotNull
+//    private Long userId;
 
 
     private Long categoryId;
