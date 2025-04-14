@@ -64,7 +64,8 @@ dependencies {
     //Oauth2
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-
+    // Redis 의존성
+    implementation ("org.springframework.boot:spring-boot-starter-data-redis")
 
 
 

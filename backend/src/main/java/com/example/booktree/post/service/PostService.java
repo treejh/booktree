@@ -51,7 +51,7 @@ public class PostService {
         return postRepository.findByMainCategoryId(mainCategoryId, pageable);
     }
 
-    // 일주일 동안 조회수 높은 게시글 가져오기
+    // 메인 카테고리 별 일주일 동안 조회수 높은 게시글 가져오기
     public Page<Post> getPostByViews(Pageable pageable, Long mainCategoryId) {
         // 메인 카테고리가 없을 시 예외처리
         if (!mainCategortService.validateMainCate(mainCategoryId)) {
@@ -140,6 +140,7 @@ public class PostService {
         postRepository.delete(post);
     }
 
-
-
+    public List<Post> findAllById(List<Long> allId){
+        return postRepository.findAllById(allId);
+    }
 }
