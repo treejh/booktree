@@ -41,5 +41,7 @@ public class CommentDto {
         private String userEmail;
         // 대댓글은 각 댓글에 대해 페이징 처리된 결과로 포함
         private Page<ReplyDto.Response> replies;
+        private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
     }
 }

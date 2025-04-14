@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
@@ -17,6 +19,7 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    // 댓글 생성
     @PostMapping("/create")
     public ResponseEntity<CommentDto.Response> createComment(@RequestBody CommentDto.Post dto) {
         CommentDto.Response response = commentService.createComment(dto);
@@ -34,6 +37,7 @@ public class CommentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    // 댓글 수정
     @PatchMapping("/update/{commentId}")
     public ResponseEntity<CommentDto.Response> updateComment(@PathVariable Long commentId,
                                                              @RequestBody CommentDto.Patch dto) {
@@ -42,6 +46,7 @@ public class CommentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    // 댓글 삭제
     @DeleteMapping("/delete/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);

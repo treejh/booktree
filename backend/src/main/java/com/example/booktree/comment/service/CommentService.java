@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -28,6 +27,12 @@ public class CommentService {
     private final TokenService tokenService;
     private final UserService userService;
 
+    public CommentService(CommentRepository commentRepository, PostRepository postRepository) {
+        this.commentRepository = commentRepository;
+        this.postRepository = postRepository;
+    }
+
+    // 댓글 생성
     @Transactional
     public CommentDto.Response createComment(CommentDto.Post dto) {
         Optional<Post> postOptional = postRepository.findById(dto.getPostId());
@@ -69,6 +74,7 @@ public class CommentService {
         return mapToResponseWithReplies(updated);
     }
 
+    // 댓글 삭제
     @Transactional
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
@@ -107,4 +113,5 @@ public class CommentService {
                 replies
         );
     }
+
 }

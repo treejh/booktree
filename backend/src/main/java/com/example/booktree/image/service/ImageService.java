@@ -6,7 +6,7 @@ import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.image.dto.request.ImageRequestDto;
 import com.example.booktree.image.entity.Image;
 import com.example.booktree.image.repository.ImageRepository;
-import com.example.booktree.post.PostRepository;
+import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.utils.S3Uploader;
 import java.io.IOException;

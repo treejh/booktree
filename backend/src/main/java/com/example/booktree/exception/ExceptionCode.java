@@ -12,8 +12,14 @@ public enum ExceptionCode {
     USER_NOT_CATEGORY_OWNER(404, "해당 카테고리의 소유자가 아닙니다."),
      MAINCATEGORY_NOT_FOUNT(404, "해당 메인카테고리를 찾을 수 없습니다."),
     POST_NOT_FOUND(404,"카테고리를 찾을 수 없습니다. "),
-    IMAGE_NOT_FOUND(404,"이미지를 찾을 수 없습니다.");
-    ;
+    IMAGE_NOT_FOUND(404,"이미지를 찾을 수 없습니다."),
+    ROLE_NOT_FOUND(404, "존재하지 않은 역할입니다."),
+    ALREADY_HAS_EMAIL(404,"이미 존재하는 이메일입니다."),
+    ALREADY_HAS_PHONENUMBER(404,"이미 존재하는 전화번호입니다."),
+    USER_NOT_POST_OWNER(403, "해당 게시글의 소유자가 아닙니다."),
+    USER_NOT_OWNER(404, "해당 유저의 소유자가 아닙니다."),
+    INVALID_PASSWORD(404, "비밀번호가 일치하지 않습니다."),
+    S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다.");
 
 
 

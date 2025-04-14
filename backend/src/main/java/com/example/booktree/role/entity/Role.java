@@ -1,9 +1,15 @@
 package com.example.booktree.role.entity;
 
 import com.example.booktree.auditable.Auditable;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.example.booktree.enums.RoleType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,10 +31,8 @@ public class Role extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @NotBlank
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String role;
-
+    private RoleType role;
 
 }
