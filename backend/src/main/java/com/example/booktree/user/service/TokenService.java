@@ -103,7 +103,7 @@ public class TokenService {
     }
 
 
-    public void x(String name) {
+    public void deleteCookie(String name) {
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
                 .domain("localhost")
