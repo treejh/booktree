@@ -32,7 +32,7 @@ public class ReplyService {
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + dto.getCommentId()));
         // 토큰에서 현재 로그인한 사용자의 이메일을 추출하고, 해당 사용자 조회
         String userEmail = tokenService.getEmailFromToken();
-        User user = userService.findByUserEmail(userEmail);
+        User user = userService.findUserByEmail(userEmail);
 
         Reply reply = Reply.builder()
                 .content(dto.getContent())
