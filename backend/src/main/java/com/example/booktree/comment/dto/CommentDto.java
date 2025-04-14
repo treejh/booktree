@@ -6,13 +6,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Page;
-
 import java.time.LocalDateTime;
 
 @Data
 public class CommentDto {
 
-    // 댓글 생성 DTO
     @Getter
     @Setter
     @AllArgsConstructor
@@ -21,7 +19,6 @@ public class CommentDto {
         private String content;
     }
 
-    // 댓글 수정 DTO
     @Getter
     @Setter
     @AllArgsConstructor
@@ -30,7 +27,6 @@ public class CommentDto {
         private String content;
     }
 
-    // 댓글 응답 DTO
     @Getter
     @Setter
     @AllArgsConstructor
@@ -38,10 +34,10 @@ public class CommentDto {
         private Long commentId;
         private String content;
         private Long postId;
+        private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
         private String userEmail;
         // 대댓글은 각 댓글에 대해 페이징 처리된 결과로 포함
         private Page<ReplyDto.Response> replies;
-        private LocalDateTime createdAt;
-        private LocalDateTime modifiedAt;
     }
 }
