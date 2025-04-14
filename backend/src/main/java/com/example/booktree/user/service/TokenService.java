@@ -1,7 +1,10 @@
 package com.example.booktree.user.service;
 
 
+import com.example.booktree.exception.BusinessLogicException;
+import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.jwt.util.JwtTokenizer;
+import com.example.booktree.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.util.StringUtils;
 public class TokenService {
 
     private final HttpServletRequest httpServletRequest;
+    private final UserRepository userRepository;
     private final JwtTokenizer jwtTokenizer;
 
 
@@ -44,16 +48,26 @@ public class TokenService {
             throw new IllegalArgumentException("Token is missing");  // 토큰이 없으면 예외 처리
         }
 
+        userRepository.findByEmail(jwtTokenizer.getEmailFromToken(token))
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+
 
         return jwtTokenizer.getEmailFromToken(token);
     }
 
     public Long getIdFromToken(){
+
+
         String token = getTokenFromRequest();
 
         if (token == null) {
             throw new IllegalArgumentException("Token is missing");  // 토큰이 없으면 예외 처리
         }
+
+        userRepository.findById(jwtTokenizer.getUserIdFromToken(token))
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
 
         return jwtTokenizer.getUserIdFromToken(token);
 

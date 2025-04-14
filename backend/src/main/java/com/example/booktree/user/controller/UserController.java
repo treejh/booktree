@@ -1,38 +1,112 @@
 package com.example.booktree.user.controller;
 
 
+import com.example.booktree.blog.dto.request.BlogRequestDto;
+import com.example.booktree.blog.dto.response.BlogResponseDto;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.user.dto.request.UserLoginRequestDto;
+import com.example.booktree.user.dto.request.UserPasswordRequestDto;
+import com.example.booktree.user.dto.request.UserPatchRequestDto;
+import com.example.booktree.user.dto.request.UserPhoneNumberRequestDto;
 import com.example.booktree.user.dto.request.UserPostRequestDto;
 import com.example.booktree.user.dto.response.UserLoginResponseDto;
+import com.example.booktree.user.dto.response.UserProfileResponseDto;
 import com.example.booktree.user.dto.response.UserResponseDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
     private final JwtTokenizer jwtTokenizer;
 
-    @PostMapping
-    public ResponseEntity postMember(@Valid @RequestBody UserPostRequestDto userPostRequestDto) {
+    @PostMapping("/create")
+    public ResponseEntity createMember(@Valid @RequestBody UserPostRequestDto userPostRequestDto) {
         UserResponseDto response = new UserResponseDto(userService.createUser(userPostRequestDto));
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    // Read
+    //토큰으로 유저 조회
+    @GetMapping("/get/{userId}")
+    public ResponseEntity getUserByUserId(@PathVariable("userId") Long userId) {
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.findById(userId));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    // Update
+    @PatchMapping("/patch")
+    public ResponseEntity patchUser(@RequestBody UserPatchRequestDto userPatchRequestDto) {
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.updateUser(userPatchRequestDto));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //update email
+    @PatchMapping("/patch/email")
+    public ResponseEntity patchUserEmail(@Valid @RequestParam String email ) {
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.updateEmail(email));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //update username
+    @PatchMapping("/patch/username")
+    public ResponseEntity patchUsername(@Valid @RequestParam String username ) {
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.updateEmail(username));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Update
+    @PatchMapping("/patch/pw")
+    public ResponseEntity patchPw(@Valid @RequestBody UserPasswordRequestDto userPasswordRequestDto) {
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePw(userPasswordRequestDto));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Update
+    @PatchMapping("/patch/phoneNumber")
+    public ResponseEntity patchPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePhoneNumber(userPhoneNumberRequestDto));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+
+    // Delete
+    @DeleteMapping("/delete")
+    public ResponseEntity deleteBlog() {
+        userService.deleteUser();
+        return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
+    }
+
+    // Delete
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity deleteBlog(@Positive @PathVariable("userId") Long userId) {
+        userService.deleteUserById(userId);
+        return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity login(HttpServletResponse response, @RequestBody UserLoginRequestDto userLoginRequestDto){
@@ -87,10 +161,8 @@ public class UserController {
 
 
 
-
-
-
-
-
-
 }
+
+
+
+
