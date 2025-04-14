@@ -87,4 +87,10 @@ public class Post extends Auditable {
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     List<Image> imageList = new ArrayList<>();
 
+
+
+    // 게시글 좋아요 필드 추가
+    @Column(name = "like_count")
+    private Long likeCount = 0L;
+
 }
