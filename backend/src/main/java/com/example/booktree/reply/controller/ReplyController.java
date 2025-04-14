@@ -23,12 +23,13 @@ public class ReplyController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 대댓글 조회 엔드포인트
+    // 대댓글 조회
     @GetMapping("/get")
     public ResponseEntity<List<ReplyDto.Response>> getReplies(@RequestParam("commentId") Long commentId) {
         List<ReplyDto.Response> responses = replyService.getRepliesByCommentId(commentId);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
+
 
     // 대댓글 수정
     @PatchMapping("/update/{replyId}")
@@ -39,8 +40,8 @@ public class ReplyController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // 대댓글 삭제 엔드포인트
-    @DeleteMapping("/{replyId}")
+    // 대댓글 삭제
+    @DeleteMapping("/delete/{replyId}")
     public ResponseEntity<Void> deleteReply(@PathVariable Long replyId) {
         replyService.deleteReply(replyId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
