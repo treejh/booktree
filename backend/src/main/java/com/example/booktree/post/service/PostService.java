@@ -184,4 +184,11 @@ public class PostService {
         postRepository.delete(post);
     }
 
+
+    // 게시글 좋아요에 service주입용 추가
+    public Post findById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+    }
+
 }
