@@ -39,10 +39,9 @@ public class SecurityConfigBookTree {
                                 "/h2-console/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login").permitAll()
-                        .requestMatchers("/api/v1/post/create", "/api/v1/post/patch", "/api/v1/post/delete").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch", "/api/v1/posts/delete").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                         .anyRequest().authenticated()
-                )
-
+                )// "/api/v1/posts"
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session

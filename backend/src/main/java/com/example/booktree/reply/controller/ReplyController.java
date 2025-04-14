@@ -31,7 +31,7 @@ public class ReplyController {
     }
 
     // 대댓글 수정 엔드포인트
-    @PutMapping("/{replyId}")
+    @PatchMapping("/{replyId}")
     public ResponseEntity<ReplyDto.Response> updateReply(@PathVariable Long replyId,
                                                          @RequestBody ReplyDto.Patch dto) {
         dto.setReplyId(replyId);
