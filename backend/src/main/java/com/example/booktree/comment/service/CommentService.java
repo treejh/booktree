@@ -36,7 +36,7 @@ public class CommentService {
 
         // JWT 토큰에서 사용자 이메일을 추출하고, 해당 사용자 정보를 조회합니다.
         String email = tokenService.getEmailFromToken();
-        User user = userService.findByUserEmail(email);
+        User user = userService.findUserByEmail(email);
 
         Comment comment = Comment.builder()
                 .content(dto.getContent())

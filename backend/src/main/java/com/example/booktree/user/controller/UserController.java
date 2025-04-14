@@ -14,17 +14,17 @@ import com.example.booktree.user.dto.response.UserProfileResponseDto;
 import com.example.booktree.user.dto.response.UserResponseDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.service.UserService;
+import com.example.booktree.utils.dto.ApiResponseDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -111,7 +111,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity login(HttpServletResponse response, @RequestBody UserLoginRequestDto userLoginRequestDto){
 
-        User user = userService.findByUserEmail(userLoginRequestDto.getEmail());
+        User user = userService.findUserByEmail(userLoginRequestDto.getEmail());
 
         if(!userService.validPassword(userLoginRequestDto.getPassword(),user.getPassword())){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -158,6 +158,51 @@ public class UserController {
 
         return ResponseEntity.ok("로그아웃 완료");
     }
+
+
+    //비밀번호로 이메일 찾기
+    @PostMapping("/find/email/pw")
+    public ResponseEntity findEmailByPassword(@Valid @RequestBody UserPasswordRequestDto.findEmailByPw userPasswordRequestDto ) {
+        String email = userService.findEmailByPassword(userPasswordRequestDto);
+        ApiResponseDto response = ApiResponseDto.builder()
+                .data(email)
+                .message("이메일 입니다.")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    //핸드폰 번호로 이메일 찾기
+    @PostMapping("/find/email/phone")
+    public ResponseEntity findEmailByPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
+        String email = userService.findEmailByPhoneNumber(userPhoneNumberRequestDto) ;
+        ApiResponseDto response = ApiResponseDto.builder()
+                .data(email)
+                .message("이메일 입니다.")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/find/pw/email")
+    public ResponseEntity findPwByPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
+        String password = userService.findPasswordByPhoneNumber(userPhoneNumberRequestDto.getPhoneNumber()) ;
+        ApiResponseDto response = ApiResponseDto.builder()
+                .data(password)
+                .message("임시 비밀번호 입니다.")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/find/pw/phone")
+    public ResponseEntity findPwByEmail(@Valid @RequestParam String email) {
+        String password = userService.findPasswordByEmail(email) ;
+        ApiResponseDto response = ApiResponseDto.builder()
+                .data(password)
+                .message("임시 비밀번호 입니다.")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
 
 
