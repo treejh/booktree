@@ -2,8 +2,10 @@ package com.example.booktree.user.service;
 
 
 import com.example.booktree.blog.entity.Blog;
+import com.example.booktree.enums.RoleType;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.role.entity.Role;
 import com.example.booktree.role.repository.RoleRepository;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
 
@@ -13,6 +15,7 @@ import com.example.booktree.user.dto.request.UserPostRequestDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
 import com.example.booktree.utils.CreateRandomNumber;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,6 +65,8 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+
 
     public User findUserByEmail(String email){
         return userRepository.findByEmail(email)
@@ -259,5 +264,43 @@ public class UserService {
                 });
 
     }
+
+    public void modify(User user, @NotBlank String username){
+        user.setUsername(username);
+    }
+
+    public User modifyOrJoins(String email, String username,String provider, String socialId){
+        Optional<User> opUser = userRepository.findByEmail(email);
+
+        if(opUser.isPresent()){
+            User user = opUser.get();
+            modify(user,username);
+            return user;
+        }
+
+        return createSocialUser(email, "",username,provider,socialId);
+    }
+
+    public User createSocialUser(String email, String password, String username,String provider,String socialId){
+        Role role = roleRepository.findByRole(RoleType.USER.toString())
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.ROLE_NOT_FOUND));
+
+        User user = User.builder()
+                .email(email)
+                .password(password)
+                .username(username)
+                .ssoProvider(provider)
+                .role(role)
+                .socialId(socialId)
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .build();
+
+        return userRepository.save(user);
+    }
+
+
+
+
     
 }

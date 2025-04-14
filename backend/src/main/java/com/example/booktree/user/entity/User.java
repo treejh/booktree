@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import com.example.booktree.role.entity.Role;
 import jakarta.persistence.*;
@@ -25,6 +26,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Entity
 @Table(name="users")
@@ -65,22 +68,23 @@ public class User extends Auditable {
     @Column(length = 20)
     private String username;
 
+    //oauth에서 제공된 user 식별 아이디
+    @Column(name = "social_id", length = 255)
+    private String socialId;
+
+    //사용된 oauth 이름, kakao, naver.
     @Column(name = "sso_provider", length = 50)
     private String ssoProvider;
 
-    @Column(name = "api_key")
-    private String apiKey;
 
-    @Column(name = "social_id", length = 255)
-    private String socialId;
+
+
 
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<Blog> blogList = new ArrayList<>();
-
-
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
@@ -91,6 +95,28 @@ public class User extends Auditable {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<LikeReply> likeReplyList = new ArrayList<>();
+
+    public User(long id, String email, String username, Role role, Collection<? extends GrantedAuthority> authorities) {
+        this.id=id;
+        this.email = email;
+        this.username=username;
+        this.role = role;
+    }
+
+
+    public List<String> getAuthoritiesAsStringList() {
+        List<String> authorities = new ArrayList<>();
+        authorities.add("ROLE_" + role.getRole().toString()); // 또는 role.getRoleType().name()
+        return authorities;
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return getAuthoritiesAsStringList()
+                .stream()
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+    }
+
 
 
 

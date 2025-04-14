@@ -12,7 +12,7 @@ spring:
         registration:
           kakao:
             clientId: ON_SECRET
-            scope: profile_nickname, profile_image
+            scope: profile_nickname
             client-name: Kakao
             authorization-grant-type: authorization_code
             redirect-uri: "${custom.site.backUrl}/{action}/oauth2/code/{registrationId}"
@@ -61,7 +61,7 @@ custom:
     frontUrl: "http://${custom.dev.cookieDomain}:3000"
     backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
   prod:
-    cookieDomain: blog.sik2.site
+    cookieDomain: blog.sik2.site #api.booktri.site
     frontUrl: "https://www.${custom.prod.cookieDomain}"
     backUrl: "https://api.${custom.prod.cookieDomain}"
   site:
