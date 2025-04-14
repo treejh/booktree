@@ -68,6 +68,8 @@ public class JwtTokenizer {
     public Claims parseAccessToken(String accessToken){
         return parseToken(accessToken,accessSecret);
     }
+
+
     //토큰을 -> claims 로
     public Claims parseRefreshToken(String refreshToken){
         return parseToken(refreshToken,accessSecret);
@@ -104,8 +106,8 @@ public class JwtTokenizer {
     }
     private void checkTokenExpiration(Claims claims) {
         Date expiration = claims.getExpiration();
-        System.out.println("현재시간 확인!!: " + new Date());
-        System.out.println("만료시간 확인 !!!  "+ expiration);
+//        System.out.println("현재시간 확인!!: " + new Date());
+//        System.out.println("만료시간 확인 !!!  "+ expiration);
         if (expiration != null && expiration.before(new Date())) {
             throw new IllegalArgumentException("토큰이 만료되었습니다.");
         }

@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter@Setter
 public class CreateCategoryRequestDto {
     private String categoryName;
-    private Long userId;
 
     public Category toEntity() {
         Category category = new Category();
