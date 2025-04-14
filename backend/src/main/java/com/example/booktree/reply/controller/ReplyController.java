@@ -16,21 +16,21 @@ public class ReplyController {
 
     private final ReplyService replyService;
 
-    // 대댓글 생성 엔드포인트: POST /api/v1/replies/create
+    // 대댓글 생성
     @PostMapping("/create")
     public ResponseEntity<ReplyDto.Response> createReply(@RequestBody ReplyDto.Post dto) {
         ReplyDto.Response response = replyService.createReply(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 대댓글 조회 엔드포인트: GET /api/v1/replies/get?commentId={commentId}
+    // 대댓글 조회 엔드포인트
     @GetMapping("/get")
     public ResponseEntity<List<ReplyDto.Response>> getReplies(@RequestParam("commentId") Long commentId) {
         List<ReplyDto.Response> responses = replyService.getRepliesByCommentId(commentId);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    // 대댓글 수정 엔드포인트: PATCH /api/v1/replies/update/{replyId}
+    // 대댓글 수정
     @PatchMapping("/update/{replyId}")
     public ResponseEntity<ReplyDto.Response> updateReply(@PathVariable Long replyId,
                                                          @RequestBody ReplyDto.Patch dto) {
@@ -39,7 +39,7 @@ public class ReplyController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // 대댓글 삭제 엔드포인트: DELETE /api/v1/replies/delete/{replyId}
+    // 대댓글 삭제\
     @DeleteMapping("/delete/{replyId}")
     public ResponseEntity<Void> deleteReply(@PathVariable Long replyId) {
         replyService.deleteReply(replyId);
