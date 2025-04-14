@@ -39,8 +39,8 @@ public class ReplyController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // 대댓글 삭제\
-    @DeleteMapping("/delete/{replyId}")
+    // 대댓글 삭제 엔드포인트
+    @DeleteMapping("/{replyId}")
     public ResponseEntity<Void> deleteReply(@PathVariable Long replyId) {
         replyService.deleteReply(replyId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

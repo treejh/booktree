@@ -37,5 +37,6 @@ public class CommentDto {
         private Long postId;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
+        private String userEmail;
     }
 }

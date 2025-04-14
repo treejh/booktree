@@ -74,21 +74,15 @@ public class PostController {
 
 
 
-
-
-
-
-    @PostMapping("/create")
-    public ResponseEntity<?> createPost(@RequestBody @Valid PostRequestDto dto) {
+    @PostMapping(value = "/create", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> createPost(@ModelAttribute @Valid PostRequestDto dto) {
         postService.createPost(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("게시글이 성공적으로 작성되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("게시글 등록 성공!");
     }
 
-
-
-    @PatchMapping("/patch/{postId}")
+    @PatchMapping(value = "/patch/{postId}", consumes = {"multipart/form-data"})
     public ResponseEntity<?> updatePost(@PathVariable("postId") Long postId,
-                                        @RequestBody @Valid PostRequestDto postRequestDto) {
+                                        @ModelAttribute @Valid PostRequestDto postRequestDto) {
         postService.updatePost(postId, postRequestDto);
         return ResponseEntity.ok().build();
     }
