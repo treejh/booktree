@@ -68,6 +68,9 @@ public class User extends Auditable {
     @Column(name = "sso_provider", length = 50)
     private String ssoProvider;
 
+    @Column(name = "api_key")
+    private String apiKey;
+
     @Column(name = "social_id", length = 255)
     private String socialId;
 
