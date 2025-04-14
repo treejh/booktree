@@ -22,7 +22,6 @@ public class PostController {
 
     private final PostService postService;
 
-
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
     public ResponseEntity<?> getPostByMaincCategory(@PathVariable Long maincategoryId,
@@ -71,7 +70,6 @@ public class PostController {
         );
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
 
 
     @PostMapping(value = "/create", consumes = {"multipart/form-data"})
