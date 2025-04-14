@@ -36,14 +36,14 @@ public class CustomOAuth2AuthenticationSuccessHandler extends SavedRequestAwareA
      User user = userRepository.findById(jwtTokenizer.getUser().getId())
              .orElseThrow(()->new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
-     //토큰 발급
-     //jwtTokenizer.createAccessToken(user.getId(),user.getEmail(),user.getUsername(),user.getRole().toString());
+     //토큰 으로 쿠키 발급
      tokenService.makeAuthCookies(user);
      String redirectUrl = request.getParameter("state");
-
-
+     System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
 
      //프론트 주소로 redirect
      response.sendRedirect(redirectUrl);
+     System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
+
     }
 }

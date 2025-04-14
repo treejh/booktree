@@ -55,14 +55,10 @@ public class User extends Auditable {
     @Column(nullable = false, length = 100)
     private String email;
 
-    @NotNull
-    @NotBlank
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String password;
 
-    @NotNull
-    @NotBlank
-    @Column(name = "phone_number", nullable = false, length = 255)
+    @Column(name = "phone_number", length = 255)
     private String phoneNumber;
 
     @Column(length = 20)
@@ -96,28 +92,26 @@ public class User extends Auditable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<LikeReply> likeReplyList = new ArrayList<>();
 
-    public User(long id, String email, String username, Role role, Collection<? extends GrantedAuthority> authorities) {
+    public User(long id, String email, String username, Collection<? extends GrantedAuthority> authorities) {
         this.id=id;
         this.email = email;
         this.username=username;
-        this.role = role;
     }
 
 
-    public List<String> getAuthoritiesAsStringList() {
+    public List<String> getAuthoritiesAsStringList(String role) {
         List<String> authorities = new ArrayList<>();
-        authorities.add("ROLE_" + role.getRole().toString()); // 또는 role.getRoleType().name()
+        authorities.add("ROLE_" + role); // 또는 role.getRoleType().name()
         return authorities;
     }
 
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getAuthoritiesAsStringList()
+
+    public Collection<? extends GrantedAuthority> getAuthorities(Role role) {
+        return getAuthoritiesAsStringList(role.getRole().toString())
                 .stream()
                 .map(SimpleGrantedAuthority::new)
                 .toList();
     }
-
-
 
 
 }

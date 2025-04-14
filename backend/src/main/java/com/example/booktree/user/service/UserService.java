@@ -281,14 +281,18 @@ public class UserService {
         return createSocialUser(email, "",username,provider,socialId);
     }
 
+
     public User createSocialUser(String email, String password, String username,String provider,String socialId){
-        Role role = roleRepository.findByRole(RoleType.USER.toString())
+
+        Role role = roleRepository.findByRole(RoleType.USER)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.ROLE_NOT_FOUND));
+
 
         User user = User.builder()
                 .email(email)
                 .password(password)
                 .username(username)
+                .phoneNumber(" ")
                 .ssoProvider(provider)
                 .role(role)
                 .socialId(socialId)

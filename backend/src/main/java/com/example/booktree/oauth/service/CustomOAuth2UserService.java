@@ -46,14 +46,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         User user = userService.modifyOrJoins(email,nickname,providerTypeCode,oauthId);
 
+
+        //로그인 했다고 알리기 위해
         return new SecurityUser(
                 user.getId(),
                 user.getEmail(),
-                "",
+                " ",
                 user.getUsername(),
-                user.getRole(),
-                user.getAuthorities()
+                user.getAuthorities(user.getRole())
         );
+
+
     }
 
 
