@@ -26,15 +26,7 @@ public class LikePostService {
     private final PostService postService;
     private final TokenService tokenService;
 
-    /**
-     * 게시글 좋아요
-     *
-     *
-     * - 게시글 좋아요 CRUD
-     *     - 게시글의 좋아요 개수 가지고오기
-     *     - 게시글 가지고 올때 테이블에 넣기 실시간으로 계산에서 넣기
-     *     - 좋아요 개수 가지고 오는 api 생성
-     */
+
 
 
     @Transactional
@@ -78,9 +70,7 @@ public class LikePostService {
         likePostRepository.save(likePost);
     }
 
-    /**
-     * 게시글 좋아요 취소
-     */
+
     @Transactional
     public void unlikePost(Long postId) {
         Long userId = tokenService.getIdFromToken();
@@ -96,18 +86,15 @@ public class LikePostService {
         likePostRepository.delete(likePost);
     }
 
-    /**
-     * 현재 게시글 좋아요 수 조회
-     */
+
     @Transactional
     public int getLikeCount(Long postId) {
         Post post = postService.findById(postId);
-        return post.getLikeCount().intValue();
+        return post.getLikeCount() != null ? post.getLikeCount().intValue() : 0;
+        //return post.getLikeCount() == null ? 0 : post.getLikeCount().intValue();
     }
 
-    /**
-     * 현재 로그인한 유저가 해당 게시글에 좋아요 했는지 여부 확인
-     */
+
     public boolean hasLikedPost(Long postId) {
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
