@@ -2,6 +2,7 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
@@ -23,6 +24,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PopularPostService popularPostService;
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
@@ -102,10 +104,12 @@ public class PostController {
         PostResponseDto response = PostResponseDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
-                .viewCount(post.getView())
+                .viewCount(post.getView() + 1)
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
+        postService.postViewUpdate(postId);
+        popularPostService.increasePopularity(post.getId());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

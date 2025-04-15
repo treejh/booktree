@@ -50,6 +50,7 @@ public class CategoryService {
 
 
     // delete
+    @Transactional
     public void deleteCategory(Long categoryId, Long userId){
 
         // 카테고리 Id 로 찾은 userId 와 로그인된 유저 Id 가 맞는지 비교 후 삭제
@@ -62,6 +63,7 @@ public class CategoryService {
     }
 
     // update
+    @Transactional
     public void modCategory(Long categoryId,Long userId, String name){
 
         // 카테고리 id로 찾은 userId와 로그인된 유저 Id가 맞는지 비교
@@ -81,6 +83,7 @@ public class CategoryService {
 
 
     // create
+    @Transactional
     public void createCategory(CreateCategoryRequestDto createCategoryRequestDto,Long userId){
 
         // dto -> entity 변환
