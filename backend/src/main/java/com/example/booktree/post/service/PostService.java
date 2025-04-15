@@ -11,6 +11,7 @@ import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import com.example.booktree.maincategory.service.MainCategortService;
 import com.example.booktree.post.dto.request.PostRequestDto;
+import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
@@ -18,6 +19,7 @@ import com.example.booktree.user.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ import com.example.booktree.utils.S3Uploader;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
 
     private final S3Uploader s3Uploader;
@@ -201,6 +204,58 @@ public class PostService {
     public Post findById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+    }
+
+
+
+    // 게시글 아이디로 해당 게시글 조회
+    public Post findPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+    }
+
+    // 블로그별로 게시글 목록 조회
+    public List<PostResponseDto> getPostsByBlog(Long blogId) {
+        Blog blog = blogService.findBlogByBlogId(blogId);
+        if (blog == null) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        List<Post> posts = postRepository.findByBlogId(blogId);
+
+        List<PostResponseDto> response = new ArrayList<>();
+        for (Post post : posts) {
+            response.add(PostResponseDto.builder()
+                    .postId(post.getId())
+                    .title(post.getTitle())
+                    .viewCount(post.getView())
+                    .createdAt(post.getCreatedAt())
+                    .modifiedAt(post.getModifiedAt())
+                    .build());
+        }
+        return response;
+    }
+
+    // 회원별로 게시글 목록을 조회
+    public List<PostResponseDto> getPostsByUser(Long userId) {
+        User user = userService.findById(userId);
+        if (user == null) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+
+        List<Post> posts = postRepository.findByUserId(userId);
+
+        List<PostResponseDto> response = new ArrayList<>();
+        for (Post post : posts) {
+            response.add(PostResponseDto.builder()
+                    .postId(post.getId())
+                    .title(post.getTitle())
+                    .viewCount(post.getView())
+                    .createdAt(post.getCreatedAt())
+                    .modifiedAt(post.getModifiedAt())
+                    .build());
+        }
+        return response;
     }
 
 }
