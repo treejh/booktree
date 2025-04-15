@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/vi/follow")
 @RequiredArgsConstructor
 @Tag(name = "팔로우 관리 컨트롤러")
 public class FollowController {
@@ -24,7 +24,7 @@ public class FollowController {
     private final FollowService followService;
 
     // 팔로우 모두 보기
-    @GetMapping("/follow/allfollower")
+    @GetMapping("/allfollower")
     @Operation(
             summary = "팔로우 목록 보기 기능",
             description = "내가 팔로우 하는 회원들 닉네임을 가져오는 메서드 ",
@@ -37,7 +37,7 @@ public class FollowController {
     }
 
     // 팔로잉 모두 보기
-    @GetMapping("/follow/allfollowed")
+    @GetMapping("/allfollowed")
     @Operation(
             summary = "팔로잉 목록 보기 기능",
             description = "나를 팔로우하는 회원들 닉네임을 가져오는 메서드",
@@ -50,7 +50,7 @@ public class FollowController {
     }
 
     // 팔로우 생성
-    @PostMapping("/follow/createfollow")
+    @PostMapping("/createfollow")
     @Operation(
             summary = "팔로우 생성 기능",
             description = "로그인한 유저가 선택한 유저를 팔로우 하는 메서드",
@@ -63,7 +63,7 @@ public class FollowController {
     }
 
     // 팔로워, 팔로잉 숫자
-    @GetMapping("/follow/getfollowcount")
+    @GetMapping("/getfollowcount")
     @Operation(
             summary = "팔로워, 팔로잉 숫자 제공 기능",
             description = "로그인한 ID를 기반으로 팔로워, 팔로잉하는 유저들의 수를 제공하는 메서드",
@@ -76,7 +76,7 @@ public class FollowController {
     }
 
     // 언팔로우
-    @DeleteMapping("/follow/unfollow")
+    @DeleteMapping("/unfollow")
     @Operation(
             summary = "언팔로우 기능",
             description = "로그인한 유저가 선택한 유저를 언팔로우 하는 메서드",
