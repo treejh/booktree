@@ -2,9 +2,16 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
+
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
 import com.example.booktree.post.dto.response.PostFollowingPageDto;
+
+
+import com.example.booktree.post.dto.response.PostDetailResponseDto;
+import com.example.booktree.post.dto.response.PostFollowingPageDto;
+
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
@@ -27,10 +34,11 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PopularPostService popularPostService;
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
-    public ResponseEntity<?> getPostByMaincCategory(@PathVariable Long maincategoryId,
+    public ResponseEntity<?> getPostByMainCategory(@PathVariable Long maincategoryId,
                                                     @RequestParam(name = "page", defaultValue = "1") int page,
                                                     @RequestParam(name="size", defaultValue = "8") int size,
                                                     @PathVariable int value) {
@@ -126,13 +134,18 @@ public class PostController {
                 .imageUrls(post.getImageList().stream()
                         .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
                         .toList())
-                .viewCount(post.getView())
+
+                .viewCount(post.getView() + 1)
+
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
 
+
         return ResponseEntity.ok(response);
+
+
 
 
 
@@ -174,5 +187,24 @@ public class PostController {
 
 
 
+    // 게시글 검색 : /api/v1/posts/search?type=title&keyword=Java&page=1&size=10
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostResponseDto>> searchPosts(
+            @RequestParam("type") String type,
+            @RequestParam("keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        // 최신순
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
+        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .postId(post.getId())
+                .viewCount(post.getView())
+                .build());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 }

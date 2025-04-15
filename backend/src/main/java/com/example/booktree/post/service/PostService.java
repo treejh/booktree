@@ -70,7 +70,7 @@ public class PostService {
         return postRepository.findByMainCategoryId(mainCategoryId, pageable);
     }
 
-    // 일주일 동안 조회수 높은 게시글 가져오기
+    // 메인 카테고리 별 일주일 동안 조회수 높은 게시글 가져오기
     public Page<Post> getPostByViews(Pageable pageable, Long mainCategoryId) {
         // 메인 카테고리가 없을 시 예외처리
         if (!mainCategortService.validateMainCate(mainCategoryId)) {
@@ -169,6 +169,13 @@ public class PostService {
     }
 
     @Transactional
+    public void postViewUpdate(Long postId) {
+        Post updatePost = findPostById(postId);
+        updatePost.setView(updatePost.getView() + 1);
+        postRepository.save(updatePost);
+    }
+
+    @Transactional
     public void deletePost(Long postId) {
         Long userId = tokenService.getIdFromToken();
 
@@ -185,6 +192,19 @@ public class PostService {
 
         imageRepository.deleteAll(post.getImageList());
         postRepository.delete(post);
+    }
+
+    // 검색 기능 : searchType은 title, author, book 중 하나 선택
+    public Page<Post> searchPosts(String searchType, String keyword, Pageable pageable) {
+        if ("title".equalsIgnoreCase(searchType)) {
+            return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else if ("author".equalsIgnoreCase(searchType)) {
+            return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
+        } else if ("book".equalsIgnoreCase(searchType)) {
+            return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
+        } else {
+            throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
+        }
     }
 
     @Transactional
@@ -208,15 +228,11 @@ public class PostService {
 
     }
 
-
-
     // 게시글 좋아요에 service주입용 추가
     public Post findById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
-
-
 
     // 게시글 아이디로 해당 게시글 조회
     public Post findPostById(Long postId) {
@@ -267,6 +283,7 @@ public class PostService {
         }
         return response;
     }
+
 
     // 최신순
     public Page<PostResponseDto> getPagedPostsByBlog(Long blogId, int page, int size) {
@@ -324,5 +341,10 @@ public class PostService {
 
 
 
+
+
+    public List<Post> findAllById(List<Long> allId){
+        return postRepository.findAllById(allId);
+    }
 
 }
