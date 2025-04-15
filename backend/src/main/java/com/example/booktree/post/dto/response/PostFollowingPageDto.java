@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter@Setter
-@Builder
+//@Builder
 public class PostFollowingPageDto {
     private Long postId;
     private String title;
