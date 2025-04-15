@@ -1,4 +1,4 @@
-package com.example.booktree.user.dto.request;
+package com.example.booktree.user.dto.response;
 
 import com.example.booktree.user.entity.User;
 import jakarta.validation.constraints.Email;

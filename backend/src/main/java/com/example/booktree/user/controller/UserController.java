@@ -1,11 +1,9 @@
 package com.example.booktree.user.controller;
 
 
-import com.example.booktree.blog.dto.request.BlogRequestDto;
-import com.example.booktree.blog.dto.response.BlogResponseDto;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.user.dto.request.UserLoginRequestDto;
-import com.example.booktree.user.dto.request.UserMyPageResponseDto;
+import com.example.booktree.user.dto.response.UserMyPageResponseDto;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
 import com.example.booktree.user.dto.request.UserPatchRequestDto;
 import com.example.booktree.user.dto.request.UserPhoneNumberRequestDto;
@@ -56,12 +54,19 @@ public class UserController {
     }
 
     // Read (본인 정보 수정할때 사용)
-    @GetMapping("/get/{userId}")
-    public ResponseEntity getUserByToken(@PathVariable("userId") Long userId) {
-        UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findById(userId));
+    @GetMapping("/get/token/{userId}")
+    public ResponseEntity getUserByToken() {
+        UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findByToken());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    //요청한 비밀번호와 사용자의 비밀번호가 같은지 확인
+    //페이지에서 회원 정보 수정 페이지 들어가기전에 사용하면 될듯
+    @PostMapping("/validation/password")
+    public ResponseEntity validationPw(@Valid @RequestBody UserPasswordRequestDto.PasswordDto passwordDto) {
+        userService.validPasswordCorrect(passwordDto);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 
     // Update
