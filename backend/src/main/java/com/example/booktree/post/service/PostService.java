@@ -7,6 +7,8 @@ import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
+import com.example.booktree.follow.service.FollowService;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import com.example.booktree.maincategory.service.MainCategortService;
@@ -18,10 +20,13 @@ import com.example.booktree.user.entity.User;
 import com.example.booktree.user.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import jakarta.transaction.Transactional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
@@ -47,6 +52,7 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final MainCategoryRepository mainCategoryRepository;
     private final ImageRepository imageRepository;
+    private final FollowService followService;
 
 
 
@@ -83,13 +89,8 @@ public class PostService {
 
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
-        if (user == null) {
-            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
-        }
         Blog blog = blogService.findBlogByBlogId(dto.getBlogId());
-        if (blog == null) {
-            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
-        }
+
         MainCategory mainCategory = mainCategoryRepository.findById(dto.getMainCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MAINCATEGORY_NOT_FOUNT));
 
@@ -200,13 +201,32 @@ public class PostService {
         }
     }
 
+    @Transactional
+    public Page<Post> getPostsFromFollowing(){
+        Long userId = tokenService.getIdFromToken();
+
+        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+
+        //id가 userid인듯
+        List<AllFollowListResponseDto> followingList = followService.getAllFollowedList(userId);
+        List<Long> followingUserIds = followingList.stream()
+                .map(AllFollowListResponseDto::getId)
+                .toList();
+
+        if (followingUserIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        return postRepository.findByUserIdInOrderByCreatedAtDesc(followingUserIds, pageable);
+
+    }
+
     // 게시글 좋아요에 service주입용 추가
     public Post findById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
-
-
 
     // 게시글 아이디로 해당 게시글 조회
     public Post findPostById(Long postId) {
