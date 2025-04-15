@@ -163,4 +163,13 @@ public class PostController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/get/followingPost")
+    public ResponseEntity<?> getFollowingPost() {
+        Page<Post> listPost = postService.getPostsFromFollowing();
+        Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
 }
