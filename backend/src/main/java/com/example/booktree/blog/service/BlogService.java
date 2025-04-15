@@ -91,11 +91,7 @@ public class BlogService {
 
         Blog findBlog = findBlogByBlogId(blogId);
 
-        if(!userId.equals(findBlog.getUser().getId())){
-            throw new BusinessLogicException(ExceptionCode.USER_NOT_BLOG_OWNER);
-        }
-
-        validationBlogOwner(userId,blogId);
+        validationBlogOwner(userId,findBlog.getUser().getId());
 
         blogRepository.delete(findBlog);
     }
