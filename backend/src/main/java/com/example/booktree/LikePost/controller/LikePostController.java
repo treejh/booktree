@@ -47,7 +47,7 @@ public class LikePostController {
 
      //좋아요 개수 조회
 
-    @GetMapping("/{postId}/count")
+    @GetMapping("/get/{postId}/count")
     public ResponseEntity<LikePostResponseDto> getLikeCount(@PathVariable("postId") Long postId) {
         int likeCount = likePostService.getLikeCount(postId);
         boolean hasLiked = likePostService.hasLikedPost(postId);
@@ -67,7 +67,7 @@ public class LikePostController {
 
 
 
-    @GetMapping("/{postId}/users")
+    @GetMapping("/get/{postId}/users")
     public ResponseEntity<List<LikeUserListDto>> getUsersWhoLikedPost(@PathVariable("postId") Long postId) {
         List<User> users = likePostService.getUsersWhoLikedPost(postId);
         List<LikeUserListDto> userDtos = users.stream()
