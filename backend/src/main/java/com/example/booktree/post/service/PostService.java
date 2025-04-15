@@ -86,13 +86,8 @@ public class PostService {
 
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
-        if (user == null) {
-            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
-        }
         Blog blog = blogService.findBlogByBlogId(dto.getBlogId());
-        if (blog == null) {
-            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
-        }
+
         MainCategory mainCategory = mainCategoryRepository.findById(dto.getMainCategoryId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MAINCATEGORY_NOT_FOUNT));
 
@@ -210,8 +205,6 @@ public class PostService {
         return postRepository.findByUserIdInOrderByCreatedAtDesc(followingUserIds, pageable);
 
     }
-
-
 
 
 
