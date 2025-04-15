@@ -195,6 +195,19 @@ public class PostService {
         postRepository.delete(post);
     }
 
+    // 검색 기능 : searchType은 title, author, book 중 하나 선택
+    public Page<Post> searchPosts(String searchType, String keyword, Pageable pageable) {
+        if ("title".equalsIgnoreCase(searchType)) {
+            return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else if ("author".equalsIgnoreCase(searchType)) {
+            return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
+        } else if ("book".equalsIgnoreCase(searchType)) {
+            return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
+        } else {
+            throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
+        }
+    }
+
     @Transactional
     public Page<Post> getPostsFromFollowing(){
         Long userId = tokenService.getIdFromToken();
@@ -216,15 +229,11 @@ public class PostService {
 
     }
 
-
-
     // 게시글 좋아요에 service주입용 추가
     public Post findById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
-
-
 
     // 게시글 아이디로 해당 게시글 조회
     public Post findPostById(Long postId) {

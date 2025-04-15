@@ -28,7 +28,7 @@ public class PostController {
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
-    public ResponseEntity<?> getPostByMaincCategory(@PathVariable Long maincategoryId,
+    public ResponseEntity<?> getPostByMainCategory(@PathVariable Long maincategoryId,
                                                     @RequestParam(name = "page", defaultValue = "1") int page,
                                                     @RequestParam(name="size", defaultValue = "8") int size,
                                                     @PathVariable int value) {
@@ -129,5 +129,24 @@ public class PostController {
 
 
 
+    // 게시글 검색 : /api/v1/posts/search?type=title&keyword=Java&page=1&size=10
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostResponseDto>> searchPosts(
+            @RequestParam("type") String type,
+            @RequestParam("keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        // 최신순
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
+        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .postId(post.getId())
+                .viewCount(post.getView())
+                .build());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 }
