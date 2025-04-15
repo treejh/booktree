@@ -74,34 +74,37 @@ public class UserController {
     public ResponseEntity patchUser(@RequestBody UserPatchRequestDto userPatchRequestDto) {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.updateUser(userPatchRequestDto));
         return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
     //update email
     @PatchMapping("/patch/email")
     public ResponseEntity patchUserEmail(@Valid @RequestParam String email ) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updateEmail(email));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updateEmail(email);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
     }
 
     //update username
     @PatchMapping("/patch/username")
     public ResponseEntity patchUsername(@Valid @RequestParam String username ) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updateEmail(username));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updateEmail(username);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
+
     }
 
     // Update
     @PatchMapping("/patch/pw")
     public ResponseEntity patchPw(@Valid @RequestBody UserPasswordRequestDto userPasswordRequestDto) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePw(userPasswordRequestDto));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updatePw(userPasswordRequestDto);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
+
     }
 
     // Update
     @PatchMapping("/patch/phoneNumber")
     public ResponseEntity patchPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePhoneNumber(userPhoneNumberRequestDto));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updatePhoneNumber(userPhoneNumberRequestDto);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
     }
 
 
@@ -110,14 +113,14 @@ public class UserController {
     @DeleteMapping("/delete")
     public ResponseEntity deleteBlog() {
         userService.deleteUser();
-        return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
+        return new ResponseEntity<>("삭제 완료", HttpStatus.OK);
     }
 
     // Delete
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity deleteBlog(@Positive @PathVariable("userId") Long userId) {
         userService.deleteUserById(userId);
-        return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
+        return new ResponseEntity<>("삭제 완료.", HttpStatus.OK);
     }
 
 
