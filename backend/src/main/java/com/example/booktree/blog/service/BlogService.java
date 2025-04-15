@@ -9,6 +9,7 @@ import com.example.booktree.user.entity.User;
 import com.example.booktree.user.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,20 @@ public class BlogService {
     @Transactional
     public Blog findBlogByBlogId(Long blogId) {
         return verifiedBlog(blogId);
+    }
+    @Transactional
+    public Blog findBlogByToken() {
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
+
+        List<Blog> blogList = user.getBlogList();
+        if (blogList == null || blogList.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        Blog blog = blogList.get(0); // 첫 번째 블로그 가져오기
+
+        return verifiedBlog(blog.getId());
     }
 
     //update
