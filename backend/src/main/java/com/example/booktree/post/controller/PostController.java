@@ -11,6 +11,7 @@ import com.example.booktree.post.service.PostService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -138,10 +139,19 @@ public class PostController {
     }
 
     // 블로그별로 게시글 목록 조회
+//    @GetMapping("/get/blog/{blogId}")
+//    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
+//        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
+//        return new ResponseEntity<>(posts, HttpStatus.OK);
+//    }
+
     @GetMapping("/get/blog/{blogId}")
-    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
-        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
-        return new ResponseEntity<>(posts, HttpStatus.OK);
+    public ResponseEntity<Page<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId,
+                                                                @RequestParam(name = "page", defaultValue = "0") int page,
+                                                                @RequestParam(name = "size", defaultValue = "8") int size) {
+
+        Page<PostResponseDto> posts = postService.getPagedPostsByBlog(blogId, page, size);
+        return ResponseEntity.ok(posts);
     }
 
     // 회원별로 게시글 목록 조회
@@ -150,6 +160,17 @@ public class PostController {
         List<PostResponseDto> posts = postService.getPostsByUser(userId);
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
+
+    @GetMapping("/get/blog/popular/{blogId}")
+    public ResponseEntity<Page<PostResponseDto>> getPopularPostsByBlog(
+            @PathVariable("blogId") Long blogId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
+
+        Page<PostResponseDto> posts = postService.getPopularPostsByBlog(blogId, page, size);
+        return ResponseEntity.ok(posts);
+    }
+
 
 
 

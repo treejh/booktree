@@ -31,4 +31,18 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     // 회원별 게시글 조회
     List<Post> findByUserId(Long userId);
+
+    // 최신순
+    Page<Post> findByBlogIdOrderByCreatedAtDesc(Long blogId, Pageable pageable);
+
+    // 인기순
+    @Query("SELECT p FROM Post p WHERE p.blog.id = :blogId AND p.createdAt >= :oneWeekAgo ORDER BY p.likeCount DESC")
+    Page<Post> findPopularPostsByLikesInLastWeek(@Param("blogId") Long blogId,
+                                                 @Param("oneWeekAgo") LocalDateTime oneWeekAgo,
+                                                 Pageable pageable);
+
+
+
+
+
 }
