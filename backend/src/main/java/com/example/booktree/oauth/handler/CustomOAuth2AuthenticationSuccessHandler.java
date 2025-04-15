@@ -55,10 +55,9 @@ public class CustomOAuth2AuthenticationSuccessHandler extends SavedRequestAwareA
      response.sendRedirect(redirectUrl);
 
 
-     //System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
-
 
      //System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
+
 
 
     }
