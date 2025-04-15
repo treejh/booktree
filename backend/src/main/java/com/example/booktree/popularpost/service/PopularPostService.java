@@ -6,6 +6,7 @@ import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.post.service.PostService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PopularPostService {
 
     private final StringRedisTemplate redisTemplate;
@@ -26,6 +28,7 @@ public class PopularPostService {
     // 게시글 조회 시 인기순위에 반영
     public void increasePopularity(Long postId) {
         redisTemplate.opsForZSet().incrementScore(REDIS_KEY, postId.toString(), 1);
+        log.info("redis : " + redisTemplate.toString());
     }
 
     // 인기 게시글 TOP N 조회

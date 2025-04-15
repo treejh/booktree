@@ -170,6 +170,13 @@ public class PostService {
     }
 
     @Transactional
+    public void postViewUpdate(Long postId) {
+        Post updatePost = findPostById(postId);
+        updatePost.setView(updatePost.getView() + 1);
+        postRepository.save(updatePost);
+    }
+
+    @Transactional
     public void deletePost(Long postId) {
         Long userId = tokenService.getIdFromToken();
 
