@@ -3,6 +3,7 @@ package com.example.booktree.post.controller;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.dto.request.PostRequestDto;
+import com.example.booktree.post.dto.response.PostFollowingPageDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
@@ -15,13 +16,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
-
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
@@ -73,22 +75,15 @@ public class PostController {
     }
 
 
-
-
-
-
-
-    @PostMapping("/create")
-    public ResponseEntity<?> createPost(@RequestBody @Valid PostRequestDto dto) {
+    @PostMapping(value = "/create", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> createPost(@ModelAttribute @Valid PostRequestDto dto) {
         postService.createPost(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("게시글이 성공적으로 작성되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("게시글 등록 성공!");
     }
 
-
-
-    @PatchMapping("/patch/{postId}")
+    @PatchMapping(value = "/patch/{postId}", consumes = {"multipart/form-data"})
     public ResponseEntity<?> updatePost(@PathVariable("postId") Long postId,
-                                        @RequestBody @Valid PostRequestDto postRequestDto) {
+                                        @ModelAttribute @Valid PostRequestDto postRequestDto) {
         postService.updatePost(postId, postRequestDto);
         return ResponseEntity.ok().build();
     }
@@ -97,6 +92,49 @@ public class PostController {
     public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId) {
         postService.deletePost(postId);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @GetMapping("/get/likePost/{postId}")
+    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
+        postService.deletePost(postId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/get/followingPost")
+    public ResponseEntity<?> getFollowingPost() {
+        Page<Post> listPost = postService.getPostsFromFollowing();
+        Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 게시글 아이디로 해당 게시글 조회
+    @GetMapping("/get/{postId}")
+    public ResponseEntity<PostResponseDto> getPostById(@PathVariable("postId") Long postId) {
+        Post post = postService.findPostById(postId);
+        PostResponseDto response = PostResponseDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .viewCount(post.getView())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 블로그별로 게시글 목록 조회
+    @GetMapping("/get/blog/{blogId}")
+    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
+        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
+    // 회원별로 게시글 목록 조회
+    @GetMapping("/get/user/{userId}")
+    public ResponseEntity<List<PostResponseDto>> getPostsByUser(@PathVariable("userId") Long userId) {
+        List<PostResponseDto> posts = postService.getPostsByUser(userId);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
 

@@ -5,9 +5,12 @@ import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
 import com.example.booktree.user.entity.User;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -21,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -107,5 +109,7 @@ public class PopularPostServiceTest {
         assertEquals(3, popularPosts.size());
         assertEquals(Arrays.asList(post1, post2, post3), popularPosts);
     }
+
+
 
 }

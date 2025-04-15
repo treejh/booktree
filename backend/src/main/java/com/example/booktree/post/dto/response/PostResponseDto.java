@@ -1,5 +1,6 @@
 package com.example.booktree.post.dto.response;
 
+import com.example.booktree.post.entity.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,4 +15,5 @@ public class PostResponseDto {
     private Long viewCount;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+
 }

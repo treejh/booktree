@@ -24,4 +24,11 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Page<Post> findTopPostsByViewsInLastWeek(@Param("mainCategoryId") Long mainCategoryId,
                                              @Param("oneWeekAgo") LocalDateTime oneWeekAgo,
                                              Pageable pageable);
+
+    Page<Post> findByUserIdInOrderByCreatedAtDesc(List<Long> userIds, Pageable pageable);
+    // 블로그별 게시글 조회
+    List<Post> findByBlogId(Long blogId);
+
+    // 회원별 게시글 조회
+    List<Post> findByUserId(Long userId);
 }
