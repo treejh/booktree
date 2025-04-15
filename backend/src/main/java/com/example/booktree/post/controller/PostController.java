@@ -4,9 +4,14 @@ import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
+
+import com.example.booktree.post.dto.response.PostDetailResponseDto;
+import com.example.booktree.post.dto.response.PostFollowingPageDto;
+
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -98,19 +103,28 @@ public class PostController {
 
 
     // 게시글 아이디로 해당 게시글 조회
+    @Transactional
     @GetMapping("/get/{postId}")
-    public ResponseEntity<PostResponseDto> getPostById(@PathVariable("postId") Long postId) {
+    public ResponseEntity<PostDetailResponseDto> getPostById(@PathVariable("postId") Long postId) {
         Post post = postService.findPostById(postId);
-        PostResponseDto response = PostResponseDto.builder()
+
+        PostDetailResponseDto response = PostDetailResponseDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
+                .content(post.getContent())
+                .username(post.getUser().getUsername()) // 작성자 이름
+                .imageUrls(post.getImageList().stream()
+                        .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
+                        .toList())
                 .viewCount(post.getView() + 1)
+                .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
         postService.postViewUpdate(postId);
         popularPostService.increasePopularity(post.getId());
         return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
     // 블로그별로 게시글 목록 조회
