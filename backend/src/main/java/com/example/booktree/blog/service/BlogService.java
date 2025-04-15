@@ -26,7 +26,7 @@ public class BlogService {
         private final TokenService tokenService;
 
         @Transactional
-    public Blog createBlog(BlogRequestDto blogRequestDto) {
+     public Blog createBlog(BlogRequestDto blogRequestDto) {
         //블로그 가지고 있는지 확인
         Long userId = tokenService.getIdFromToken();
 
@@ -108,6 +108,5 @@ public class BlogService {
         Optional<Blog> blog = blogRepository.findById(blogId);
         return blog.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
     }
-
 
     }
