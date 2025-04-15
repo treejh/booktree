@@ -72,7 +72,7 @@ public class BlogService {
         Long blogId = userService.findById(userId).getBlogList().get(0).getId();
         //검증
         Blog findBlog = findBlogByBlogId(blogId);
-        validationBlogOwner(userId,blogId);
+        validationBlogOwner(userId,findBlog.getUser().getId());
 
         Optional.ofNullable(blogRequestDto.getName()).ifPresent(findBlog::setName);
         Optional.ofNullable(blogRequestDto.getProfile()).ifPresent(findBlog::setProfile);
