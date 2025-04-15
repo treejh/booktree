@@ -5,6 +5,5 @@ import lombok.Setter;
 
 @Getter@Setter
 public class UnFollowRequestDto {
-    private Long followerId;
     private Long followeeId;
 }

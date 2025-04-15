@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter@Setter@Builder
 public class FollowRequestDto {
 
-    private Long followerId;
     private Long followeeId;
 
 }
