@@ -120,7 +120,7 @@ public class UserController {
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity deleteBlog(@Positive @PathVariable("userId") Long userId) {
         userService.deleteUserById(userId);
-        return new ResponseEntity<>("삭제 완료.", HttpStatus.OK);
+        return new ResponseEntity<>("삭제 완료", HttpStatus.OK);
     }
 
 
