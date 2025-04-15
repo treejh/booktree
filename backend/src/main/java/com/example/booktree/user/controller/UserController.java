@@ -47,16 +47,16 @@ public class UserController {
     }
 
     // Read(마이페이지 할때 사용) - 아이디로 유저 가지고 오기
-    @GetMapping("/get/{userId}")
+    @GetMapping("/get/profile/{userId}")
     public ResponseEntity getUserByUserId(@PathVariable("userId") Long userId) {
         UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findById(userId));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // Read (본인 정보 수정할때 사용)
-    @GetMapping("/get/token/{userId}")
+    @GetMapping("/get/token")
     public ResponseEntity getUserByToken() {
-        UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findByToken());
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.findByToken());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

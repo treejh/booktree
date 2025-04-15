@@ -48,7 +48,8 @@ public class SecurityConfigBookTree {
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
                                 "/api/users",
-                                "/api/v1/users/find/**"
+                                "/api/v1/users/find/**",
+                                "/api/v1/users/get/profile/**"
 
                         ).permitAll()
                         .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch/**", "/api/v1/posts/delete/**", "/api/v1/likeposts/click/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
