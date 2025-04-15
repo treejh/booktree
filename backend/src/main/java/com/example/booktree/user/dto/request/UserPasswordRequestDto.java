@@ -33,7 +33,7 @@ public class UserPasswordRequestDto {
 
     @Getter
     @AllArgsConstructor
-    public static class findEmailByPw {
+    public static class FindEmailByPw {
         @NotEmpty
         @Pattern(
                 regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$",
@@ -45,7 +45,7 @@ public class UserPasswordRequestDto {
 
     @Getter
     @AllArgsConstructor
-    public static class findEmailByPwANDPhone {
+    public static class FindEmailByPwANDPhone {
         @NotEmpty
         @Pattern(
                 regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$",
@@ -56,6 +56,18 @@ public class UserPasswordRequestDto {
         @NotBlank
         @Pattern(regexp = "^\\d{3}-\\d{4}-\\d{4}$", message = "전화번호 형식은 010-1234-5678이어야 합니다.")
         private String phoneNumber;
+
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class PasswordDto {
+        @NotEmpty
+        @Pattern(
+                regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*\\W).{8,20}$",
+                message = "비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리."
+        )
+        private String password;
 
 
     }

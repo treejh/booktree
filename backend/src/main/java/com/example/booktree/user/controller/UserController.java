@@ -1,10 +1,9 @@
 package com.example.booktree.user.controller;
 
 
-import com.example.booktree.blog.dto.request.BlogRequestDto;
-import com.example.booktree.blog.dto.response.BlogResponseDto;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.user.dto.request.UserLoginRequestDto;
+import com.example.booktree.user.dto.response.UserMyPageResponseDto;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
 import com.example.booktree.user.dto.request.UserPatchRequestDto;
 import com.example.booktree.user.dto.request.UserPhoneNumberRequestDto;
@@ -47,12 +46,26 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // Read
-    //토큰으로 유저 조회
-    @GetMapping("/get/{userId}")
+    // Read(마이페이지 할때 사용) - 아이디로 유저 가지고 오기
+    @GetMapping("/get/profile/{userId}")
     public ResponseEntity getUserByUserId(@PathVariable("userId") Long userId) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.findById(userId));
+        UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findById(userId));
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Read (본인 정보 수정할때 사용)
+    @GetMapping("/get/token")
+    public ResponseEntity getUserByToken() {
+        UserProfileResponseDto response = new UserProfileResponseDto(userService.findByToken());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //요청한 비밀번호와 사용자의 비밀번호가 같은지 확인
+    //페이지에서 회원 정보 수정 페이지 들어가기전에 사용하면 될듯
+    @PostMapping("/validation/password")
+    public ResponseEntity validationPw(@Valid @RequestBody UserPasswordRequestDto.PasswordDto passwordDto) {
+        userService.validPasswordCorrect(passwordDto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
@@ -61,34 +74,37 @@ public class UserController {
     public ResponseEntity patchUser(@RequestBody UserPatchRequestDto userPatchRequestDto) {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.updateUser(userPatchRequestDto));
         return new ResponseEntity<>(response, HttpStatus.OK);
+
     }
 
     //update email
     @PatchMapping("/patch/email")
     public ResponseEntity patchUserEmail(@Valid @RequestParam String email ) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updateEmail(email));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updateEmail(email);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
     }
 
     //update username
     @PatchMapping("/patch/username")
     public ResponseEntity patchUsername(@Valid @RequestParam String username ) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updateEmail(username));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updateEmail(username);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
+
     }
 
     // Update
     @PatchMapping("/patch/pw")
     public ResponseEntity patchPw(@Valid @RequestBody UserPasswordRequestDto userPasswordRequestDto) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePw(userPasswordRequestDto));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updatePw(userPasswordRequestDto);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
+
     }
 
     // Update
     @PatchMapping("/patch/phoneNumber")
     public ResponseEntity patchPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.updatePhoneNumber(userPhoneNumberRequestDto));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        userService.updatePhoneNumber(userPhoneNumberRequestDto);
+        return new ResponseEntity<>("수정 완료", HttpStatus.OK);
     }
 
 
@@ -97,14 +113,14 @@ public class UserController {
     @DeleteMapping("/delete")
     public ResponseEntity deleteBlog() {
         userService.deleteUser();
-        return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
+        return new ResponseEntity<>("삭제 완료", HttpStatus.OK);
     }
 
     // Delete
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity deleteBlog(@Positive @PathVariable("userId") Long userId) {
         userService.deleteUserById(userId);
-        return new ResponseEntity<>("삭제가 완료되었습니다.", HttpStatus.OK);
+        return new ResponseEntity<>("삭제 완료", HttpStatus.OK);
     }
 
 
@@ -160,17 +176,6 @@ public class UserController {
     }
 
 
-    //비밀번호로 이메일 찾기
-    @PostMapping("/find/email/pw")
-    public ResponseEntity findEmailByPassword(@Valid @RequestBody UserPasswordRequestDto.findEmailByPw userPasswordRequestDto ) {
-        String email = userService.findEmailByPassword(userPasswordRequestDto);
-        ApiResponseDto response = ApiResponseDto.builder()
-                .data(email)
-                .message("이메일 입니다.")
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
 
     //핸드폰 번호로 이메일 찾기
     @PostMapping("/find/email/phone")
@@ -183,7 +188,8 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/find/pw/email")
+
+    @PostMapping("/find/pw/phone")
     public ResponseEntity findPwByPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
         String password = userService.findPasswordByPhoneNumber(userPhoneNumberRequestDto.getPhoneNumber()) ;
         ApiResponseDto response = ApiResponseDto.builder()
@@ -193,7 +199,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/find/pw/phone")
+    @PostMapping("/find/pw/email")
     public ResponseEntity findPwByEmail(@Valid @RequestParam String email) {
         String password = userService.findPasswordByEmail(email) ;
         ApiResponseDto response = ApiResponseDto.builder()

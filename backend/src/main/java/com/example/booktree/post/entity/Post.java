@@ -67,12 +67,6 @@ public class Post extends Auditable {
     @Column(length = 100)
     private String book;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
-
     @Builder.Default
     @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long view = 0L; //조회수

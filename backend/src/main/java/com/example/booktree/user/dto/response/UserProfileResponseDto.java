@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+//사용자가 수정할 수 있는
 public class UserProfileResponseDto {
 
     @NotBlank

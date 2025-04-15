@@ -31,4 +31,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     // 회원별 게시글 조회
     List<Post> findByUserId(Long userId);
+
+    Page<Post> findByTitleContainingIgnoreCase(String title, Pageable pageable); // 제목 검색
+
+    Page<Post> findByAuthorContainingIgnoreCase(String author, Pageable pageable); // 작성자 검색
+
+    Page<Post> findByBookContainingIgnoreCase(String book, Pageable pageable); // 책 제목 검색
 }
