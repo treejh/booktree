@@ -1,16 +1,37 @@
+
 server:
   port: 8090
+
+
 spring:
-#  sql:
-#    init:
-#      mode: always
-#      data-locations: classpath:data.sql
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            clientId: ON_SECRET
+            scope: profile_nickname
+            client-name: Kakao
+            authorization-grant-type: authorization_code
+            redirect-uri: "${custom.site.backUrl}/{action}/oauth2/code/{registrationId}"
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+
   output:
     ansi:
       enabled: ALWAYS
   profiles:
     active: dev
     include: secret
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
   datasource:
     url: jdbc:h2:./db_dev;MODE=MySQL
     username: sa
@@ -26,6 +47,8 @@ spring:
         format_sql: true
         highlight_sql: true
         use_sql_comments: true
+
+
 logging:
   level:
     com.ll.blog: DEBUG
@@ -39,7 +62,7 @@ custom:
     frontUrl: "http://${custom.dev.cookieDomain}:3000"
     backUrl: "http://${custom.dev.cookieDomain}:${server.port}"
   prod:
-    cookieDomain: blog.sik2.site
+    cookieDomain: blog.sik2.site #api.booktri.site
     frontUrl: "https://www.${custom.prod.cookieDomain}"
     backUrl: "https://api.${custom.prod.cookieDomain}"
   site:

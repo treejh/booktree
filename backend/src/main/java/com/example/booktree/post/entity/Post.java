@@ -22,11 +22,8 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
@@ -64,29 +61,29 @@ public class Post extends Auditable {
     @Column(nullable = false)
     private String content;
 
-    @NotBlank
     @Column(length = 100)
     private String author;
 
-    @NotBlank
     @Column(length = 100)
     private String book;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "modified_at", nullable = false)
-    private LocalDateTime modifiedAt;
-
-    @Column
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long view = 0L; //조회수
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "category_id")
+    private Category category; //개인 카테고리
 
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     List<Image> imageList = new ArrayList<>();
+
+
+
+    // 게시글 좋아요 필드 추가
+    @Builder.Default
+    @Column(name = "like_count", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private Long likeCount = 0L;
 
 }

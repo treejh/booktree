@@ -14,7 +14,6 @@ public class LikeCommentDto {
     @AllArgsConstructor
     public static class Post {
         private Long commentId;
-        private Long userId;
     }
 
     // 응답용
@@ -22,10 +21,8 @@ public class LikeCommentDto {
     @Setter
     @AllArgsConstructor
     public static class Response {
-        private Long id;
-        private Long commentId;
-        private Long userId;
-        private LocalDateTime createdAt;
-        private LocalDateTime modifiedAt;
+        private Long likeCommentId;
+        private Long commentId; // 좋아요 대상 댓글의 ID
+        private Long userId; // 좋아요를 누른 사용자의 ID
     }
 }

@@ -33,11 +33,14 @@ public class Reply extends Auditable {
     @NotBlank
     @Column(nullable = false)
     private String content;
-
+    
+    // 부모 댓글이 있어야 함
     @ManyToOne
-    @JoinColumn(name = "comment_id")
+    @JoinColumn(name = "comment_id", nullable = false)
     private Comment comment;
-
+    
+    
+    // 대댓글작성자
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
