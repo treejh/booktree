@@ -40,7 +40,6 @@ import com.example.booktree.utils.S3Uploader;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class PostService {
 
     private final S3Uploader s3Uploader;
@@ -195,6 +194,19 @@ public class PostService {
         postRepository.delete(post);
     }
 
+    // 검색 기능 : searchType은 title, author, book 중 하나 선택
+    public Page<Post> searchPosts(String searchType, String keyword, Pageable pageable) {
+        if ("title".equalsIgnoreCase(searchType)) {
+            return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else if ("author".equalsIgnoreCase(searchType)) {
+            return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
+        } else if ("book".equalsIgnoreCase(searchType)) {
+            return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
+        } else {
+            throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
+        }
+    }
+
     @Transactional
     public Page<Post> getPostsFromFollowing(){
 
@@ -214,15 +226,11 @@ public class PostService {
 
     }
 
-
-
     // 게시글 좋아요에 service주입용 추가
     public Post findById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
-
-
 
     // 게시글 아이디로 해당 게시글 조회
     public Post findPostById(Long postId) {
@@ -274,7 +282,67 @@ public class PostService {
         return response;
     }
 
+
+    // 최신순
+    public Page<PostResponseDto> getPagedPostsByBlog(Long blogId, int page, int size) {
+
+        if (blogId == null) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        Blog blog = blogService.findBlogByBlogId(blogId);
+        if (blog == null) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> posts = postRepository.findByBlogIdOrderByCreatedAtDesc(blogId, pageable);
+
+        List<Post> debugList = postRepository.findByBlogId(2L);
+
+
+
+
+        return posts.map(post -> PostResponseDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .viewCount(post.getView())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .build());
+    }
+
+    public Page<PostResponseDto> getPopularPostsByBlog(Long blogId, int page, int size) {
+        Blog blog = blogService.findBlogByBlogId(blogId);
+        if (blog == null) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findPopularPostsByLikesInLastWeek(blogId, oneWeekAgo, pageable);
+
+        List<Post> debugList = postRepository.findByBlogId(2L);
+
+
+
+        return posts.map(post -> PostResponseDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .viewCount(post.getView())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .build());
+    }
+
+
+
+
+
+
     public List<Post> findAllById(List<Long> allId){
         return postRepository.findAllById(allId);
     }
+
 }

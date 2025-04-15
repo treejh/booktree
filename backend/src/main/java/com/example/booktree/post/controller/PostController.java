@@ -4,11 +4,21 @@ import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
+
+import com.example.booktree.post.dto.response.PostDetailResponseDto;
+import com.example.booktree.post.dto.response.PostFollowingPageDto;
+
+
+import com.example.booktree.post.dto.response.PostDetailResponseDto;
+import com.example.booktree.post.dto.response.PostFollowingPageDto;
+
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,7 +38,7 @@ public class PostController {
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
-    public ResponseEntity<?> getPostByMaincCategory(@PathVariable Long maincategoryId,
+    public ResponseEntity<?> getPostByMainCategory(@PathVariable Long maincategoryId,
                                                     @RequestParam(name = "page", defaultValue = "1") int page,
                                                     @RequestParam(name="size", defaultValue = "8") int size,
                                                     @PathVariable int value) {
@@ -96,28 +106,59 @@ public class PostController {
     }
 
 
+    @GetMapping("/get/likePost/{postId}")
+    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
+        postService.deletePost(postId);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
     // 게시글 아이디로 해당 게시글 조회
+    @Transactional
     @GetMapping("/get/{postId}")
-    public ResponseEntity<PostResponseDto> getPostById(@PathVariable("postId") Long postId) {
+    public ResponseEntity<PostDetailResponseDto> getPostById(@PathVariable("postId") Long postId) {
         Post post = postService.findPostById(postId);
-        PostResponseDto response = PostResponseDto.builder()
+
+        PostDetailResponseDto response = PostDetailResponseDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
+                .content(post.getContent())
+                .username(post.getUser().getUsername()) // 작성자 이름
+                .imageUrls(post.getImageList().stream()
+                        .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
+                        .toList())
+
                 .viewCount(post.getView() + 1)
+
+                .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
-        postService.postViewUpdate(postId);
-        popularPostService.increasePopularity(post.getId());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+
+        return ResponseEntity.ok(response);
+
+
+
+
+
     }
 
     // 블로그별로 게시글 목록 조회
+//    @GetMapping("/get/blog/{blogId}")
+//    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
+//        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
+//        return new ResponseEntity<>(posts, HttpStatus.OK);
+//    }
+
     @GetMapping("/get/blog/{blogId}")
-    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
-        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
-        return new ResponseEntity<>(posts, HttpStatus.OK);
+    public ResponseEntity<Page<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId,
+                                                                @RequestParam(name = "page", defaultValue = "0") int page,
+                                                                @RequestParam(name = "size", defaultValue = "8") int size) {
+
+        Page<PostResponseDto> posts = postService.getPagedPostsByBlog(blogId, page, size);
+        return ResponseEntity.ok(posts);
     }
 
     // 회원별로 게시글 목록 조회
@@ -127,6 +168,46 @@ public class PostController {
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
+    @GetMapping("/get/blog/popular/{blogId}")
+    public ResponseEntity<Page<PostResponseDto>> getPopularPostsByBlog(
+            @PathVariable("blogId") Long blogId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
+
+        Page<PostResponseDto> posts = postService.getPopularPostsByBlog(blogId, page, size);
+        return ResponseEntity.ok(posts);
+    }
+
+
+
+
+    // 게시글 검색 : /api/v1/posts/search?type=title&keyword=Java&page=1&size=10
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostResponseDto>> searchPosts(
+            @RequestParam("type") String type,
+            @RequestParam("keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        // 최신순
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
+        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .postId(post.getId())
+                .viewCount(post.getView())
+                .build());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get/followingPost")
+    public ResponseEntity<?> getFollowingPost() {
+        Page<Post> listPost = postService.getPostsFromFollowing();
+        Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 
 
