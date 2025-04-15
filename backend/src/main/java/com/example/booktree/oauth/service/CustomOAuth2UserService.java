@@ -4,9 +4,11 @@ package com.example.booktree.oauth.service;
 import com.example.booktree.oauth.domain.SecurityUser;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.service.UserService;
+import com.example.booktree.utils.CreateRandomNumber;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -37,24 +39,41 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         Map<String,String> attributesProperties = (Map<String,String>) attributes.get("properties");
+        String nickname = null;
+        if (providerTypeCode.equals("KAKAO")) {
+            nickname = attributesProperties.get("nickname");
+        } else if (providerTypeCode.equals("GITHUB")) {
+           nickname = (String) attributes.get("login");
+            if(nickname == null || nickname.isEmpty()){
+                nickname = (String) attributes.get("name");
+            }
+        }
 
-        //카카오에서 받아온 닉네임
-        String nickname = attributesProperties.get("nickname");
+        if(nickname == null || nickname.isEmpty()){
+            nickname = CreateRandomNumber.randomNumber();
+        }
 
-        //카카오에서 이메일을 받아올 수 없기 때문에, 만들어서 넣어준다.
         String email =providerTypeCode+"__"+oauthId;
 
-        User user = userService.modifyOrJoins(email,nickname,providerTypeCode,oauthId);
+        Optional<User> validUser = userService.findByProviderAndUuidAndSocialId(oauthId,providerTypeCode,nickname);
+
+        //만약 회원이 존재한다면 -> 회원가입이 된 사용자라면 ?
+        User user;
+        if (validUser.isPresent()) {
+            user = validUser.get();
+        } else {
+            user = userService.modifyOrJoins(email, nickname, providerTypeCode, oauthId);
+
+        }
 
 
-        //로그인 했다고 알리기 위해
         return new SecurityUser(
                 user.getId(),
                 user.getEmail(),
                 " ",
                 user.getUsername(),
-                user.getAuthorities(user.getRole())
-        );
+                user.getAuthorities(user.getRole()));
+
 
 
     }
