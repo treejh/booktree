@@ -66,13 +66,13 @@ public class BlogService {
         return verifiedBlog(blog.getId());
     }
 
-    //update
     public Blog updateBlog(BlogRequestDto blogRequestDto) {
         Long userId = tokenService.getIdFromToken();
-        Long blogId = userService.findById(userId).getBlogList().get(0).getId();
-        //검증
-        Blog findBlog = findBlogByBlogId(blogId);
-        validationBlogOwner(userId,findBlog.getUser().getId());
+        User user = userService.findById(userId);
+
+        Blog findBlog = getFirstBlogOfUser(userId);
+        // 검증
+        validationBlogOwner(userId, findBlog.getUser().getId());
 
         Optional.ofNullable(blogRequestDto.getName()).ifPresent(findBlog::setName);
         Optional.ofNullable(blogRequestDto.getProfile()).ifPresent(findBlog::setProfile);
@@ -80,21 +80,29 @@ public class BlogService {
         findBlog.setModifiedAt(LocalDateTime.now());
 
         return blogRepository.save(findBlog);
-
     }
+
 
     @Transactional
     // Delete
     public void deleteBlog() {
         Long userId = tokenService.getIdFromToken();
-        Long blogId = userService.findById(userId).getBlogList().get(0).getId();
-
-        Blog findBlog = findBlogByBlogId(blogId);
+        Blog findBlog = getFirstBlogOfUser(userId);
 
         validationBlogOwner(userId,findBlog.getUser().getId());
 
         blogRepository.delete(findBlog);
     }
+
+    private Blog getFirstBlogOfUser(Long userId) {
+        User user = userService.findById(userId);
+        List<Blog> blogList = user.getBlogList();
+        if (blogList == null || blogList.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+        return blogList.get(0);
+    }
+
 
 
     @Transactional
