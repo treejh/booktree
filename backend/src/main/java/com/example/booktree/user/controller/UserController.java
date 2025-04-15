@@ -5,6 +5,7 @@ import com.example.booktree.blog.dto.request.BlogRequestDto;
 import com.example.booktree.blog.dto.response.BlogResponseDto;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.user.dto.request.UserLoginRequestDto;
+import com.example.booktree.user.dto.request.UserMyPageResponseDto;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
 import com.example.booktree.user.dto.request.UserPatchRequestDto;
 import com.example.booktree.user.dto.request.UserPhoneNumberRequestDto;
@@ -47,13 +48,20 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // Read
-    //토큰으로 유저 조회
+    // Read(마이페이지 할때 사용) - 아이디로 유저 가지고 오기
     @GetMapping("/get/{userId}")
     public ResponseEntity getUserByUserId(@PathVariable("userId") Long userId) {
-        UserProfileResponseDto response = new UserProfileResponseDto(userService.findById(userId));
+        UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findById(userId));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    // Read (본인 정보 수정할때 사용)
+    @GetMapping("/get/{userId}")
+    public ResponseEntity getUserByToken(@PathVariable("userId") Long userId) {
+        UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findById(userId));
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
 
     // Update
@@ -172,7 +180,8 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/find/pw/email")
+
+    @PostMapping("/find/pw/phone")
     public ResponseEntity findPwByPhoneNumber(@Valid @RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto) {
         String password = userService.findPasswordByPhoneNumber(userPhoneNumberRequestDto.getPhoneNumber()) ;
         ApiResponseDto response = ApiResponseDto.builder()
@@ -182,7 +191,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/find/pw/phone")
+    @PostMapping("/find/pw/email")
     public ResponseEntity findPwByEmail(@Valid @RequestParam String email) {
         String password = userService.findPasswordByEmail(email) ;
         ApiResponseDto response = ApiResponseDto.builder()
