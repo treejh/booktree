@@ -98,7 +98,7 @@ public class PostController {
             @RequestParam("keyword") String keyword,
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
-        // 최신순 정렬
+        // 최신순
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
         Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
