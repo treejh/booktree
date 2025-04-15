@@ -40,6 +40,12 @@ public class UserService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
 
+    public User findByToken() {
+        Long userId= tokenService.getIdFromToken();
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
+
     public void saveUser(User user){
         userRepository.save(user);
     }
@@ -95,12 +101,7 @@ public class UserService {
     }
 
 
-    //아이디 찾기 - 비밀번호로
-    public String findEmailByPassword(UserPasswordRequestDto.findEmailByPw password){
-        User user = findUserByPassword(password.getPassword());
 
-        return user.getEmail();
-    }
 
     //아이디 찾기 - 핸드폰 번호로
     public String findEmailByPhoneNumber(UserPhoneNumberRequestDto userPhoneNumberRequestDto){
@@ -122,6 +123,17 @@ public class UserService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     }
+
+
+
+    public void validPasswordCorrect(UserPasswordRequestDto.PasswordDto passwordDto){
+        Long userId = tokenService.getIdFromToken();
+        User user = findById(userId);
+        if(!passwordEncoder.matches(passwordDto.getPassword(),user.getPassword())){
+            throw new BusinessLogicException(ExceptionCode.INVALID_PASSWORD);
+        };
+    }
+
 
 
     public boolean validPassword(String dtoPassword, String userPassword){
