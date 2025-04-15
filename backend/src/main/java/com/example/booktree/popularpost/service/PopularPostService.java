@@ -28,7 +28,6 @@ public class PopularPostService {
     // 게시글 조회 시 인기순위에 반영
     public void increasePopularity(Long postId) {
         redisTemplate.opsForZSet().incrementScore(REDIS_KEY, postId.toString(), 1);
-        log.info("redis : " + redisTemplate.toString());
     }
 
     // 인기 게시글 TOP N 조회
