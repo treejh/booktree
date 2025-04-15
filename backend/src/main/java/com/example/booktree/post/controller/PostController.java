@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -89,6 +91,36 @@ public class PostController {
     public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId) {
         postService.deletePost(postId);
         return ResponseEntity.noContent().build();
+    }
+
+
+
+    // 게시글 아이디로 해당 게시글 조회
+    @GetMapping("/get/{postId}")
+    public ResponseEntity<PostResponseDto> getPostById(@PathVariable("postId") Long postId) {
+        Post post = postService.findPostById(postId);
+        PostResponseDto response = PostResponseDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .viewCount(post.getView())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 블로그별로 게시글 목록 조회
+    @GetMapping("/get/blog/{blogId}")
+    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
+        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
+    // 회원별로 게시글 목록 조회
+    @GetMapping("/get/user/{userId}")
+    public ResponseEntity<List<PostResponseDto>> getPostsByUser(@PathVariable("userId") Long userId) {
+        List<PostResponseDto> posts = postService.getPostsByUser(userId);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
 
