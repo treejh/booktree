@@ -53,21 +53,21 @@ public class SecurityConfigBookTree {
 
                         ).permitAll()
                         .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch/**", "/api/v1/posts/delete/**", "/api/v1/likeposts/click/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login", "/api/v1/likeposts/**", "/api/v1/posts/get/**").permitAll()
+                        .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login", "/api/v1/likeposts/**", "/api/v1/posts/get/**", "/api/v1/posts/get/blog/**", "api/v1/posts/get/blog/popular/**").permitAll()
                         .anyRequest().authenticated()
                 )// "/api/v1/posts"
-                .oauth2Login(
-                        oauth2Login -> {
-                            // Configure OAuth2 login
-                            oauth2Login
-                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
-                                    .authorizationEndpoint(
-                                            authorizationEndpoint ->
-                                                    authorizationEndpoint
-                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
-                                    );
-                        }
-                )
+//                .oauth2Login(
+//                        oauth2Login -> {
+//                            // Configure OAuth2 login
+//                            oauth2Login
+//                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
+//                                    .authorizationEndpoint(
+//                                            authorizationEndpoint ->
+//                                                    authorizationEndpoint
+//                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
+//                                    );
+//                        }
+//                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session

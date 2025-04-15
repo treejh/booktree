@@ -9,6 +9,7 @@ import com.example.booktree.user.entity.User;
 import com.example.booktree.user.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,13 +51,28 @@ public class BlogService {
     public Blog findBlogByBlogId(Long blogId) {
         return verifiedBlog(blogId);
     }
-
-    //update
-    public Blog updateBlog(BlogRequestDto blogRequestDto, Long blogId) {
+    @Transactional
+    public Blog findBlogByToken() {
         Long userId = tokenService.getIdFromToken();
-        //검증
-        Blog findBlog = findBlogByBlogId(blogId);
-        validationBlogOwner(userId,blogId);
+        User user = userService.findById(userId);
+
+        List<Blog> blogList = user.getBlogList();
+        if (blogList == null || blogList.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        Blog blog = blogList.get(0); // 첫 번째 블로그 가져오기
+
+        return verifiedBlog(blog.getId());
+    }
+
+    public Blog updateBlog(BlogRequestDto blogRequestDto) {
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
+
+        Blog findBlog = getFirstBlogOfUser(userId);
+        // 검증
+        validationBlogOwner(userId, findBlog.getUser().getId());
 
         Optional.ofNullable(blogRequestDto.getName()).ifPresent(findBlog::setName);
         Optional.ofNullable(blogRequestDto.getProfile()).ifPresent(findBlog::setProfile);
@@ -64,24 +80,29 @@ public class BlogService {
         findBlog.setModifiedAt(LocalDateTime.now());
 
         return blogRepository.save(findBlog);
-
     }
+
 
     @Transactional
     // Delete
-    public void deleteBlog(Long blogId) {
+    public void deleteBlog() {
         Long userId = tokenService.getIdFromToken();
+        Blog findBlog = getFirstBlogOfUser(userId);
 
-        Blog findBlog = findBlogByBlogId(blogId);
-
-        if(!userId.equals(findBlog.getUser().getId())){
-            throw new BusinessLogicException(ExceptionCode.USER_NOT_BLOG_OWNER);
-        }
-
-        validationBlogOwner(userId,blogId);
+        validationBlogOwner(userId,findBlog.getUser().getId());
 
         blogRepository.delete(findBlog);
     }
+
+    private Blog getFirstBlogOfUser(Long userId) {
+        User user = userService.findById(userId);
+        List<Blog> blogList = user.getBlogList();
+        if (blogList == null || blogList.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+        return blogList.get(0);
+    }
+
 
 
     @Transactional
