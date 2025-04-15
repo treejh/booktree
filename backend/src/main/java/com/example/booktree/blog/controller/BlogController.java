@@ -22,7 +22,7 @@ public class BlogController {
     private final BlogService blogService;
 
     // Create
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity postBlog(@Valid @RequestBody BlogRequestDto blogRequestDto) {
         BlogResponseDto response = new BlogResponseDto(blogService.createBlog(blogRequestDto));
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -30,7 +30,7 @@ public class BlogController {
 
     // Read
     //내 블로그는 하나밖에 없다는 가정하에 유저 아이디로 가져옴
-    @GetMapping
+    @GetMapping("/get")
     public ResponseEntity getBlogByUserId(@Positive @RequestParam Long blogId) {
         BlogResponseDto response = new BlogResponseDto(blogService.findBlogByBlogId(blogId));
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -38,17 +38,16 @@ public class BlogController {
 
 
     // Update
-    @PatchMapping("/{blogId}")
-    public ResponseEntity patchBlog(@RequestBody BlogRequestDto blogRequestDto
-                                    , @PathVariable("blogId") Long blogId) {
-        BlogResponseDto response = new BlogResponseDto(blogService.updateBlog(blogRequestDto,blogId));
+    @PatchMapping("/patch")
+    public ResponseEntity patchBlog(@RequestBody BlogRequestDto blogRequestDto) {
+        BlogResponseDto response = new BlogResponseDto(blogService.updateBlog(blogRequestDto));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // Delete
-    @DeleteMapping("/delete/{blogId}")
-    public ResponseEntity deleteBlog(@PathVariable("blogId") Long blogId) {
-        blogService.deleteBlog(blogId);
+    @DeleteMapping("/delete")
+    public ResponseEntity deleteBlog() {
+        blogService.deleteBlog();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

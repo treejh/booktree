@@ -52,8 +52,9 @@ public class BlogService {
     }
 
     //update
-    public Blog updateBlog(BlogRequestDto blogRequestDto, Long blogId) {
+    public Blog updateBlog(BlogRequestDto blogRequestDto) {
         Long userId = tokenService.getIdFromToken();
+        Long blogId = userService.findById(userId).getBlogList().get(0).getId();
         //검증
         Blog findBlog = findBlogByBlogId(blogId);
         validationBlogOwner(userId,blogId);
@@ -69,8 +70,9 @@ public class BlogService {
 
     @Transactional
     // Delete
-    public void deleteBlog(Long blogId) {
+    public void deleteBlog() {
         Long userId = tokenService.getIdFromToken();
+        Long blogId = userService.findById(userId).getBlogList().get(0).getId();
 
         Blog findBlog = findBlogByBlogId(blogId);
 
