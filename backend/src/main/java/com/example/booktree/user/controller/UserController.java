@@ -160,17 +160,6 @@ public class UserController {
     }
 
 
-    //비밀번호로 이메일 찾기
-    @PostMapping("/find/email/pw")
-    public ResponseEntity findEmailByPassword(@Valid @RequestBody UserPasswordRequestDto.findEmailByPw userPasswordRequestDto ) {
-        String email = userService.findEmailByPassword(userPasswordRequestDto);
-        ApiResponseDto response = ApiResponseDto.builder()
-                .data(email)
-                .message("이메일 입니다.")
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
 
     //핸드폰 번호로 이메일 찾기
     @PostMapping("/find/email/phone")

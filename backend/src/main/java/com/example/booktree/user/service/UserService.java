@@ -95,12 +95,7 @@ public class UserService {
     }
 
 
-    //아이디 찾기 - 비밀번호로
-    public String findEmailByPassword(UserPasswordRequestDto.findEmailByPw password){
-        User user = findUserByPassword(password.getPassword());
 
-        return user.getEmail();
-    }
 
     //아이디 찾기 - 핸드폰 번호로
     public String findEmailByPhoneNumber(UserPhoneNumberRequestDto userPhoneNumberRequestDto){
