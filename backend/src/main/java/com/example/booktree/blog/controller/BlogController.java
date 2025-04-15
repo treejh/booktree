@@ -56,6 +56,6 @@ public class BlogController {
     @DeleteMapping("/delete")
     public ResponseEntity deleteBlog() {
         blogService.deleteBlog();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>("삭제 완료",HttpStatus.OK);
     }
 }
