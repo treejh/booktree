@@ -82,8 +82,9 @@ public class TokenService {
         String refreshToken = jwtTokenizer.createRefreshToken(user.getId(),user.getEmail(),user.getUsername(),user.getRole().toString());
 
         user.setRefreshToken(refreshToken);
+        userRepository.save(user);
 
-        setCookie("refreshToken", user.getRefreshToken());
+        //setCookie("refreshToken", user.getRefreshToken());
         setCookie("accessToken", accessToken);
 
         return accessToken;

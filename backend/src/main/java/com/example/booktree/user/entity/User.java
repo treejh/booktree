@@ -73,23 +73,19 @@ public class User extends Auditable {
     private String ssoProvider;
 
 
-
-
-
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
     List<Blog> blogList = new ArrayList<>();
 
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
     List<Category> categoryList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
     List<LikeComment> likeCommentList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
     List<LikeReply> likeReplyList = new ArrayList<>();
 
     public User(long id, String email, String username, Collection<? extends GrantedAuthority> authorities) {
