@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/popular")
+@RequestMapping("/api/v1/popular")
 @Slf4j
 public class PopularPostController {
 
