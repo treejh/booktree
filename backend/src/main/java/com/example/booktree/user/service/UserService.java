@@ -15,10 +15,12 @@ import com.example.booktree.user.dto.request.UserPostRequestDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
 import com.example.booktree.utils.CreateRandomNumber;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -303,6 +305,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
+
+    @Transactional
+    public Optional<User> findByProviderAndUuidAndSocialId(String socialId, String ssoProvider, String username){
+        return userRepository.findBySocialIdAndSsoProviderAndUsername(socialId, ssoProvider, username);
+    }
 
 
 

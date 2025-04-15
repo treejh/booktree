@@ -14,6 +14,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,6 +34,7 @@ public class SecurityConfigBookTree {
     private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
 
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -37,7 +42,8 @@ public class SecurityConfigBookTree {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/api/oauth/**",
-                                "/oauth",
+                                "/oauth2/**",
+                                "/login/oauth2/code/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
@@ -77,6 +83,8 @@ public class SecurityConfigBookTree {
 
         return http.build();
     }
+
+
 
 
     //특정 포트 번호 허락

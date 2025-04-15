@@ -73,9 +73,6 @@ public class User extends Auditable {
     private String ssoProvider;
 
 
-
-
-
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 

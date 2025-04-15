@@ -33,6 +33,15 @@ public class CustomOAuth2AuthenticationSuccessHandler extends SavedRequestAwareA
  public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                      Authentication authentication) throws ServletException, IOException {
 
+     String requestUri = request.getRequestURI();
+     String provider = extractProviderFromUri(requestUri);
+
+     if(provider == null){
+         response.sendRedirect("/");
+         return;
+     }
+
+
      User user = userRepository.findById(jwtTokenizer.getUser().getId())
              .orElseThrow(()->new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
@@ -43,7 +52,21 @@ public class CustomOAuth2AuthenticationSuccessHandler extends SavedRequestAwareA
 
      //프론트 주소로 redirect
      response.sendRedirect(redirectUrl);
-     System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
 
     }
+
+
+    private String extractProviderFromUri(String uri) {
+        if(uri == null || uri.isBlank()) {
+            return null;
+        }
+        if(!uri.startsWith("/login/oauth2/code/")){
+            return null;
+        }
+        // 예: /login/oauth2/code/github -> github
+        String[] segments = uri.split("/");
+        return segments[segments.length - 1];
+    }
+
+
 }
