@@ -216,7 +216,7 @@ public class PostController {
     @GetMapping("/get/likePost")
     public ResponseEntity<?> getLikedPosts(
             @RequestParam(name = "page", defaultValue = "1") int page,
-            @RequestParam(name="size", defaultValue = "6") int size
+            @RequestParam(name="size", defaultValue = "8") int size
     ) {
 
         Page<Post> posts = postService.getPostsFromUserLike(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
