@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styles from "./login.module.css";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [rememberLogin, setRememberLogin] = useState(false);
@@ -19,8 +20,13 @@ export default function LoginPage() {
             <span className={styles.logoText}>BookTree</span>
           </div>
           <div className="flex items-center gap-2">
-            <button className={styles.loginButton}>로그인</button>
-            <button className={styles.signupButton}>회원가입</button>
+            <Link href="/login">
+              <button className={styles.loginButton}>로그인</button>
+            </Link>
+
+            <Link href="/register">
+              <button className={styles.signupButton}>회원가입</button>
+            </Link>
           </div>
         </div>
       </header>
@@ -87,42 +93,46 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <button
-                  type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  로그인
-                </button>
+              <button
+                type="submit"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                로그인
+              </button>
 
-                <button
-                  type="button"
-                  className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              <button
+                type="button"
+                className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+              >
+                <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current">
+                  <path d="M12 3C6.5 3 2 6.5 2 11c0 2.5 1.2 4.7 3 6.2l-1 3.8 4-2.4c1.3.4 2.6.6 4 .6 5.5 0 10-3.5 10-8s-4.5-8-10-8z" />
+                </svg>
+                카카오로 시작하기
+              </button>
+
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-4 bg-white text-sm text-gray-500">
+                    또는
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-center text-sm">
+                <span className="text-gray-500">계정이 없으신가요? </span>
+                <Link
+                  href="/register"
+                  className="text-gray-900 hover:text-gray-700 font-medium"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="w-5 h-5 mr-2 fill-current"
-                  >
-                    <path d="M12 3C6.5 3 2 6.5 2 11c0 2.5 1.2 4.7 3 6.2l-1 3.8 4-2.4c1.3.4 2.6.6 4 .6 5.5 0 10-3.5 10-8s-4.5-8-10-8z" />
-                  </svg>
-                  카카오로 시작하기
-                </button>
+                  회원가입
+                </Link>
               </div>
             </div>
           </form>
-
-          <div className="mt-6 text-center text-sm">
-            <span className="text-gray-500">계정이 없으신가요? </span>
-            <a
-              href="/signup"
-              className="text-gray-900 hover:text-gray-700 font-medium"
-            >
-              회원가입
-            </a>
-          </div>
         </div>
-
-        <div className="h-20"></div>
       </div>
 
       <footer className={styles.footer}>
