@@ -107,12 +107,11 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-
-    @GetMapping("/get/likePost/{postId}")
-    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
-        postService.deletePost(postId);
-        return ResponseEntity.noContent().build();
-    }
+//    @GetMapping("/get/likePost/{postId}")
+//    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
+//        postService.deletePost(postId);
+//        return ResponseEntity.noContent().build();
+//    }
 
 
 
@@ -142,17 +141,8 @@ public class PostController {
         return ResponseEntity.ok(response);
 
 
-
-
-
     }
 
-    // 블로그별로 게시글 목록 조회
-//    @GetMapping("/get/blog/{blogId}")
-//    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
-//        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
-//        return new ResponseEntity<>(posts, HttpStatus.OK);
-//    }
 
     @GetMapping("/get/blog/{blogId}")
     public ResponseEntity<Page<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId,
@@ -216,7 +206,7 @@ public class PostController {
     @GetMapping("/get/likePost")
     public ResponseEntity<?> getLikedPosts(
             @RequestParam(name = "page", defaultValue = "1") int page,
-            @RequestParam(name="size", defaultValue = "6") int size
+            @RequestParam(name="size", defaultValue = "8") int size
     ) {
 
         Page<Post> posts = postService.getPostsFromUserLike(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
