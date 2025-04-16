@@ -1,5 +1,7 @@
 package com.example.booktree.post.service;
 
+import com.example.booktree.LikePost.repository.LikePostRepository;
+import com.example.booktree.LikePost.service.LikePostService;
 import com.example.booktree.blog.entity.Blog;
 
 import com.example.booktree.blog.service.BlogService;
@@ -43,14 +45,17 @@ import com.example.booktree.utils.S3Uploader;
 public class PostService {
 
     private final S3Uploader s3Uploader;
+
     private final PostRepository postRepository;
     private final MainCategortService mainCategortService;
-    private final TokenService tokenService;
-    private final UserService userService;
-    private final BlogService blogService;
     private final CategoryRepository categoryRepository;
     private final MainCategoryRepository mainCategoryRepository;
     private final ImageRepository imageRepository;
+    private final LikePostRepository likePostRepository;
+
+    private final TokenService tokenService;
+    private final UserService userService;
+    private final BlogService blogService;
     private final FollowService followService;
 
 
@@ -207,6 +212,7 @@ public class PostService {
         }
     }
 
+    //팔로잉 한 유저들의 게시글을 최신순으로 가져오기
     @Transactional
     public Page<Post> getPostsFromFollowing(){
 
@@ -223,6 +229,20 @@ public class PostService {
         }
 
         return postRepository.findByUserIdInOrderByCreatedAtDesc(followingUserIds, pageable);
+
+    }
+
+    //사용자가 좋아요 누른 게시글 가져오기
+    @Transactional
+    public Page<Post> getPostsFromUserLike(Pageable pageable){
+        Long userId = tokenService.getIdFromToken();
+        Page<Post> likePostList = likePostRepository.findLikedPostsByUser(userId,pageable);
+
+        if (likePostList.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        return likePostList;
 
     }
 
@@ -301,8 +321,6 @@ public class PostService {
         List<Post> debugList = postRepository.findByBlogId(2L);
 
 
-
-
         return posts.map(post -> PostResponseDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
@@ -338,11 +356,9 @@ public class PostService {
 
 
 
-
-
-
     public List<Post> findAllById(List<Long> allId){
         return postRepository.findAllById(allId);
     }
+
 
 }
