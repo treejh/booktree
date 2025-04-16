@@ -21,7 +21,7 @@ export default function FollowPage() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
+    <main className="max-w-4xl mx-auto px-4 py-8 bg-[#F4F4F4]">
       <h1 className="text-3xl font-bold mb-8">팔로우</h1>
 
       {/* 탭 네비게이션 */}
