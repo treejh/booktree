@@ -213,9 +213,11 @@ public class PostController {
 
     @GetMapping("/get/likePost")
     public ResponseEntity<?> getLikedPosts(
-            @PageableDefault(size = 8, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name="size", defaultValue = "6") int size
+    ) {
 
-        Page<Post> posts = postService.getPostsFromUserLike(pageable);
+        Page<Post> posts = postService.getPostsFromUserLike(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         Page<PostFollowingPageDto> response = posts.map(PostFollowingPageDto::new);
 
         return new ResponseEntity<>(response,HttpStatus.OK);
