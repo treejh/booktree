@@ -204,8 +204,10 @@ public class PostController {
     }
 
     @GetMapping("/get/followingPost")
-    public ResponseEntity<?> getFollowingPost() {
-        Page<Post> listPost = postService.getPostsFromFollowing();
+    public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
+                                               @RequestParam(name="size", defaultValue = "8") int size
+    ){
+        Page<Post> listPost = postService.getPostsFromFollowing(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
 
         return new ResponseEntity<>(response, HttpStatus.OK);

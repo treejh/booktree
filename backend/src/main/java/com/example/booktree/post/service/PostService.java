@@ -214,9 +214,8 @@ public class PostService {
 
     //팔로잉 한 유저들의 게시글을 최신순으로 가져오기
     @Transactional
-    public Page<Post> getPostsFromFollowing(){
+    public Page<Post> getPostsFromFollowing(Pageable pageable){
 
-        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         //id가 userid인듯
         List<AllFollowListResponseDto> followingList = followService.getAllFollowedList();
