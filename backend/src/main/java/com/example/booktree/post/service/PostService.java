@@ -208,9 +208,8 @@ public class PostService {
     }
 
     @Transactional
-    public Page<Post> getPostsFromFollowing(){
+    public Page<Post> getPostsFromFollowing(Pageable pageable){
 
-        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         //id가 userid인듯
         List<AllFollowListResponseDto> followingList = followService.getAllFollowedList();
