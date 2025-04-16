@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 export default function DetailPage() {
   // 라우터 초기화
@@ -10,9 +11,9 @@ export default function DetailPage() {
   // 게시물 데이터 상태
   const [post, setPost] = useState({
     id: 1,
-    title: "2024년 책 읽기 좋은 장소 추천",
+    title: "2025년 책 읽기 좋은 장소 추천",
     author: "이지은",
-    date: "2024.03.15",
+    date: "2025.04.16",
     views: 1234,
     likes: 56,
     content:
@@ -20,15 +21,15 @@ export default function DetailPage() {
     recommendations: [
       {
         title: "성수",
-        subItems: ["서울북카페 센터", "세이버얼웨어바"],
+        subItems: ["서울북카페 센터", "세이버앤페이버"],
       },
       {
-        title: "제주도 유채꽃밭",
-        subItems: ["카페도 유채꽃 추천", "산왕산 유채꽃길"],
+        title: "광진",
+        subItems: ["아차산 숲속도서관", "북카페림"],
       },
       {
-        title: "순천만 국가정원",
-        subItems: ["북꽃 정원", "습지 생태공원"],
+        title: "송파",
+        subItems: ["그래픽바이대신", "하우스서울"],
       },
     ],
   });
@@ -66,7 +67,7 @@ export default function DetailPage() {
   const [commentInput, setCommentInput] = useState("");
 
   // 댓글 제출 핸들러
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (commentInput.trim() === "") return;
 
@@ -179,14 +180,14 @@ export default function DetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <div className="rounded-lg overflow-hidden h-80">
               <img
-                src="https://images.unsplash.com/photo-1523481503411-dc6899fb4221"
+                src="https://pcmap.place.naver.com/restaurant/1572659650/photo?filterType=%EB%B0%A9%EB%AC%B8%EC%9E%90#"
                 alt="벚꽃 길"
                 className="w-full h-full object-cover rounded-lg"
               />
             </div>
             <div className="rounded-lg overflow-hidden h-80">
               <img
-                src="https://images.unsplash.com/photo-1609141236292-528b591df258"
+                src="https://pcmap.place.naver.com/place/1706923553/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202504162038&locale=ko&svcName=map_pcv5&searchText=%EA%B7%B8%EB%9E%98%ED%94%BD%EB%B0%94%EC%9D%B4%EB%8C%80%EC%8B%A0#"
                 alt="공원 벤치"
                 className="w-full h-full object-cover rounded-lg"
               />

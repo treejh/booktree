@@ -21,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -105,12 +107,11 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-
-    @GetMapping("/get/likePost/{postId}")
-    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
-        postService.deletePost(postId);
-        return ResponseEntity.noContent().build();
-    }
+//    @GetMapping("/get/likePost/{postId}")
+//    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
+//        postService.deletePost(postId);
+//        return ResponseEntity.noContent().build();
+//    }
 
 
 
@@ -140,17 +141,8 @@ public class PostController {
         return ResponseEntity.ok(response);
 
 
-
-
-
     }
 
-    // 블로그별로 게시글 목록 조회
-//    @GetMapping("/get/blog/{blogId}")
-//    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
-//        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
-//        return new ResponseEntity<>(posts, HttpStatus.OK);
-//    }
 
     @GetMapping("/get/blog/{blogId}")
     public ResponseEntity<Page<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId,
@@ -202,12 +194,29 @@ public class PostController {
     }
 
     @GetMapping("/get/followingPost")
-    public ResponseEntity<?> getFollowingPost() {
-        Page<Post> listPost = postService.getPostsFromFollowing();
+    public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
+                                               @RequestParam(name="size", defaultValue = "8") int size
+    ){
+        Page<Post> listPost = postService.getPostsFromFollowing(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @GetMapping("/get/likePost")
+    public ResponseEntity<?> getLikedPosts(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name="size", defaultValue = "8") int size
+    ) {
+
+        Page<Post> posts = postService.getPostsFromUserLike(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<PostFollowingPageDto> response = posts.map(PostFollowingPageDto::new);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+
+
 
 
 
