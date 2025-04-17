@@ -1,53 +1,18 @@
 "use client";
 
-import CategoryGrid from "./components/CategoryGrid";
-import Link from "next/link";
-import Header from "./components/Header";
+import CategoryGrid from './components/CategoryGrid';
+import Link from 'next/link';
+import Header from './components/Header';
+import CategoryNav from './components/CategoryNav';
 
 export default function Home() {
   console.log(process.env.NEXT_PUBLIC_API_BASE_URL);
 
   return (
     <div className="bg-[#F4F4F4] min-h-screen">
+      <CategoryNav currentSlug="" />
       <div className="w-full px-0 py-4">
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Link
-            href="/main/category/novel"
-            className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
-          >
-            소설
-          </Link>
-          <Link
-            href="/main/category/self-development"
-            className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
-          >
-            자기계발서
-          </Link>
-          <Link
-            href="/main/category/study"
-            className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
-          >
-            공부/자격
-          </Link>
-          <Link
-            href="/main/category/essay"
-            className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
-          >
-            에세이/일상
-          </Link>
-          <Link
-            href="/main/category/hobby"
-            className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
-          >
-            실용/취미
-          </Link>
-          <Link
-            href="/main/category/it"
-            className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
-          >
-            IT/컴퓨터
-          </Link>
-        </div>
+
 
         <div className="w-full h-96 rounded-lg overflow-hidden mb-12">
           <img
@@ -72,9 +37,7 @@ export default function Home() {
                 <span className="text-xs bg-[#2E804E] text-white px-2 py-1 rounded-md">
                   소설
                 </span>
-                <h3 className="font-medium mt-2 text-sm">
-                  미래를 바꾸는 순간들
-                </h3>
+                <h3 className="font-medium mt-2 text-sm">미래를 바꾸는 순간들</h3>
                 <p className="text-xs text-gray-500 mt-1">조회수 1,234</p>
               </div>
             </div>
@@ -91,9 +54,7 @@ export default function Home() {
                 <span className="text-xs bg-[#2E804E] text-white px-2 py-1 rounded-md">
                   자기계발서
                 </span>
-                <h3 className="font-medium mt-2 text-sm">
-                  성공하는 습관의 비밀
-                </h3>
+                <h3 className="font-medium mt-2 text-sm">성공하는 습관의 비밀</h3>
                 <p className="text-xs text-gray-500 mt-1">조회수 987</p>
               </div>
             </div>
@@ -110,9 +71,7 @@ export default function Home() {
                 <span className="text-xs bg-[#2E804E] text-white px-2 py-1 rounded-md">
                   공부/자격
                 </span>
-                <h3 className="font-medium mt-2 text-sm">
-                  효율적인 학습법 가이드
-                </h3>
+                <h3 className="font-medium mt-2 text-sm">효율적인 학습법 가이드</h3>
                 <p className="text-xs text-gray-500 mt-1">조회수 856</p>
               </div>
             </div>
