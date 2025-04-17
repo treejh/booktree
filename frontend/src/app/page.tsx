@@ -8,41 +8,41 @@ export default function Home() {
   console.log(process.env.NEXT_PUBLIC_API_BASE_URL);
 
   return (
-    <>
+    <div className="bg-[#F4F4F4] min-h-screen">
       <div className="w-full px-0 py-4">
         <div className="flex flex-wrap gap-2 mb-6">
           <Link 
-            href="/"
+            href="/main/category/novel"
             className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
           >
             소설
           </Link>
           <Link 
-            href="/"
+            href="/main/category/self-development"
             className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
           >
             자기계발서
           </Link>
           <Link 
-            href="/"
+            href="/main/category/study"
             className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
           >
             공부/자격
           </Link>
           <Link 
-            href="/"
+            href="/main/category/essay"
             className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
           >
             에세이/일상
           </Link>
           <Link 
-            href="/"
+            href="/main/category/hobby"
             className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
           >
             실용/취미
           </Link>
           <Link 
-            href="/"
+            href="/main/category/it"
             className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
           >
             IT/컴퓨터
@@ -118,6 +118,6 @@ export default function Home() {
           <CategoryGrid />
         </section>
       </div>
-    </>
+    </div>
   );
 }
