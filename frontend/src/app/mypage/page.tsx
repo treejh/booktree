@@ -62,7 +62,7 @@ export default function MyPage() {
             </div>
           </div>
           <button
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="px-4 py-2 bg-[#2E804E] text-white rounded-md hover:bg-[#246A40]"
             onClick={() => setIsEditing(!isEditing)}
           >
             프로필 수정
@@ -88,7 +88,7 @@ export default function MyPage() {
                   onClick={() => {
                     setIsEditing(false);
                   }}
-                  className="px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700"
+                  className="px-3 py-1 text-sm text-white bg-[#2E804E] rounded-md hover:bg-[#246A40]"
                 >
                   저장
                 </button>
