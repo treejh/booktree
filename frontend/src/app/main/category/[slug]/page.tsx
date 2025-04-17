@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import CategoryNav from '@/app/components/CategoryNav';
 
 // 카테고리별 데이터 (실제로는 API에서 가져올 것입니다)
 const categoryData = {
@@ -310,47 +311,10 @@ const CategoryDetailPage = () => {
   const popularBooks = categoryData[slug as keyof typeof categoryData] || [];
 
   return (
-    <div className="w-full px-5 py-4">
-      <div className="flex flex-wrap gap-2 mb-6 bg-white p-4 rounded-lg shadow-sm">
-        <Link 
-          href="/main/category/novel"
-          className={`py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm ${slug === 'novel' ? 'border-black font-medium' : ''}`}
-        >
-          소설
-        </Link>
-        <Link 
-          href="/main/category/self-development"
-          className={`py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm ${slug === 'self-development' ? 'border-black font-medium' : ''}`}
-        >
-          자기계발서
-        </Link>
-        <Link 
-          href="/main/category/study"
-          className={`py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm ${slug === 'study' ? 'border-black font-medium' : ''}`}
-        >
-          공부/자격
-        </Link>
-        <Link 
-          href="/main/category/essay"
-          className={`py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm ${slug === 'essay' ? 'border-black font-medium' : ''}`}
-        >
-          에세이/일상
-        </Link>
-        <Link 
-          href="/main/category/hobby"
-          className={`py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm ${slug === 'hobby' ? 'border-black font-medium' : ''}`}
-        >
-          실용/취미
-        </Link>
-        <Link 
-          href="/main/category/it"
-          className={`py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm ${slug === 'it' ? 'border-black font-medium' : ''}`}
-        >
-          IT/컴퓨터
-        </Link>
-      </div>
+    <div className="w-full">
+      <CategoryNav currentSlug={slug} />
       
-      <h1 className="text-3xl font-bold mb-8">{getCategoryTitle()}</h1>
+      <h1 className="text-3xl font-bold mb-8 mt-6">{getCategoryTitle()}</h1>
       
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-grow lg:w-2/3">
