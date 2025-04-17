@@ -11,7 +11,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center pl-5 cursor-pointer">
             <img
-              src="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree.png"
+              src="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BooktreeLogo.png"
               alt="책 아이콘"
               className="w-9 h-9 mr-2"
             />
