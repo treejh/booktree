@@ -31,7 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Header /> {/* 👈 공통 헤더 */}
-        <main className="w-full max-w-full px-5">{children}</main>
+        <main className="w-full max-w-full">{children}</main>
       </body>
     </html>
   );

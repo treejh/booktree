@@ -15,7 +15,7 @@ export default function Header() {
             />
             <h1 className="text-xl font-bold">BookTree</h1>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <div className="relative flex items-center border border-gray-200 rounded-md overflow-hidden">
               <select className="appearance-none bg-white pl-4 pr-9 py-2 text-sm outline-none cursor-pointer">
@@ -25,12 +25,24 @@ export default function Header() {
                 <option>작성자</option>
               </select>
               <div className="absolute right-3 pointer-events-none">
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 5L9 1" stroke="#666" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  width="10"
+                  height="6"
+                  viewBox="0 0 10 6"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M1 1L5 5L9 1"
+                    stroke="#666"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
             </div>
-            
+
             <div className="flex items-center border border-gray-200 rounded-md overflow-hidden">
               <button className="px-3 bg-white">
                 <svg
@@ -55,7 +67,7 @@ export default function Header() {
               />
             </div>
           </div>
-          
+
           <div className="flex items-center pr-2">
             <button
               className="px-4 py-2 mr-2 text-sm border border-gray-200 rounded-md hover:bg-gray-50"

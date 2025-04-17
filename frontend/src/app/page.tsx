@@ -60,10 +60,7 @@ export default function Home() {
         <section className="mb-12">
           <h2 className="text-xl font-semibold mb-6">인기 게시물</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link
-              href="/detail/1"
-              className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-            >
+            <div className="rounded-lg overflow-hidden shadow-sm">
               <div className="relative h-48 bg-gray-200">
                 <img
                   src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c"
@@ -76,11 +73,11 @@ export default function Home() {
                   소설
                 </span>
                 <h3 className="font-medium mt-2 text-sm">
-                  2024년 책 읽기 좋은 장소 추천
+                  미래를 바꾸는 순간들
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">조회수 1,234</p>
               </div>
-            </Link>
+            </div>
 
             <div className="rounded-lg overflow-hidden shadow-sm">
               <div className="relative h-48 bg-gray-200">
