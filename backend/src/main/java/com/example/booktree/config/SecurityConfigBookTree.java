@@ -80,8 +80,6 @@ public class SecurityConfigBookTree {
                         "/api/v1/posts/get/likePost","/api/v1/posts/get/followingPost",
                                "/api/v1/posts/delete/**" )
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .anyRequest().authenticated()
-
                         //메인 카테고리 /api/v1/maincategories
                         .requestMatchers("/api/v1/maincategories/get"
 
@@ -161,6 +159,7 @@ public class SecurityConfigBookTree {
                         .requestMatchers(
                                 "/api/v1/blogs/get"
                         ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(
                         oauth2Login -> {
