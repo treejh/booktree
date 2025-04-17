@@ -201,6 +201,7 @@ public class SecurityConfigBookTree {
         config.addAllowedOrigin("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
 
         source.registerCorsConfiguration("/**",config);
         return source;

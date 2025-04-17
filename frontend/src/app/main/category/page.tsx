@@ -29,7 +29,46 @@ const CategoryPage = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="w-full px-4 py-2">
+      <div className="flex flex-wrap gap-2 mb-8">
+        <Link 
+          href="/"
+          className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
+        >
+          소설
+        </Link>
+        <Link 
+          href="/"
+          className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
+        >
+          자기계발서
+        </Link>
+        <Link 
+          href="/"
+          className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
+        >
+          공부/자격
+        </Link>
+        <Link 
+          href="/"
+          className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
+        >
+          에세이/일상
+        </Link>
+        <Link 
+          href="/"
+          className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
+        >
+          실용/취미
+        </Link>
+        <Link 
+          href="/"
+          className="py-2 px-6 bg-white rounded-md text-center hover:bg-gray-100 border border-gray-200 shadow-sm flex-1 min-w-24 text-sm"
+        >
+          IT/컴퓨터
+        </Link>
+      </div>
+
       <h1 className="text-3xl font-bold mb-8">자기계발서</h1>
       
       <div className="flex flex-col lg:flex-row gap-8">
