@@ -53,7 +53,7 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // Read (본인 정보 수정할때 사용)
+    // Read (본인 정보 수정할때 사용) - 토큰을 사용하여 유저 조회
     @GetMapping("/get/token")
     public ResponseEntity getUserByToken() {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.findByToken());
