@@ -80,6 +80,7 @@ public class SecurityConfigBookTree {
                         "/api/v1/posts/get/likePost","/api/v1/posts/get/followingPost",
                                "/api/v1/posts/delete/**" )
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
                         //메인 카테고리 /api/v1/maincategories
                         .requestMatchers("/api/v1/maincategories/get"
 
@@ -197,7 +198,8 @@ public class SecurityConfigBookTree {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOrigin("*");
+        //config.addAllowedOrigin("*");
+        config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
