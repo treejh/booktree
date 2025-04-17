@@ -2,19 +2,21 @@
 
 "use client";
 
+import Link from 'next/link';
+
 export default function Header() {
   return (
     <header className="w-full border-b border-gray-200 bg-white">
       <div className="w-full px-1 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center pl-5">
+          <Link href="/" className="flex items-center pl-5">
             <img
               src="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree.png"
               alt="책 아이콘"
               className="w-9 h-9 mr-2"
             />
             <h1 className="text-xl font-bold">BookTree</h1>
-          </div>
+          </Link>
           
           <div className="flex items-center space-x-3">
             <div className="relative flex items-center border border-gray-200 rounded-md overflow-hidden">
