@@ -60,7 +60,11 @@ export default function LoginPage() {
                                     </label>
                                 </div>
                                 <div className="text-sm">
-                                    <Link href="/findAccount" className="text-gray-700">
+                                    <Link href="/account/findAccount/findId" className="text-gray-700">
+                                        이메일 찾기
+                                    </Link>
+                                    /
+                                    <Link href="/account/findAccount/findPassword" className="text-gray-700">
                                         비밀번호 찾기
                                     </Link>
                                 </div>
