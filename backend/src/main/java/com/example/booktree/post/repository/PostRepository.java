@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.util.Optional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,5 +53,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Page<Post> findByAuthorContainingIgnoreCase(String author, Pageable pageable); // 작성자 검색
 
     Page<Post> findByBookContainingIgnoreCase(String book, Pageable pageable); // 책 제목 검색
+
+
+
 
 }

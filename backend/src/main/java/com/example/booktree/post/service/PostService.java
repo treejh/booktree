@@ -101,6 +101,12 @@ public class PostService {
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         }
 
+        if (!blog.getUser().getId().equals(user.getId())) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
+        }
+
+
+
         Post post = Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
@@ -140,6 +146,13 @@ public class PostService {
         if (!post.getUser().getId().equals(userId)) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_POST_OWNER);
         }
+
+        if (!post.getBlog().getUser().getId().equals(userId)) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
+        }
+
+
+
 
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
@@ -186,6 +199,10 @@ public class PostService {
 
         if (!post.getUser().getId().equals(userId)) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_POST_OWNER);
+        }
+
+        if (!post.getBlog().getUser().getId().equals(userId)) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
         }
 
         for (Image image : post.getImageList()) {
@@ -248,10 +265,30 @@ public class PostService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
 
-    // 게시글 아이디로 해당 게시글 조회
+    public void increaseViewCount(Post post) {
+        post.setView(post.getView() + 1);
+        postRepository.save(post);
+    }
+
+
+    // 게시글 아이디로 해당 게시글 조회 (조회수 증가)
+    @Transactional
     public Post findPostById(Long postId) {
-        return postRepository.findById(postId)
+
+
+
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+
+        increaseViewCount(post);
+
+
+
+
+
+        return post;
+
+
     }
 
     // 블로그별로 게시글 목록 조회

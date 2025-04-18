@@ -49,7 +49,7 @@ public class Post extends Auditable {
     @JoinColumn(name = "blog_id", nullable = false)
     private Blog blog; //블로그아이디
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user; //회원아이디
 
