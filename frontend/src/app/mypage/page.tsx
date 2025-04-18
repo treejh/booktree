@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // useRouter import 추가
 
 interface Post {
   id: number;
@@ -11,6 +12,8 @@ interface Post {
 }
 
 export default function MyPage() {
+  const router = useRouter(); // router 추가
+
   const [posts] = useState<Post[]>([
     {
       id: 1,
@@ -39,12 +42,30 @@ export default function MyPage() {
   const [introduction, setIntroduction] = useState(
     "안녕하세요! 제 블로그에 오신 것을 환영합니다. 여기서는 일상과 관심사를 공유하고 있습니다."
   );
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(128); // 상태 추가
+
+  // 게시물 클릭 핸들러 추가
+  const handlePostsClick = () => {
+    router.push("/detail");
+  };
+
+  // 팔로잉 클릭 핸들러 추가
+  const handleFollowingClick = () => {
+    router.push("/follow");
+  };
+
+  // toggleFollow 함수 수정
+  const toggleFollow = () => {
+    setIsFollowing(!isFollowing);
+    setFollowerCount((prev) => (isFollowing ? prev - 1 : prev + 1));
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      {/* 프로필 섹션 */}
-      <div className="bg-white rounded-lg p-6 mb-4 shadow-sm">
-        <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 py-4 max-w-5xl">
+      {/* 프로필과 통계를 포함하는 섹션 */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
+        <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
           <div className="flex items-center">
             <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden mr-4">
               <img
@@ -61,14 +82,52 @@ export default function MyPage() {
               <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
             </div>
           </div>
-          <button
-            className="px-4 py-2 bg-[#2E804E] text-white rounded-md hover:bg-[#246A40]"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            프로필 수정
-          </button>
+          <div className="flex space-x-2">
+            <button
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={toggleFollow}
+              className="p-2 transition-colors duration-200 cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-5 w-5 ${
+                  isFollowing ? "text-red-500 fill-current" : "text-gray-400"
+                }`}
+                viewBox="0 0 24 24"
+                fill={isFollowing ? "currentColor" : "none"} // fill 속성 수정
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div className="mt-4">
+
+        {/* 소개글 */}
+        <div className="mb-6 pb-6 border-b border-gray-200">
           {isEditing ? (
             <div className="flex flex-col gap-2">
               <textarea
@@ -88,7 +147,7 @@ export default function MyPage() {
                   onClick={() => {
                     setIsEditing(false);
                   }}
-                  className="px-3 py-1 text-sm text-white bg-[#2E804E] rounded-md hover:bg-[#246A40]"
+                  className="px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700"
                 >
                   저장
                 </button>
@@ -98,28 +157,36 @@ export default function MyPage() {
             <p className="text-gray-600">{introduction}</p>
           )}
         </div>
-      </div>
 
-      {/* 통계 섹션 */}
-      <div className="flex gap-4 mb-4">
-        <div className="flex-1 bg-white p-6 rounded-lg shadow-sm text-center">
-          <h3 className="text-gray-500 mb-2">게시물</h3>
-          <p className="text-2xl font-bold">42</p>
-        </div>
-        <div className="flex-1 bg-white p-6 rounded-lg shadow-sm text-center">
-          <h3 className="text-gray-500 mb-2">팔로잉</h3>
-          <p className="text-2xl font-bold">128</p>
-        </div>
-        <div className="flex-1 bg-white p-6 rounded-lg shadow-sm text-center">
-          <h3 className="text-gray-500 mb-2">팔로워</h3>
-          <p className="text-2xl font-bold">128</p>
+        {/* 통계 섹션 */}
+        <div className="grid grid-cols-3 divide-x divide-gray-200">
+          <div
+            className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+            onClick={handlePostsClick}
+          >
+            <h3 className="text-gray-500 mb-2">게시물</h3>
+            <p className="text-2xl font-bold">42</p>
+          </div>
+          <div
+            className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+            onClick={handleFollowingClick}
+          >
+            <h3 className="text-gray-500 mb-2">팔로잉</h3>
+            <p className="text-2xl font-bold">128</p>
+          </div>
+          <div className="text-center px-4">
+            <h3 className="text-gray-500 mb-2">팔로워</h3>
+            <p className="text-2xl font-bold">{followerCount}</p>{" "}
+            {/* 통계 섹션의 팔로워 부분 수정 */}
+          </div>
         </div>
       </div>
 
       {/* 카테고리 섹션 */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-        <h2 className="text-lg font-bold p-6 border-b">카테고리</h2>
-        {/* divide-y 클래스를 제거하고 일반 div로 변경 */}
+        <h2 className="text-lg font-bold p-6 border-b border-gray-200">
+          카테고리
+        </h2>
         <div>
           {posts.map((post) => (
             <div
