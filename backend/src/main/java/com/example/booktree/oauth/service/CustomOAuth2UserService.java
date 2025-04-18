@@ -56,6 +56,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email =providerTypeCode+"__"+oauthId;
 
         Optional<User> validUser = userService.findByProviderAndUuidAndSocialId(oauthId,providerTypeCode,nickname);
+        System.out.println(validUser.get().getEmail());
 
         //만약 회원이 존재한다면 -> 회원가입이 된 사용자라면 ?
         User user;

@@ -1,7 +1,6 @@
 package com.example.booktree.post.service;
 
 import com.example.booktree.LikePost.repository.LikePostRepository;
-import com.example.booktree.LikePost.service.LikePostService;
 import com.example.booktree.blog.entity.Blog;
 
 import com.example.booktree.blog.service.BlogService;
@@ -19,12 +18,10 @@ import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import jakarta.transaction.Transactional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

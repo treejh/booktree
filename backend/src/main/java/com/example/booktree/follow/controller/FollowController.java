@@ -5,7 +5,6 @@ import com.example.booktree.follow.dto.request.UnFollowRequestDto;
 import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
 import com.example.booktree.follow.dto.response.FollowCountDto;
 import com.example.booktree.follow.service.FollowService;
-import com.example.booktree.user.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

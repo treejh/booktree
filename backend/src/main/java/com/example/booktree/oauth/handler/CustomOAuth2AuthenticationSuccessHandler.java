@@ -5,11 +5,9 @@ package com.example.booktree.oauth.handler;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.jwt.util.JwtTokenizer;
-import com.example.booktree.oauth.app.AppConfig;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
-import com.example.booktree.user.service.TokenService;
-import com.example.booktree.user.service.UserService;
+import com.example.booktree.jwt.service.TokenService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -48,16 +46,10 @@ public class CustomOAuth2AuthenticationSuccessHandler extends SavedRequestAwareA
      //토큰 으로 쿠키 발급
      tokenService.makeAuthCookies(user);
      String redirectUrl = request.getParameter("state");
-     //System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
 
 
      //프론트 주소로 redirect
      response.sendRedirect(redirectUrl);
-
-
-
-     //System.out.println("확인 !!!!!!!!!!! redirectUrl"+redirectUrl);
-
 
 
     }
