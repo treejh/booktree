@@ -1,10 +1,10 @@
 package com.example.booktree.user.service;
 
 
-import com.example.booktree.blog.entity.Blog;
 import com.example.booktree.enums.RoleType;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.role.entity.Role;
 import com.example.booktree.role.repository.RoleRepository;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
@@ -19,14 +19,14 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -42,6 +42,7 @@ public class UserService {
 
     public User findByToken() {
         Long userId= tokenService.getIdFromToken();
+        log.info("findByToken" + userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }

@@ -57,6 +57,7 @@ public class UserController {
     @GetMapping("/get/token")
     public ResponseEntity getUserByToken() {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.findByToken());
+        System.out.println(response);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -163,7 +164,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Authorization header is missing or invalid");
         }
 
-        String token = authorization.substring(7); // "Bearer " 제거
+        //String token = authorization.substring(7); // "Bearer " 제거
 
         // accessToken 쿠키 삭제
         Cookie accessTokenCookie = new Cookie("accessToken", null);

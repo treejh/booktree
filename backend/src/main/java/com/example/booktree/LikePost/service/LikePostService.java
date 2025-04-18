@@ -7,12 +7,11 @@ import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

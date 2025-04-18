@@ -116,10 +116,15 @@ public class PostController {
 
 
     // 게시글 아이디로 해당 게시글 조회
-    @Transactional
     @GetMapping("/get/{postId}")
     public ResponseEntity<PostDetailResponseDto> getPostById(@PathVariable("postId") Long postId) {
         Post post = postService.findPostById(postId);
+
+
+
+
+
+
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
                 .postId(post.getId())
@@ -130,13 +135,14 @@ public class PostController {
                         .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
                         .toList())
 
-                .viewCount(post.getView() + 1)
+                .viewCount(post.getView())
 
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
 
+        popularPostService.increasePopularity(postId);
 
         return ResponseEntity.ok(response);
 
@@ -157,6 +163,8 @@ public class PostController {
     @GetMapping("/get/user/{userId}")
     public ResponseEntity<List<PostResponseDto>> getPostsByUser(@PathVariable("userId") Long userId) {
         List<PostResponseDto> posts = postService.getPostsByUser(userId);
+
+
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 

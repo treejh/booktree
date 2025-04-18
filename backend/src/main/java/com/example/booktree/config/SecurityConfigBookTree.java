@@ -70,7 +70,7 @@ public class SecurityConfigBookTree {
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         //게시글 api/v1/posts
-                        .requestMatchers("/api/v1/users/get/profile/**","api/v1/posts/search"
+                        .requestMatchers("/api/v1/users/get/profile/**","/api/v1/posts/search"
                                 ,"api/v1/posts/get/**"
 
 
@@ -159,6 +159,11 @@ public class SecurityConfigBookTree {
                         //실시간 전체 인기 게시글 가져오기
                         .requestMatchers(
                                 "/api/v1/blogs/get"
+                        ).permitAll()
+
+                        //실시간 조회수순 인기 게시글 가져오기
+                        .requestMatchers(
+                                "/api/v1/popular/get/posts"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
