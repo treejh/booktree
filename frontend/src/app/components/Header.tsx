@@ -10,7 +10,7 @@ export default function Header() {
     const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
 
     return (
-        <header className="w-full border-b border-gray-200 bg-white">
+        <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white">
             <div className="w-full px-1 py-3">
                 <div className="flex items-center justify-between">
                     <Link href="/" className="flex items-center pl-5 cursor-pointer">
