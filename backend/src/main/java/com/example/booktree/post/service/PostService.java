@@ -105,7 +105,7 @@ public class PostService {
         }
 
         if (!blog.getUser().getId().equals(user.getId())) {
-            throw new BusinessLogicException(ExceptionCode.POST_NOT_OWNER);
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
         }
 
 
@@ -149,6 +149,13 @@ public class PostService {
         if (!post.getUser().getId().equals(userId)) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_POST_OWNER);
         }
+
+        if (!post.getBlog().getUser().getId().equals(userId)) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
+        }
+
+
+
 
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
@@ -195,6 +202,10 @@ public class PostService {
 
         if (!post.getUser().getId().equals(userId)) {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_POST_OWNER);
+        }
+
+        if (!post.getBlog().getUser().getId().equals(userId)) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
         }
 
         for (Image image : post.getImageList()) {
