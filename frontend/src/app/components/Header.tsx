@@ -76,7 +76,7 @@ export default function Header() {
                     {/* 🔐 로그인 상태 */}
                     {isLogin ? (
                         <div className="flex items-center space-x-3 pr-5">
-                            <span className="text-sm">{loginUser.nickname}님</span>
+                            <span className="text-sm">{loginUser.username}님</span>
                             <button
                                 onClick={logoutAndHome}
                                 className="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"

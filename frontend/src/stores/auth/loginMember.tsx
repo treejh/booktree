@@ -1,11 +1,13 @@
-import { createContext, useState, use } from "react";
+import { createContext, useContext, useState, use } from "react";
 import { useRouter } from "next/navigation";
 
 type User = {
   id: number;
+  email: string;
+  phoneNumber: string;
+  username: string;
   createDate: string;
   modifyDate: string;
-  nickname: string;
 };
 
 export const LoginUserContext = createContext<{
@@ -29,7 +31,9 @@ function createEmptyUser(): User {
     id: 0,
     createDate: "",
     modifyDate: "",
-    nickname: "",
+    email: "",
+    phoneNumber: "",
+    username: "",
   };
 }
 
@@ -82,5 +86,5 @@ export function useLoginUser() {
 }
 
 export function useGlobalLoginUser() {
-  return use(LoginUserContext);
+  return useContext(LoginUserContext);
 }

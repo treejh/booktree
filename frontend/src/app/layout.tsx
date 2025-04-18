@@ -25,7 +25,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="ko" className="bg-[#F4F4F4]">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F4F4F4]`}>
                 <ClientLayout>
-                    <Header /> {/* 👈 공통 헤더 */}
                     <main className="w-full max-w-full px-5">{children}</main>
                 </ClientLayout>
             </body>
