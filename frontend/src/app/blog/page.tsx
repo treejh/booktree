@@ -104,7 +104,7 @@ export default function BlogPage() {
           </section>
 
           {/* 네비게이션 */}
-          <nav className="border-b mb-8">
+          <nav className="border-b border-gray-200 mb-8">
             <ul className="flex gap-8">
               <li className="pb-2 border-b-2 border-gray-900">
                 <Link href="/blog" className="text-gray-900">
@@ -136,7 +136,7 @@ export default function BlogPage() {
             {posts.map((post) => (
               <article
                 key={post.id}
-                className="border rounded-lg p-6 hover:shadow-md transition-shadow"
+                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="bg-gray-100 px-2 py-1 rounded text-sm">
@@ -179,7 +179,7 @@ export default function BlogPage() {
       <aside className="w-64 flex-shrink-0 mt-100">
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4">태그 목록</h2>
-          <div className="border-b border-gray-400 mb-4"></div>
+          <div className="border-b border-gray-200 mb-4"></div>
           <ul className="space-y-2">
             {categories.map((category) => (
               <li key={category.name}>
