@@ -63,7 +63,7 @@ public class CategoryController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/create/")
+    @PostMapping("/create")
     @Operation(
             summary = "카테고리 생성 기능",
             description = "입력된 내용을 바탕으로 카테고리 생성 메서드",

@@ -2,9 +2,16 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
+
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
 import com.example.booktree.post.dto.response.PostFollowingPageDto;
+
+
+import com.example.booktree.post.dto.response.PostDetailResponseDto;
+import com.example.booktree.post.dto.response.PostFollowingPageDto;
+
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
@@ -14,7 +21,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +36,11 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PopularPostService popularPostService;
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
-    public ResponseEntity<?> getPostByMaincCategory(@PathVariable Long maincategoryId,
+    public ResponseEntity<?> getPostByMainCategory(@PathVariable Long maincategoryId,
                                                     @RequestParam(name = "page", defaultValue = "1") int page,
                                                     @RequestParam(name="size", defaultValue = "8") int size,
                                                     @PathVariable int value) {
@@ -97,20 +107,13 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
+//    @GetMapping("/get/likePost/{postId}")
+//    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
+//        postService.deletePost(postId);
+//        return ResponseEntity.noContent().build();
+//    }
 
-    @GetMapping("/get/likePost/{postId}")
-    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
-        postService.deletePost(postId);
-        return ResponseEntity.noContent().build();
-    }
 
-    @GetMapping("/get/followingPost")
-    public ResponseEntity<?> getFollowingPost() {
-        Page<Post> listPost = postService.getPostsFromFollowing();
-        Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 
     // 게시글 아이디로 해당 게시글 조회
     @Transactional
@@ -126,24 +129,20 @@ public class PostController {
                 .imageUrls(post.getImageList().stream()
                         .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
                         .toList())
-                .viewCount(post.getView()+1)
+
+                .viewCount(post.getView() + 1)
+
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
 
-        return ResponseEntity.ok(response);
 
+        return ResponseEntity.ok(response);
 
 
     }
 
-    // 블로그별로 게시글 목록 조회
-//    @GetMapping("/get/blog/{blogId}")
-//    public ResponseEntity<List<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId) {
-//        List<PostResponseDto> posts = postService.getPostsByBlog(blogId);
-//        return new ResponseEntity<>(posts, HttpStatus.OK);
-//    }
 
     @GetMapping("/get/blog/{blogId}")
     public ResponseEntity<Page<PostResponseDto>> getPostsByBlog(@PathVariable("blogId") Long blogId,
@@ -170,6 +169,52 @@ public class PostController {
         Page<PostResponseDto> posts = postService.getPopularPostsByBlog(blogId, page, size);
         return ResponseEntity.ok(posts);
     }
+
+
+
+
+    // 게시글 검색 : /api/v1/posts/search?type=title&keyword=Java&page=1&size=10
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostResponseDto>> searchPosts(
+            @RequestParam("type") String type,
+            @RequestParam("keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        // 최신순
+        PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
+        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+                .title(post.getTitle())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .postId(post.getId())
+                .viewCount(post.getView())
+                .build());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get/followingPost")
+    public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
+                                               @RequestParam(name="size", defaultValue = "8") int size
+    ){
+        Page<Post> listPost = postService.getPostsFromFollowing(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<PostFollowingPageDto> response = listPost.map(PostFollowingPageDto::new);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get/likePost")
+    public ResponseEntity<?> getLikedPosts(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name="size", defaultValue = "8") int size
+    ) {
+
+        Page<Post> posts = postService.getPostsFromUserLike(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<PostFollowingPageDto> response = posts.map(PostFollowingPageDto::new);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
 
 
 

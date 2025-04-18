@@ -1,5 +1,7 @@
 package com.example.booktree.post.service;
 
+import com.example.booktree.LikePost.repository.LikePostRepository;
+import com.example.booktree.LikePost.service.LikePostService;
 import com.example.booktree.blog.entity.Blog;
 
 import com.example.booktree.blog.service.BlogService;
@@ -43,14 +45,17 @@ import com.example.booktree.utils.S3Uploader;
 public class PostService {
 
     private final S3Uploader s3Uploader;
+
     private final PostRepository postRepository;
     private final MainCategortService mainCategortService;
-    private final TokenService tokenService;
-    private final UserService userService;
-    private final BlogService blogService;
     private final CategoryRepository categoryRepository;
     private final MainCategoryRepository mainCategoryRepository;
     private final ImageRepository imageRepository;
+    private final LikePostRepository likePostRepository;
+
+    private final TokenService tokenService;
+    private final UserService userService;
+    private final BlogService blogService;
     private final FollowService followService;
 
 
@@ -70,7 +75,7 @@ public class PostService {
         return postRepository.findByMainCategoryId(mainCategoryId, pageable);
     }
 
-    // 일주일 동안 조회수 높은 게시글 가져오기
+    // 메인 카테고리 별 일주일 동안 조회수 높은 게시글 가져오기
     public Page<Post> getPostByViews(Pageable pageable, Long mainCategoryId) {
         // 메인 카테고리가 없을 시 예외처리
         if (!mainCategortService.validateMainCate(mainCategoryId)) {
@@ -169,6 +174,13 @@ public class PostService {
     }
 
     @Transactional
+    public void postViewUpdate(Long postId) {
+        Post updatePost = findPostById(postId);
+        updatePost.setView(updatePost.getView() + 1);
+        postRepository.save(updatePost);
+    }
+
+    @Transactional
     public void deletePost(Long postId) {
         Long userId = tokenService.getIdFromToken();
 
@@ -187,15 +199,26 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    @Transactional
-    public Page<Post> getPostsFromFollowing(){
-        Long userId = tokenService.getIdFromToken();
+    // 검색 기능 : searchType은 title, author, book 중 하나 선택
+    public Page<Post> searchPosts(String searchType, String keyword, Pageable pageable) {
+        if ("title".equalsIgnoreCase(searchType)) {
+            return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else if ("author".equalsIgnoreCase(searchType)) {
+            return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
+        } else if ("book".equalsIgnoreCase(searchType)) {
+            return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
+        } else {
+            throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
+        }
+    }
 
-        Pageable pageable = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
+    //팔로잉 한 유저들의 게시글을 최신순으로 가져오기
+    @Transactional
+    public Page<Post> getPostsFromFollowing(Pageable pageable){
 
 
         //id가 userid인듯
-        List<AllFollowListResponseDto> followingList = followService.getAllFollowedList(userId);
+        List<AllFollowListResponseDto> followingList = followService.getAllFollowedList();
         List<Long> followingUserIds = followingList.stream()
                 .map(AllFollowListResponseDto::getId)
                 .toList();
@@ -208,15 +231,25 @@ public class PostService {
 
     }
 
+    //사용자가 좋아요 누른 게시글 가져오기
+    @Transactional
+    public Page<Post> getPostsFromUserLike(Pageable pageable){
+        Long userId = tokenService.getIdFromToken();
+        Page<Post> likePostList = likePostRepository.findLikedPostsByUser(userId,pageable);
 
+        if (likePostList.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        return likePostList;
+
+    }
 
     // 게시글 좋아요에 service주입용 추가
     public Post findById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
-
-
 
     // 게시글 아이디로 해당 게시글 조회
     public Post findPostById(Long postId) {
@@ -268,6 +301,7 @@ public class PostService {
         return response;
     }
 
+
     // 최신순
     public Page<PostResponseDto> getPagedPostsByBlog(Long blogId, int page, int size) {
 
@@ -284,8 +318,6 @@ public class PostService {
         Page<Post> posts = postRepository.findByBlogIdOrderByCreatedAtDesc(blogId, pageable);
 
         List<Post> debugList = postRepository.findByBlogId(2L);
-
-
 
 
         return posts.map(post -> PostResponseDto.builder()
@@ -323,6 +355,9 @@ public class PostService {
 
 
 
+    public List<Post> findAllById(List<Long> allId){
+        return postRepository.findAllById(allId);
+    }
 
 
 }

@@ -47,25 +47,133 @@ public class SecurityConfigBookTree {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/h2-console/**",
-                                "/api/users"
+                                "/api/users",
+                                "/api/v1/users/find/**",
+                                "/api/v1/users/get/profile/**"
 
                         ).permitAll()
-                        .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch/**", "/api/v1/posts/delete/**", "/api/v1/likeposts/click/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .requestMatchers("/api/v1/users/get", "/api/v1/users/create","/api/v1/users/login", "/api/v1/likeposts/**", "/api/v1/posts/get/**", "/api/v1/posts/get/blog/**", "api/v1/posts/get/blog/popular/**").permitAll()
+                        //회원 /api/v1/users
+                        .requestMatchers("/api/v1/users/get/profile/**", "/api/v1/users/create"
+                                ,"/api/v1/users/login","/api/v1/users/find/**"
+
+                        ).permitAll()
+                        .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
+                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
+                                "/api/v1/users/delete/**")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //대댓글 /api/v1/replies
+                        .requestMatchers("/api/v1/replies/get"
+
+                        ).permitAll()
+                        .requestMatchers("/api/v1/replies/create","/api/v1/replies/update/**","/api/v1/replies/delete/**")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //게시글 api/v1/posts
+                        .requestMatchers("/api/v1/users/get/profile/**","api/v1/posts/search"
+                                ,"api/v1/posts/get/**"
+
+
+                        ).permitAll()
+                        .requestMatchers("/api/v1/posts/create", "/api/v1/posts/patch/**",
+                                "/api/v1/posts/delete/**", "/api/v1/likeposts/click/**",
+                        "/api/v1/posts/get/likePost","/api/v1/posts/get/followingPost",
+                               "/api/v1/posts/delete/**" )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //메인 카테고리 /api/v1/maincategories
+                        .requestMatchers("/api/v1/maincategories/get"
+
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/maincategories/create","/api/v1/maincategories/patch/**"
+                                ,"/api/v1/maincategories/delete/**"
+                        )
+                        .hasAnyAuthority("ROLE_ADMIN")
+
+
+                        //게시글 좋아요 /api/v1/likeposts
+                        .requestMatchers("/api/v1/likeposts/get/**"
+
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/likeposts/click/**"
+                        )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //대댓글 좋아요 /api/v1/like-replies
+                        .requestMatchers(
+                                "/api/v1/like-replies/create"
+                        )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //댓글 좋아요 /api/v1/like-comments
+                        .requestMatchers(
+                                "/api/v1/like-comments/create"
+                        )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //팔로우 /api/v1/follow/create
+                        .requestMatchers(
+                                "/api/v1/follow/create/follow"
+                        )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+
+                        //댓글 /api/v1/follow/create
+                        .requestMatchers("/api/v1/comments/get"
+
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/comments/create/**",
+                                "/api/v1/comments/update/**",
+                                "/api/v1/comments/delete/**"
+                        )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //카테고리 (개인)
+                        .requestMatchers(
+                            "/api/v1/categories/get/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/categories/create",
+                                "/api/v1/categories/patch/**",
+                                "/api/v1/categories/delete/**"
+
+                        )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //블로그 컨트롤러
+                        .requestMatchers(
+                            "/api/v1/blogs/get"
+                        ).permitAll()
+                        .requestMatchers(
+                            "/api/v1/blogs/create/**",
+                                "/api/v1/blogs/patch/**",
+                                "/api/v1/blogs/delete",
+                                "/api/v1/blogs/get/token"
+
+                        )
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        //실시간 전체 인기 게시글 가져오기
+                        .requestMatchers(
+                                "/api/v1/blogs/get"
+                        ).permitAll()
                         .anyRequest().authenticated()
-                )// "/api/v1/posts"
-//                .oauth2Login(
-//                        oauth2Login -> {
-//                            // Configure OAuth2 login
-//                            oauth2Login
-//                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
-//                                    .authorizationEndpoint(
-//                                            authorizationEndpoint ->
-//                                                    authorizationEndpoint
-//                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
-//                                    );
-//                        }
-//                )
+                )
+                .oauth2Login(
+                        oauth2Login -> {
+                            // Configure OAuth2 login
+                            oauth2Login
+                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
+                                    .authorizationEndpoint(
+                                            authorizationEndpoint ->
+                                                    authorizationEndpoint
+                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
+                                    );
+                        }
+                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
@@ -73,10 +181,7 @@ public class SecurityConfigBookTree {
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .cors(cors -> cors.configurationSource(configurationSource()))
-                //oauth2 로그인
-//                .oauth2Login(
-//                        oauth2Login->
-//                )
+
                 .logout(logout -> logout
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID"));
@@ -93,9 +198,11 @@ public class SecurityConfigBookTree {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOrigin("*");
+        //config.addAllowedOrigin("*");
+        config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
 
         source.registerCorsConfiguration("/**",config);
         return source;
