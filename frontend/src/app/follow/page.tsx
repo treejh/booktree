@@ -69,7 +69,7 @@ export default function FollowPage() {
         </h1>
 
         {/* 탭 네비게이션 */}
-        <div className="border-b mb-8">
+        <div className="border-b border-gray-200 mb-8">
           <nav className="flex gap-8">
             <button
               onClick={() => setActiveTab("following")}
@@ -100,7 +100,7 @@ export default function FollowPage() {
             <input
               type="text"
               placeholder="사용자 검색"
-              className="w-full px-4 py-2 border rounded-lg pl-10"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg pl-10"
             />
             <svg
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -124,7 +124,7 @@ export default function FollowPage() {
           {currentItems.map((user) => (
             <div
               key={user.id}
-              className="flex items-center justify-between p-6 border rounded-lg hover:bg-gray-50"
+              className="flex items-center justify-between p-6 border border-gray-200 rounded-lg hover:bg-gray-50"
             >
               <div className="flex items-center gap-6">
                 <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
