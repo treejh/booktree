@@ -163,7 +163,7 @@ export default function BlogPage() {
             {/* 카테고리 사이드바 */}
             <aside className="w-64 flex-shrink-0 mt-100">
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">태그 목록</h2>
+                    <h2 className="text-xl font-bold mb-4">카테고리 목록</h2>
                     <div className="border-b border-gray-200 mb-4"></div>
                     <ul className="space-y-2">
                         {categories.map((category) => (

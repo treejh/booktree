@@ -25,12 +25,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="ko">
             <body>
-                <Header />
-                <main className="pt-[60px]">
-                    {' '}
-                    {/* Header 높이만큼 상단 패딩 추가 */}
-                    {children}
-                </main>
+                <ClientLayout>
+                    <main className="pt-[60px]">
+                        {' '}
+                        {/* Header 높이만큼 상단 패딩 추가 */}
+                        {children}
+                    </main>
+                </ClientLayout>
             </body>
         </html>
     )

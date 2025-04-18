@@ -79,7 +79,7 @@ export default function MyPage() {
                                 <h1 className="text-xl font-bold">김블로그</h1>
                                 <span className="text-gray-500 text-sm ml-2">@blog_kim</span>
                                 <button
-                                    onClick={() => router.push('/mypage')}
+                                    onClick={() => router.push('/blog')}
                                     className="ml-2 text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
                                 >
                                     <svg
@@ -93,7 +93,7 @@ export default function MyPage() {
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
                                             strokeWidth={2}
-                                            d="M3 9.75L12 4.5l9 5.25v7.5L12 19.5l-9-5.25V9.75z"
+                                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                                         />
                                     </svg>
                                 </button>
