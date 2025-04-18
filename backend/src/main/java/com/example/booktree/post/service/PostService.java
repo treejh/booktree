@@ -251,13 +251,25 @@ public class PostService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
 
-    // 게시글 아이디로 해당 게시글 조회
+    public void increaseViewCount(Post post) {
+        post.setView(post.getView() + 1);
+        postRepository.save(post);
+    }
+
+
+    // 게시글 아이디로 해당 게시글 조회 (조회수 증가)
     @Transactional
     public Post findPostById(Long postId) {
 
+
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
-        post.setView(post.getView()+1);
+
+        increaseViewCount(post);
+
+
+
 
 
         return post;
