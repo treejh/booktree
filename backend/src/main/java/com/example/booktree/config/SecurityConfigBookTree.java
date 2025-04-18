@@ -160,6 +160,11 @@ public class SecurityConfigBookTree {
                         .requestMatchers(
                                 "/api/v1/blogs/get"
                         ).permitAll()
+
+                        //실시간 조회수순 인기 게시글 가져오기
+                        .requestMatchers(
+                                "/api/v1/popular/get/posts"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(
