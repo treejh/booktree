@@ -27,6 +27,8 @@ public class UserProfileResponseDto {
         this.username=user.getUsername();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
+
+
     }
 
 

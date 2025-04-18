@@ -53,10 +53,11 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // Read (본인 정보 수정할때 사용)
+    // Read (본인 정보 수정할때 사용) - 토큰을 사용하여 유저 조회
     @GetMapping("/get/token")
     public ResponseEntity getUserByToken() {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.findByToken());
+        System.out.println(response);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -163,7 +164,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Authorization header is missing or invalid");
         }
 
-        String token = authorization.substring(7); // "Bearer " 제거
+        //String token = authorization.substring(7); // "Bearer " 제거
 
         // accessToken 쿠키 삭제
         Cookie accessTokenCookie = new Cookie("accessToken", null);

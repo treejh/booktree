@@ -70,7 +70,7 @@ public class SecurityConfigBookTree {
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         //게시글 api/v1/posts
-                        .requestMatchers("/api/v1/users/get/profile/**","api/v1/posts/search"
+                        .requestMatchers("/api/v1/users/get/profile/**","/api/v1/posts/search"
                                 ,"api/v1/posts/get/**"
 
 
@@ -80,7 +80,6 @@ public class SecurityConfigBookTree {
                         "/api/v1/posts/get/likePost","/api/v1/posts/get/followingPost",
                                "/api/v1/posts/delete/**" )
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .anyRequest().authenticated()
 
                         //메인 카테고리 /api/v1/maincategories
                         .requestMatchers("/api/v1/maincategories/get"
@@ -161,6 +160,12 @@ public class SecurityConfigBookTree {
                         .requestMatchers(
                                 "/api/v1/blogs/get"
                         ).permitAll()
+
+                        //실시간 조회수순 인기 게시글 가져오기
+                        .requestMatchers(
+                                "/api/v1/popular/get/posts"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(
                         oauth2Login -> {
@@ -198,9 +203,11 @@ public class SecurityConfigBookTree {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOrigin("*");
+        //config.addAllowedOrigin("*");
+        config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
 
         source.registerCorsConfiguration("/**",config);
         return source;

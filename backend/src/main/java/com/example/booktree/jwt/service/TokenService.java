@@ -1,4 +1,4 @@
-package com.example.booktree.user.service;
+package com.example.booktree.jwt.service;
 
 
 import com.example.booktree.exception.BusinessLogicException;
@@ -61,8 +61,6 @@ public class TokenService {
     }
 
     public Long getIdFromToken(){
-
-
         String token = getTokenFromRequest();
 
         if (token == null) {
