@@ -130,7 +130,7 @@ public class PostController {
                         .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
                         .toList())
 
-                .viewCount(post.getView() + 1)
+                .viewCount(post.getView())
 
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())

@@ -252,9 +252,17 @@ public class PostService {
     }
 
     // 게시글 아이디로 해당 게시글 조회
+    @Transactional
     public Post findPostById(Long postId) {
-        return postRepository.findById(postId)
+
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
+        post.setView(post.getView()+1);
+
+
+        return post;
+
+
     }
 
     // 블로그별로 게시글 목록 조회
