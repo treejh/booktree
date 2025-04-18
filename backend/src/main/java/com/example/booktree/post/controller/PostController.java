@@ -137,6 +137,7 @@ public class PostController {
                 .modifiedAt(post.getModifiedAt())
                 .build();
 
+        popularPostService.increasePopularity(postId);
 
         return ResponseEntity.ok(response);
 

@@ -17,7 +17,7 @@ public enum ExceptionCode {
     ALREADY_HAS_EMAIL(404,"이미 존재하는 이메일입니다."),
     ALREADY_HAS_PHONENUMBER(404,"이미 존재하는 전화번호입니다."),
     USER_NOT_POST_OWNER(403, "해당 게시글의 소유자가 아닙니다."),
-    VIEW_NOT_FOUNd(404, "조회수가 있는 글이 없습니다."),
+    VIEW_NOT_FOUND(404, "조회수가 있는 글이 없습니다."),
     USER_NOT_OWNER(404, "해당 유저의 소유자가 아닙니다."),
     LIKE_NOT_FOUND(404, "해당 유저가 해당 게시물에 좋아요를 누른 기록이 없습니다."),
     ALREADY_LIKED(404, "이미 좋아요를 누른 상태입니다."),
