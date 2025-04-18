@@ -55,6 +55,11 @@ export default function MyPage() {
         router.push('/follow')
     }
 
+    // 팔로워 클릭 핸들러 추가
+    const handleFollowerClick = () => {
+        router.push('/follow?tab=followers') // followers 탭으로 이동
+    }
+
     // toggleFollow 함수 수정
     const toggleFollow = () => {
         setIsFollowing(!isFollowing)
@@ -172,7 +177,7 @@ export default function MyPage() {
                     )}
                 </div>
 
-                {/* 통계 섹션 */}
+                {/* 통계 섹션 수정 */}
                 <div className="grid grid-cols-3 divide-x divide-gray-200">
                     <div
                         className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
@@ -188,9 +193,12 @@ export default function MyPage() {
                         <h3 className="text-gray-500 mb-2">팔로잉</h3>
                         <p className="text-2xl font-bold">128</p>
                     </div>
-                    <div className="text-center px-4">
+                    <div
+                        className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+                        onClick={handleFollowerClick}
+                    >
                         <h3 className="text-gray-500 mb-2">팔로워</h3>
-                        <p className="text-2xl font-bold">{followerCount}</p> {/* 통계 섹션의 팔로워 부분 수정 */}
+                        <p className="text-2xl font-bold">{followerCount}</p>
                     </div>
                 </div>
             </div>
