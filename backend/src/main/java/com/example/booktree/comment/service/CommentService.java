@@ -8,7 +8,7 @@ import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.reply.dto.ReplyDto;
 import com.example.booktree.reply.repository.ReplyRepository;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

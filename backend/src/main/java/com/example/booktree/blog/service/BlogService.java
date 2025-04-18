@@ -6,7 +6,7 @@ import com.example.booktree.blog.repository.BlogRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.List;

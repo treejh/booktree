@@ -6,7 +6,7 @@ import com.example.booktree.like_reply.repository.LikeReplyRepository;
 import com.example.booktree.reply.entity.Reply;
 import com.example.booktree.reply.repository.ReplyRepository;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

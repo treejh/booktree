@@ -70,7 +70,7 @@ public class SecurityConfigBookTree {
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         //게시글 api/v1/posts
-                        .requestMatchers("/api/v1/users/get/profile/**","api/v1/posts/search"
+                        .requestMatchers("/api/v1/users/get/profile/**","/api/v1/posts/search"
                                 ,"api/v1/posts/get/**"
 
 

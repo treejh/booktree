@@ -4,7 +4,7 @@ import com.example.booktree.category.dto.request.CreateCategoryRequestDto;
 import com.example.booktree.category.dto.response.AllCategoryResponseDto;
 import com.example.booktree.category.dto.response.PostByCategoryResponseDto;
 import com.example.booktree.category.service.CategoryService;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
