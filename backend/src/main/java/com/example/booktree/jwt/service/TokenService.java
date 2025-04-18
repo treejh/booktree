@@ -76,8 +76,8 @@ public class TokenService {
     }
 
     public String makeAuthCookies(User user) {
-        String accessToken = jwtTokenizer.createAccessToken(user.getId(),user.getEmail(),user.getUsername(),user.getRole().toString());
-        String refreshToken = jwtTokenizer.createRefreshToken(user.getId(),user.getEmail(),user.getUsername(),user.getRole().toString());
+        String accessToken = jwtTokenizer.createAccessToken(user.getId(),user.getEmail(),user.getUsername(),user.getRole().getRole().name());
+        String refreshToken = jwtTokenizer.createRefreshToken(user.getId(),user.getEmail(),user.getUsername(),user.getRole().getRole().name());
 
         user.setRefreshToken(refreshToken);
         userRepository.save(user);

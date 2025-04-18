@@ -5,6 +5,7 @@ import com.example.booktree.jwt.filter.JwtAuthenticationFilter;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.oauth.handler.CustomOAuth2AuthenticationSuccessHandler;
 import com.example.booktree.oauth.resolver.CustomAuthorizationRequestResolver;
+import com.example.booktree.oauth.service.CustomOAuth2UserService;
 import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +35,6 @@ public class SecurityConfigBookTree {
     private final CustomAuthorizationRequestResolver customAuthorizationRequestResolver;
 
 
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -57,10 +57,10 @@ public class SecurityConfigBookTree {
                                 ,"/api/v1/users/login","/api/v1/users/find/**"
 
                         ).permitAll()
-//                        .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
-//                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
-//                                "/api/v1/users/delete/**")
-//                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
+                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
+                                "/api/v1/users/delete/**")
+                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         //대댓글 /api/v1/replies
                         .requestMatchers("/api/v1/replies/get"
@@ -171,18 +171,16 @@ public class SecurityConfigBookTree {
 
                         .anyRequest().permitAll()
                 )
-                .oauth2Login(
-                        oauth2Login -> {
-                            // Configure OAuth2 login
-                            oauth2Login
-                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
-                                    .authorizationEndpoint(
-                                            authorizationEndpoint ->
-                                                    authorizationEndpoint
-                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
-                                    );
-                        }
-                )
+                .oauth2Login(oauth2Login -> {
+                    oauth2Login
+                            .successHandler(customOAuth2AuthenticationSuccessHandler)
+                            .authorizationEndpoint(
+                                    authorizationEndpoint ->
+                                            authorizationEndpoint.authorizationRequestResolver(customAuthorizationRequestResolver)
+                            );
+
+                })
+
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
