@@ -1,9 +1,12 @@
 // src/app/layout.tsx
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
-import Header from '@/app/components/Header' // 👈 Header 컴포넌트 불러오기
-import { ClientLayout } from './ClientLayout'
+
+
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import Header from "@/app/components/Header"; 
+import { ClientLayout } from "./ClientLayout";// 👈 Header 컴포넌트 불러오기
+
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
