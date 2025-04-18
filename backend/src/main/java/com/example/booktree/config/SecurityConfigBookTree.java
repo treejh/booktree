@@ -57,10 +57,10 @@ public class SecurityConfigBookTree {
                                 ,"/api/v1/users/login","/api/v1/users/find/**"
 
                         ).permitAll()
-                        .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
-                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
-                                "/api/v1/users/delete/**")
-                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+//                        .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
+//                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
+//                                "/api/v1/users/delete/**")
+//                        .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         //대댓글 /api/v1/replies
                         .requestMatchers("/api/v1/replies/get"
@@ -165,7 +165,11 @@ public class SecurityConfigBookTree {
                         .requestMatchers(
                                 "/api/v1/popular/get/posts"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        //추가
+                        .requestMatchers("/api/*/**")
+                        .authenticated()
+
+                        .anyRequest().permitAll()
                 )
                 .oauth2Login(
                         oauth2Login -> {
