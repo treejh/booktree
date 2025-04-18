@@ -104,6 +104,12 @@ public class PostService {
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
         }
 
+        if (!blog.getUser().getId().equals(user.getId())) {
+            throw new BusinessLogicException(ExceptionCode.POST_NOT_OWNER);
+        }
+
+
+
         Post post = Post.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
