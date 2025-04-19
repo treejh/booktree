@@ -1,12 +1,10 @@
 // src/app/layout.tsx
 
-
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Header from "@/app/components/Header"; 
-import { ClientLayout } from "./ClientLayout";// 👈 Header 컴포넌트 불러오기
-
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import Header from '@/app/components/Header'
+import { ClientLayout } from './ClientLayout' // 👈 Header 컴포넌트 불러오기
 
 const geistSans = Geist({
     variable: '--font-geist-sans',
@@ -25,10 +23,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="ko" className="bg-[#F4F4F4]">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F4F4F4]`}>
+        <html lang="ko">
+            <body>
                 <ClientLayout>
-                    <main className="w-full max-w-full px-5">{children}</main>
+                    <main className="pt-[60px]">
+                        {' '}
+                        {/* Header 높이만큼 상단 패딩 추가 */}
+                        {children}
+                    </main>
                 </ClientLayout>
             </body>
         </html>
