@@ -127,7 +127,7 @@ export default function CategoryPage() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6">Review/네트워크</h1>
+            <h1 className="text-2xl font-bold mb-6">독서후기</h1>
             <div className="text-gray-600 mb-8">24개의 글글</div>
 
             <div className="space-y-6">

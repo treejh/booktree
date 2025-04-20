@@ -66,6 +66,13 @@ export default function MyPage() {
         setFollowerCount((prev) => (isFollowing ? prev - 1 : prev + 1))
     }
 
+    // 카테고리 아이템 클릭 핸들러 추가
+    const handleCategoryClick = (postId: number, title: string) => {
+        if (title === '독서후기') {
+            router.push('/category')
+        }
+    }
+
     return (
         <div className="container mx-auto px-4 py-4 max-w-5xl">
             {/* 프로필과 통계를 포함하는 섹션 */}
@@ -208,7 +215,11 @@ export default function MyPage() {
                 <h2 className="text-lg font-bold p-6 border-b border-gray-200">카테고리</h2>
                 <div>
                     {posts.map((post) => (
-                        <div key={post.id} className="p-6 hover:bg-gray-50 transition cursor-pointer">
+                        <div
+                            key={post.id}
+                            className="p-6 hover:bg-gray-50 transition cursor-pointer"
+                            onClick={() => handleCategoryClick(post.id, post.title)}
+                        >
                             <div className="flex items-center justify-between">
                                 <h3 className="font-medium">{post.title}</h3>
                                 <svg
