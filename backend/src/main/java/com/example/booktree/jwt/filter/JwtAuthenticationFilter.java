@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = getToken(request);
 
-        System.out.println("JwtAuthenticationFilter : "+ token);
+        //System.out.println("JwtAuthenticationFilter : "+ token);
 
         if(StringUtils.hasText(token)){
             try{
