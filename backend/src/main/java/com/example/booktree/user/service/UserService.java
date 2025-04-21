@@ -20,13 +20,11 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -42,7 +40,6 @@ public class UserService {
 
     public User findByToken() {
         Long userId= tokenService.getIdFromToken();
-        log.info("findByToken" + userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
@@ -347,8 +344,8 @@ public class UserService {
 
 
     @Transactional
-    public Optional<User> findByProviderAndUuidAndSocialId(String socialId, String ssoProvider, String username){
-        return userRepository.findBySocialIdAndSsoProviderAndUsername(socialId, ssoProvider, username);
+    public Optional<User> findBySocialIdAndSsoProvider(String socialId, String ssoProvider){
+        return userRepository.findBySocialIdAndSsoProvider(socialId, ssoProvider);
     }
 
 

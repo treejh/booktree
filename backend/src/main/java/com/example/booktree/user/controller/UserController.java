@@ -56,6 +56,7 @@ public class UserController {
     @GetMapping("/get/profile/{userId}")
     public ResponseEntity getUserByUserId(@PathVariable("userId") Long userId) {
         UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findById(userId));
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

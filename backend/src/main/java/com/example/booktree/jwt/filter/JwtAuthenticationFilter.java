@@ -43,7 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = getToken(request);
 
+
         //System.out.println("JwtAuthenticationFilter : "+ token);
+
+
 
         if(StringUtils.hasText(token)){
             try{
@@ -104,14 +107,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     }
 
-    private List<GrantedAuthority> getGrantedAuthority(Claims claims){
-        List<String>roles = (List<String>)claims.get("roles");
+    private List<GrantedAuthority> getGrantedAuthority(Claims claims) {
+        List<String> roles = (List<String>) claims.get("roles");
 
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .map(role -> {
+                    // "ROLE_" 접두사가 없으면 붙여주고, 있으면 그대로 사용
+                    if (role.startsWith("ROLE_")) {
+                        return new SimpleGrantedAuthority(role);
+                    } else {
+                        return new SimpleGrantedAuthority("ROLE_" + role);
+                    }
+                })
                 .collect(Collectors.toList());
-
     }
+
 
 
     public String getToken(HttpServletRequest request){
