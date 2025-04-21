@@ -162,18 +162,18 @@ public class SecurityConfigBookTree {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(
-                        oauth2Login -> {
-                            // Configure OAuth2 login
-                            oauth2Login
-                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
-                                    .authorizationEndpoint(
-                                            authorizationEndpoint ->
-                                                    authorizationEndpoint
-                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
-                                    );
-                        }
-                )
+//                .oauth2Login(
+//                        oauth2Login -> {
+//                            // Configure OAuth2 login
+//                            oauth2Login
+//                                    .successHandler(customOAuth2AuthenticationSuccessHandler)
+//                                    .authorizationEndpoint(
+//                                            authorizationEndpoint ->
+//                                                    authorizationEndpoint
+//                                                            .authorizationRequestResolver(customAuthorizationRequestResolver)
+//                                    );
+//                        }
+//                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenizer), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session
