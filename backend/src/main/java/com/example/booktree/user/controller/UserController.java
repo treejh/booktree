@@ -46,10 +46,17 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PostMapping("/create/admin")
+    public ResponseEntity createAdmin(@Valid @RequestBody UserPostRequestDto userPostRequestDto) {
+        UserResponseDto response = new UserResponseDto(userService.createAdmin(userPostRequestDto));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
     // Read(마이페이지 할때 사용) - 아이디로 유저 가지고 오기
     @GetMapping("/get/profile/{userId}")
     public ResponseEntity getUserByUserId(@PathVariable("userId") Long userId) {
         UserMyPageResponseDto response = new UserMyPageResponseDto(userService.findById(userId));
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -88,7 +95,7 @@ public class UserController {
     //update username
     @PatchMapping("/patch/username")
     public ResponseEntity patchUsername(@Valid @RequestParam String username ) {
-        userService.updateEmail(username);
+        userService.updateUserName(username);
         return new ResponseEntity<>("수정 완료", HttpStatus.OK);
 
     }

@@ -20,13 +20,11 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -42,7 +40,6 @@ public class UserService {
 
     public User findByToken() {
         Long userId= tokenService.getIdFromToken();
-        log.info("findByToken" + userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     }
@@ -75,6 +72,29 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public User createAdmin(UserPostRequestDto userPostRequestDto){
+        //이메일, 전화번호, 역할 검증
+        UserValidation(userPostRequestDto);
+
+        // username 비어있으면 랜덤 UUID 일부로 생성
+        String username = userPostRequestDto.getUsername();
+        if (username == null || username.trim().isEmpty()) {
+            username = "Admin_" + CreateRandomNumber.randomNumber();
+        }
+
+        User user = User.builder()
+                .email(userPostRequestDto.getEmail())
+                .password(passwordEncoder.encode(userPostRequestDto.getPassword()))
+                .phoneNumber(userPostRequestDto.getPhoneNumber())
+                //이미 UserValidation에서 검증을 했기 때문에 get() 사용
+                .role(roleRepository.findById(userPostRequestDto.getRoleId()).get())
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .username(username).build();
+
+        return userRepository.save(user);
+    }
+
 
 
     public User findUserByEmail(String email){
@@ -88,7 +108,8 @@ public class UserService {
 
         User user = findUserByEmail(email);
         String randomPassword = CreateRandomNumber.randomNumber();
-        user.setPassword(randomPassword);
+        user.setPassword(passwordEncoder.encode(randomPassword));
+        userRepository.save(user);
         return randomPassword;
     }
 
@@ -97,7 +118,9 @@ public class UserService {
 
         User user = findUserByPhoneNumber(phoneNumber);
         String randomPassword = CreateRandomNumber.randomNumber();
-        user.setPassword(randomPassword);
+        user.setPassword(passwordEncoder.encode(randomPassword));
+
+        userRepository.save(user);
         return randomPassword;
     }
 
@@ -321,8 +344,8 @@ public class UserService {
 
 
     @Transactional
-    public Optional<User> findByProviderAndUuidAndSocialId(String socialId, String ssoProvider, String username){
-        return userRepository.findBySocialIdAndSsoProviderAndUsername(socialId, ssoProvider, username);
+    public Optional<User> findBySocialIdAndSsoProvider(String socialId, String ssoProvider){
+        return userRepository.findBySocialIdAndSsoProvider(socialId, ssoProvider);
     }
 
 

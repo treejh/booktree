@@ -82,6 +82,10 @@ public class FollowService {
         User follower = userService.findById(userId);
         User followed = userService.findById(followRequestDto.getFolloweeId());
 
+        if(follower.equals(followed)) {
+            throw new BusinessLogicException(ExceptionCode.SELF_FOLLOW);
+        }
+
         if (isIn(userId,followRequestDto.getFolloweeId())) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_FOLLOW);
         }
