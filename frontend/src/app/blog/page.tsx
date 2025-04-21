@@ -1,5 +1,8 @@
+'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
+import AnnouncementModal from '../components/AnnouncementModal'
 
 interface Post {
     id: number
@@ -9,6 +12,7 @@ interface Post {
     date: string
     views: number
     comments: number
+    isBookmarked?: boolean
 }
 
 interface Category {
@@ -42,6 +46,7 @@ const posts: Post[] = [
         date: '2024년 3월 15일',
         views: 1234,
         comments: 23,
+        isBookmarked: true,
     },
     {
         id: 2,
@@ -51,6 +56,7 @@ const posts: Post[] = [
         date: '2024년 3월 12일',
         views: 987,
         comments: 15,
+        isBookmarked: false,
     },
     {
         id: 3,
@@ -61,10 +67,95 @@ const posts: Post[] = [
         date: '2024년 3월 10일',
         views: 856,
         comments: 19,
+        isBookmarked: true,
     },
 ]
 
+type TabType = 'latest' | 'popular' | 'bookmarks'
+
 export default function BlogPage() {
+    const [currentPage, setCurrentPage] = useState(1)
+    const [activeTab, setActiveTab] = useState<TabType>('latest')
+    const [isFollowing, setIsFollowing] = useState(false)
+    const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false)
+    const [posts, setPosts] = useState<Post[]>([
+        {
+            id: 1,
+            category: 'React',
+            title: 'React Query로 상태관리 최적화하기',
+            description:
+                'React Query를 활용한 서버 상태 관리와 캐싱 전략, 실시간 데이터 동기화 방법에 대해 설명해 드립니다.',
+            date: '2024년 3월 15일',
+            views: 1234,
+            comments: 23,
+            isBookmarked: true,
+        },
+        {
+            id: 2,
+            category: 'TypeScript',
+            title: '타입스크립트로 안전한 API 개발',
+            description:
+                '타입스크립트를 활용하여 백엔드 API와 프론트엔드 통신을 타입 안전하게 구현하는 방법을 공유합니다.',
+            date: '2024년 3월 12일',
+            views: 987,
+            comments: 15,
+            isBookmarked: false,
+        },
+        {
+            id: 3,
+            category: 'NextJS',
+            title: 'Next.js와 GraphQL 통합하기',
+            description:
+                'Next.js 프로젝트에서 GraphQL을 효율적으로 통합하고 활용하는 방법에 대한 실전 가이드를 제공합니다.',
+            date: '2024년 3월 10일',
+            views: 856,
+            comments: 19,
+            isBookmarked: true,
+        },
+    ])
+    const postsPerPage = 5
+
+    // Filter posts based on active tab
+    const getFilteredPosts = () => {
+        switch (activeTab) {
+            case 'latest':
+                return [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            case 'popular':
+                return [...posts].sort((a, b) => b.views - a.views)
+            case 'bookmarks':
+                return posts.filter((post) => post.isBookmarked)
+            default:
+                return posts
+        }
+    }
+
+    const filteredPosts = getFilteredPosts()
+
+    // Calculate pagination values
+    const indexOfLastPost = currentPage * postsPerPage
+    const indexOfFirstPost = indexOfLastPost - postsPerPage
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost)
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage)
+
+    // Generate page numbers array
+    const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber)
+        window.scrollTo(0, 0)
+    }
+
+    const handleTabChange = (tab: TabType) => {
+        setActiveTab(tab)
+        setCurrentPage(1)
+    }
+
+    const handleDelete = (postId: number) => {
+        if (window.confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+            setPosts(posts.filter((post) => post.id !== postId))
+        }
+    }
+
     return (
         <div className="flex gap-8 max-w-8xl mx-auto px-4 py-8">
             {/* 메인 컨텐츠 */}
@@ -77,11 +168,11 @@ export default function BlogPage() {
                         <p className="text-gray-600 mb-6">A space to document a web developer&apos;s growth journey.</p>
 
                         <div className="flex justify-center gap-8">
-                            <Link href="/follow" className="text-center hover:opacity-80">
+                            <Link href="/follow?tab=following" className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">125</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
-                            <Link href="/follow" className="text-center hover:opacity-80">
+                            <Link href="/follow?tab=followers" className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">238</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
@@ -91,30 +182,76 @@ export default function BlogPage() {
                             </div>
                         </div>
 
-                        <div className="mt-6">
-                            <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors">
-                                팔로우
+                        <div className="mt-6 flex gap-4 justify-center items-center">
+                            <button
+                                className={`px-4 py-2 rounded-md transition-colors ${
+                                    isFollowing
+                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        : 'bg-[#2E804E] text-white hover:bg-[#247040]'
+                                }`}
+                                onClick={() => setIsFollowing(!isFollowing)}
+                            >
+                                {isFollowing ? '팔로잉' : '팔로우'}
                             </button>
+                            <Link href="/announcements">
+                                <button
+                                    className="bg-[#2E804E] text-white p-2 rounded-md hover:bg-[#247040] transition-colors flex items-center justify-center"
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        setIsAnnouncementOpen(true)
+                                    }}
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="w-6 h-6"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46"
+                                        />
+                                    </svg>
+                                </button>
+                            </Link>
                         </div>
                     </section>
 
                     {/* 네비게이션 */}
                     <nav className="border-b border-gray-200 mb-8">
                         <ul className="flex gap-8">
-                            <li className="pb-2 border-b-2 border-gray-900">
-                                <Link href="/blog" className="text-gray-900">
+                            <li
+                                className={`pb-2 border-b-2 ${
+                                    activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
+                                } cursor-pointer`}
+                                onClick={() => handleTabChange('latest')}
+                            >
+                                <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
                                     최신순
-                                </Link>
+                                </span>
                             </li>
-                            <li className="pb-2">
-                                <Link href="/blog/popular" className="text-gray-600">
+                            <li
+                                className={`pb-2 border-b-2 ${
+                                    activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
+                                } cursor-pointer`}
+                                onClick={() => handleTabChange('popular')}
+                            >
+                                <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
                                     인기순
-                                </Link>
+                                </span>
                             </li>
-                            <li className="pb-2">
-                                <Link href="/blog/bookmarks" className="text-gray-600">
-                                    북마크
-                                </Link>
+                            <li
+                                className={`pb-2 border-b-2 ${
+                                    activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
+                                } cursor-pointer`}
+                                onClick={() => handleTabChange('bookmarks')}
+                            >
+                                <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
+                                    팔로잉
+                                </span>
                             </li>
                         </ul>
                     </nav>
@@ -130,20 +267,41 @@ export default function BlogPage() {
 
                     {/* 블로그 포스트 목록 */}
                     <div className="space-y-8">
-                        {posts.map((post) => (
+                        <h2 className="text-2xl font-bold mb-6">
+                            {activeTab === 'latest' && '최신 게시물'}
+                            {activeTab === 'popular' && '인기 게시물'}
+                            {activeTab === 'bookmarks' && '팔로잉 게시글'}
+                        </h2>
+                        {currentPosts.map((post) => (
                             <article
                                 key={post.id}
                                 className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                             >
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="bg-gray-100 px-2 py-1 rounded text-sm">{post.category}</span>
-                                    <span className="text-gray-500 text-sm">{post.date}</span>
-                                </div>
-                                <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-                                <p className="text-gray-600 mb-4">{post.description}</p>
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                    <span>조회 {post.views}</span>
-                                    <span>댓글 {post.comments}</span>
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="bg-gray-100 px-2 py-1 rounded text-sm">{post.category}</span>
+                                        <span className="text-gray-500 text-sm">{post.date}</span>
+                                    </div>
+                                    <h2 className="text-xl font-bold mb-2">{post.title}</h2>
+                                    <p className="text-gray-600 mb-4">{post.description}</p>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-4 text-gray-500">
+                                            <span>조회 {post.views}</span>
+                                            <span>댓글 {post.comments}</span>
+                                        </div>
+                                        <div className="flex items-center gap-4 text-gray-500">
+                                            <Link href={`/post/edit/${post.id}`}>
+                                                <span className="hover:text-gray-900 cursor-pointer">수정</span>
+                                            </Link>
+
+                                            <span
+                                                onClick={() => handleDelete(post.id)}
+                                                className="hover:text-gray-900 cursor-pointer"
+                                            >
+                                                삭제
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </article>
                         ))}
@@ -151,11 +309,31 @@ export default function BlogPage() {
 
                     {/* 페이지네이션 */}
                     <div className="flex justify-center gap-2 mt-8">
-                        <button className="px-4 py-2 border rounded hover:bg-gray-50">Previous</button>
-                        <button className="px-4 py-2 border rounded bg-gray-900 text-white">1</button>
-                        <button className="px-4 py-2 border rounded hover:bg-gray-50">2</button>
-                        <button className="px-4 py-2 border rounded hover:bg-gray-50">3</button>
-                        <button className="px-4 py-2 border rounded hover:bg-gray-50">Next</button>
+                        <button
+                            className="px-4 py-2 border rounded hover:bg-gray-50"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </button>
+                        {pageNumbers.map((number) => (
+                            <button
+                                key={number}
+                                className={`px-4 py-2 border rounded ${
+                                    currentPage === number ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'
+                                }`}
+                                onClick={() => handlePageChange(number)}
+                            >
+                                {number}
+                            </button>
+                        ))}
+                        <button
+                            className="px-4 py-2 border rounded hover:bg-gray-50"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
             </main>
@@ -163,7 +341,7 @@ export default function BlogPage() {
             {/* 카테고리 사이드바 */}
             <aside className="w-64 flex-shrink-0 mt-100">
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">카테고리 목록</h2>
+                    <h2 className="text-xl font-bold mb-4">태그 목록</h2>
                     <div className="border-b border-gray-200 mb-4"></div>
                     <ul className="space-y-2">
                         {categories.map((category) => (
@@ -180,6 +358,8 @@ export default function BlogPage() {
                     </ul>
                 </div>
             </aside>
+
+            <AnnouncementModal isOpen={isAnnouncementOpen} onClose={() => setIsAnnouncementOpen(false)} />
         </div>
     )
 }
