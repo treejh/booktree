@@ -24,6 +24,7 @@ public enum ExceptionCode {
     INVALID_PASSWORD(404, "비밀번호가 일치하지 않습니다."),
     ALREADY_FOLLOW(404, "이미 팔로우 중인 회원입니다."),
     FOLLOW_NOT_FOUND(404, "해당 유저를 팔로우 하고 있지 않습니다."),
+    SELF_FOLLOW(404, "자기 자신을 팔로우 할 수 없습니다."),
     S3_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다."),
     INVALID_SEARCH_TYPE(404,"잘못된 검색 유형입니다."),
     CANNOT_LIKE_OWN_POST(405, "자신이 작성한 게시글에는 좋아요를 누를 수 없습니다."),
