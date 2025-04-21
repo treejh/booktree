@@ -127,52 +127,58 @@ export default function CategoryPage() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6">독서후기</h1>
-            <div className="text-gray-600 mb-8">24개의 글글</div>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+                <h1 className="text-2xl font-bold mb-6">독서후기</h1>
+                <div className="text-gray-600 mb-8">24개의 글글</div>
 
-            <div className="space-y-6">
-                {posts.map((post) => (
-                    <div
-                        key={post.id}
-                        className="border-b pb-6 cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={() => router.push(`/detail/${post.id}`)}
-                    >
-                        <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                                <h2 className="text-lg font-bold mb-2">
-                                    [{post.category}/{post.subCategory}] {post.title}
-                                </h2>
-                                <p className="text-gray-600 mb-2 line-clamp-2">{post.content}</p>
-                                <div className="flex items-center text-sm text-gray-500">
-                                    <span>{post.date}</span>
-                                    <span className="mx-2">•</span>
-                                    <span>조회 {post.views}</span>
-                                    <span className="mx-2">•</span>
-                                    <span>댓글 {post.comments}</span>
+                <div className="space-y-6">
+                    {posts.map((post) => (
+                        <div
+                            key={post.id}
+                            className="border-b border-gray-200 pb-6 cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => router.push(`/detail/${post.id}`)}
+                        >
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <h2 className="text-lg font-bold mb-2">
+                                        [{post.category}/{post.subCategory}] {post.title}
+                                    </h2>
+                                    <p className="text-gray-600 mb-2 line-clamp-2">{post.content}</p>
+                                    <div className="flex items-center text-sm text-gray-500">
+                                        <span>{post.date}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>조회 {post.views}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>댓글 {post.comments}</span>
+                                    </div>
+                                </div>
+                                <div className="ml-4">
+                                    <img
+                                        src={post.image}
+                                        alt={post.title}
+                                        className="w-24 h-24 object-cover rounded-lg"
+                                    />
                                 </div>
                             </div>
-                            <div className="ml-4">
-                                <img src={post.image} alt={post.title} className="w-24 h-24 object-cover rounded-lg" />
-                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
 
-            {/* 페이지네이션 */}
-            <div className="flex justify-center mt-8 space-x-2">
-                <button className="p-2">&lt;</button>
-                {[1, 2, 3, 4, 5].map((num) => (
-                    <button
-                        key={num}
-                        className={`w-8 h-8 rounded-full ${
-                            num === 1 ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'
-                        }`}
-                    >
-                        {num}
-                    </button>
-                ))}
-                <button className="p-2">&gt;</button>
+                {/* 페이지네이션 */}
+                <div className="flex justify-center mt-8 space-x-2">
+                    <button className="p-2">&lt;</button>
+                    {[1, 2, 3, 4, 5].map((num) => (
+                        <button
+                            key={num}
+                            className={`w-8 h-8 rounded-full ${
+                                num === 1 ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'
+                            }`}
+                        >
+                            {num}
+                        </button>
+                    ))}
+                    <button className="p-2">&gt;</button>
+                </div>
             </div>
         </div>
     )
