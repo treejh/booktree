@@ -72,6 +72,29 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public User createAdmin(UserPostRequestDto userPostRequestDto){
+        //이메일, 전화번호, 역할 검증
+        UserValidation(userPostRequestDto);
+
+        // username 비어있으면 랜덤 UUID 일부로 생성
+        String username = userPostRequestDto.getUsername();
+        if (username == null || username.trim().isEmpty()) {
+            username = "Admin_" + CreateRandomNumber.randomNumber();
+        }
+
+        User user = User.builder()
+                .email(userPostRequestDto.getEmail())
+                .password(passwordEncoder.encode(userPostRequestDto.getPassword()))
+                .phoneNumber(userPostRequestDto.getPhoneNumber())
+                //이미 UserValidation에서 검증을 했기 때문에 get() 사용
+                .role(roleRepository.findById(userPostRequestDto.getRoleId()).get())
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .username(username).build();
+
+        return userRepository.save(user);
+    }
+
 
 
     public User findUserByEmail(String email){
@@ -85,7 +108,8 @@ public class UserService {
 
         User user = findUserByEmail(email);
         String randomPassword = CreateRandomNumber.randomNumber();
-        user.setPassword(randomPassword);
+        user.setPassword(passwordEncoder.encode(randomPassword));
+        userRepository.save(user);
         return randomPassword;
     }
 
@@ -94,7 +118,9 @@ public class UserService {
 
         User user = findUserByPhoneNumber(phoneNumber);
         String randomPassword = CreateRandomNumber.randomNumber();
-        user.setPassword(randomPassword);
+        user.setPassword(passwordEncoder.encode(randomPassword));
+
+        userRepository.save(user);
         return randomPassword;
     }
 

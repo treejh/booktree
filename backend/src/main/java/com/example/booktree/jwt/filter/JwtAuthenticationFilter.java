@@ -43,6 +43,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = getToken(request);
 
+
+        //System.out.println("JwtAuthenticationFilter : "+ token);
+
+
+
         if(StringUtils.hasText(token)){
             try{
                 //security에게 authentication를 넘기기 위해서 원하는 데이터를 얻어와서 authentication를 만들어준다.

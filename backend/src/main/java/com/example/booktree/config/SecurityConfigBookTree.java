@@ -53,7 +53,7 @@ public class SecurityConfigBookTree {
 
                         ).permitAll()
                         //회원 /api/v1/users
-                        .requestMatchers("/api/v1/users/get/profile/**", "/api/v1/users/create"
+                        .requestMatchers("/api/v1/users/get/profile/**", "/api/v1/users/create","api/v1/users/create/admin"
                                 ,"/api/v1/users/login","/api/v1/users/find/**"
 
                         ).permitAll()
