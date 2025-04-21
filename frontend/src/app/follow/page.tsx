@@ -75,7 +75,10 @@ export default function FollowPage() {
 
                 <div className="space-y-4">
                     {users.map((user) => (
-                        <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div
+                            key={user.id}
+                            className="flex items-center justify-between p-4 border rounded-lg border-gray-300"
+                        >
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
                                     {/* Avatar placeholder */}
