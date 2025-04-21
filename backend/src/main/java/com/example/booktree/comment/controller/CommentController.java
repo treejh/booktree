@@ -2,6 +2,7 @@ package com.example.booktree.comment.controller;
 
 import com.example.booktree.comment.dto.CommentDto;
 import com.example.booktree.comment.service.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,9 +21,10 @@ public class CommentController {
 
     // 댓글 생성
     @PostMapping("/create")
-    public ResponseEntity<CommentDto.Response> createComment(@RequestBody CommentDto.Post dto) {
-        CommentDto.Response response = commentService.createComment(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<CommentDto.Response> createComment(
+            @RequestBody @Valid CommentDto.Post postDto) {
+        CommentDto.Response created = commentService.createComment(postDto);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     // 댓글 조회: /api/v1/comments/get?postId=1&page=1&size=10
