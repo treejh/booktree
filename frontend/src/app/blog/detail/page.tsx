@@ -1011,10 +1011,10 @@ export default function DetailPage() {
                                                                         className="w-full p-3 border rounded-md min-h-[80px] focus:outline-none focus:ring-2 focus:ring-green-500"
                                                                         rows={3}
                                                                     />
-                                                                    <div className="flex justify-end mt-2 space-x-2">
+                                                                    <div className="flex justify-end mt-2 space-x-2 min-w-[200px]">
                                                                         <button
                                                                             onClick={() => setEditingCommentId(null)}
-                                                                            className="px-4 py-1.5 text-sm text-gray-600 border rounded-md hover:bg-gray-100"
+                                                                            className="px-4 py-1.5 text-sm text-gray-600 border rounded-md hover:bg-gray-100 w-[80px]"
                                                                         >
                                                                             취소
                                                                         </button>
@@ -1022,7 +1022,7 @@ export default function DetailPage() {
                                                                             onClick={() =>
                                                                                 handleCommentEditSave(comment.id)
                                                                             }
-                                                                            className="px-4 py-1.5 text-sm text-white bg-[#2E804E] rounded-md hover:bg-[#246A40]"
+                                                                            className="px-4 py-1.5 text-sm text-white bg-[#2E804E] rounded-md hover:bg-[#246A40] w-[80px]"
                                                                         >
                                                                             저장
                                                                         </button>
@@ -1150,7 +1150,7 @@ export default function DetailPage() {
                                                                         strokeLinecap="round"
                                                                         strokeLinejoin="round"
                                                                         strokeWidth={2}
-                                                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03 8 9 8s9-3.582 9-8z"
+                                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
                                                                     />
                                                                 </svg>
                                                                 답글
