@@ -13,8 +13,6 @@ interface Post {
 
 export default function MyPage() {
     const router = useRouter() // router 추가
-    const [isLiked, setIsLiked] = useState(false) // 하트 버튼 상태 추가
-    const [followerCount, setFollowerCount] = useState(128) // 상태 추가
 
     const [posts] = useState<Post[]>([
         {
@@ -40,10 +38,12 @@ export default function MyPage() {
         },
     ])
 
+    const [isEditing, setIsEditing] = useState(false)
     const [introduction, setIntroduction] = useState(
         '안녕하세요! 제 블로그에 오신 것을 환영합니다. 여기서는 일상과 관심사를 공유하고 있습니다.',
     )
     const [isFollowing, setIsFollowing] = useState(false)
+    const [followerCount, setFollowerCount] = useState(128) // 상태 추가
 
     // 게시물 클릭 핸들러 추가
     const handlePostsClick = () => {
@@ -60,23 +60,17 @@ export default function MyPage() {
         router.push('/follow?tab=followers') // followers 탭으로 이동
     }
 
-    // toggleFollow 함수 수정
-    const toggleFollow = () => {
-        setIsFollowing(!isFollowing)
-        setFollowerCount((prev) => (isFollowing ? prev - 1 : prev + 1))
-    }
+    // toggleFollow 함수 제거
+    // const toggleFollow = () => {
+    //     setIsFollowing(!isFollowing)
+    //     setFollowerCount((prev) => (isFollowing ? prev - 1 : prev + 1))
+    // }
 
     // 카테고리 아이템 클릭 핸들러 추가
     const handleCategoryClick = (postId: number, title: string) => {
         if (title === '독서후기') {
             router.push('/category')
         }
-    }
-
-    // 하트 버튼 클릭 핸들러 수정
-    const handleLikeClick = () => {
-        setIsLiked(!isLiked)
-        setFollowerCount((prev) => (isLiked ? prev - 1 : prev + 1))
     }
 
     return (
@@ -119,33 +113,85 @@ export default function MyPage() {
                             <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
                         </div>
                     </div>
-                    <button
-                        onClick={handleLikeClick}
-                        className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
-                        aria-label={isLiked ? '팔로우 취소' : '팔로우하기'}
-                    >
-                        <svg
-                            className={`w-6 h-6 ${
-                                isLiked ? 'text-red-500 fill-current' : 'text-gray-400 hover:text-gray-600'
-                            } transition-colors duration-200`}
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill={isLiked ? 'currentColor' : 'none'}
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
+                    <div className="flex space-x-2">
+                        <button
+                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                            onClick={() => setIsEditing(!isEditing)}
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                            />
-                        </svg>
-                    </button>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                />
+                            </svg>
+                        </button>
+                        {/* 톱니바퀴 버튼 추가 */}
+                        <button
+                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                            onClick={() => router.push('/settings')}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 {/* 소개글 */}
                 <div className="mb-6 pb-6 border-b border-gray-200">
-                    <p className="text-gray-600">{introduction}</p>
+                    {isEditing ? (
+                        <div className="flex flex-col gap-2">
+                            <textarea
+                                value={introduction}
+                                onChange={(e) => setIntroduction(e.target.value)}
+                                className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                rows={3}
+                            />
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => setIsEditing(false)}
+                                    className="px-3 py-1 text-sm text-gray-600 border rounded-md hover:bg-gray-100"
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsEditing(false)
+                                    }}
+                                    className="px-3 py-1 text-sm text-white bg-green-600 rounded-md hover:bg-green-700"
+                                >
+                                    저장
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-gray-600">{introduction}</p>
+                    )}
                 </div>
 
                 {/* 통계 섹션 수정 */}

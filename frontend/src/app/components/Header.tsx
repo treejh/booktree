@@ -10,12 +10,12 @@ export default function Header() {
     const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
 
     return (
-        <header className="w-full border-b border-gray-200 bg-white">
+        <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white">
             <div className="w-full px-1 py-3">
                 <div className="flex items-center justify-between">
                     <Link href="/" className="flex items-center pl-5 cursor-pointer">
                         <img
-                            src="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BooktreeLogo.png"
+                            src="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTreeLogo.png"
                             alt="책 아이콘"
                             className="w-9 h-9 mr-2"
                         />
@@ -76,7 +76,9 @@ export default function Header() {
                     {/* 🔐 로그인 상태 */}
                     {isLogin ? (
                         <div className="flex items-center space-x-3 pr-5">
-                            <span className="text-sm">{loginUser.username}님</span>
+                            <Link href="/mypage" className="text-sm hover:underline">
+                                {loginUser.username}님
+                            </Link>
                             <button
                                 onClick={logoutAndHome}
                                 className="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
@@ -89,7 +91,7 @@ export default function Header() {
                             <button
                                 className="px-4 py-2 mr-2 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
                                 onClick={() => {
-                                    window.location.href = '/login'
+                                    window.location.href = '/account/login'
                                 }}
                             >
                                 로그인
@@ -97,7 +99,7 @@ export default function Header() {
                             <button
                                 className="px-4 py-2 text-sm text-white bg-[#2E804E] rounded-md hover:bg-[#236b3e]"
                                 onClick={() => {
-                                    window.location.href = '/signup'
+                                    window.location.href = '/account/signup'
                                 }}
                             >
                                 회원가입
