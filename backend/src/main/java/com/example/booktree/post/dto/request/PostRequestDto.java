@@ -2,6 +2,8 @@ package com.example.booktree.post.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +37,7 @@ public class PostRequestDto {
 
     private String book;
 
-    private List<MultipartFile> images;
+    private List<MultipartFile> images = new ArrayList<>(); // 이미지 안보내도 되도록
 
 
 }
