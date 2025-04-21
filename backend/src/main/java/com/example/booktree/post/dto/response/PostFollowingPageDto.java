@@ -11,6 +11,7 @@ import lombok.Setter;
 @Setter
 public class PostFollowingPageDto {
     private Long postId;
+    private String username;
     private String title;
     private Long viewCount;
     private LocalDateTime createdAt;
@@ -22,6 +23,7 @@ public class PostFollowingPageDto {
         this.viewCount = post.getView();
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
+        this.username = post.getUser().getUsername();
     }
 
 }

@@ -9,6 +9,7 @@ import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
+import com.example.booktree.follow.entity.Follow;
 import com.example.booktree.follow.service.FollowService;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
@@ -21,6 +22,7 @@ import com.example.booktree.user.entity.User;
 import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import jakarta.transaction.Transactional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -230,19 +232,15 @@ public class PostService {
     @Transactional
     public Page<Post> getPostsFromFollowing(Pageable pageable){
 
+        //id가 userid인듯( 내가 팔로잉한 사람들 )
+        List<Long> followingList = followService.followingList();
 
-        //id가 userid인듯
-        List<AllFollowListResponseDto> followingList = followService.getAllFollowedList();
-        List<Long> followingUserIds = followingList.stream()
-                .map(AllFollowListResponseDto::getId)
-                .toList();
 
-        if (followingUserIds.isEmpty()) {
+        if (followingList.isEmpty()) {
+            System.out.println("여기 들어오나?");
             return Page.empty(pageable);
         }
-
-        return postRepository.findByUserIdInOrderByCreatedAtDesc(followingUserIds, pageable);
-
+        return postRepository.findByUserIdInOrderByCreatedAtDesc(followingList, pageable);
     }
 
     //사용자가 좋아요 누른 게시글 가져오기

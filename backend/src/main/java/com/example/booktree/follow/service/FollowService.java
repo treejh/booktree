@@ -142,4 +142,15 @@ public class FollowService {
             return false;
         }
     }
+
+    //팔로우 엔티티에서 본인이 팔로우한 아이디 빼오기
+    public List<Long> followingList(){
+        List<Follow> followingList = followRepository.findByFollower_Id(tokenService.getIdFromToken());
+        return followingList.stream()
+                .map(follow ->follow.getFollowed().getId())  // 상대방 ID
+                .toList();
+
+    }
+
+
 }
