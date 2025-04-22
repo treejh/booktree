@@ -1,42 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation' // useRouter import 추가
 
-interface Post {
+interface Category {
     id: number
-    title: string
-    date: string
-    views: number
-    comments: number
+    name: string
+    create_at: string
+    update_at: string
 }
 
 export default function MyPage() {
     const router = useRouter() // router 추가
+    const [categories, setCategories] = useState<Category[]>([]) // 초기값 빈 배열
+    const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
+    const [error, setError] = useState<string | null>(null) // 에러 상태 추가
 
-    const [posts] = useState<Post[]>([
-        {
-            id: 1,
-            title: '독서후기',
-            date: '2024.02.20',
-            views: 156,
-            comments: 8,
-        },
-        {
-            id: 2,
-            title: '자격증 책 추천',
-            date: '2024.02.18',
-            views: 234,
-            comments: 12,
-        },
-        {
-            id: 3,
-            title: '소설 추천',
-            date: '2024.02.15',
-            views: 189,
-            comments: 5,
-        },
-    ])
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 추가적인 헤더가 필요하면 여기에 추가
+                    },
+                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
+                })
+                if (!response.ok) {
+                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                }
+                const data = await response.json()
+                setCategories(data) // 가져온 데이터를 상태에 저장
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    // err가 Error 인스턴스인지 확인
+                    setError(err.message) // 에러 메시지 접근
+                } else {
+                    setError('알 수 없는 오류가 발생했습니다.')
+                }
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchCategories()
+    }, [])
 
     const [isEditing, setIsEditing] = useState(false)
     const [introduction, setIntroduction] = useState(
@@ -90,8 +99,34 @@ export default function MyPage() {
                             <div className="flex items-center">
                                 <h1 className="text-xl font-bold">김블로그</h1>
                                 <span className="text-gray-500 text-sm ml-2">@blog_kim</span>
+
                                 <button
-                                    onClick={() => router.push('/blog')}
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                                                method: 'GET',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                credentials: 'include', // 쿠키 인증 정보 포함
+                                            })
+
+                                            if (!res.ok) {
+                                                throw new Error('블로그 정보를 가져오는 데 실패했습니다.')
+                                            }
+
+                                            const data = await res.json()
+
+                                            if (data && data.blogId) {
+                                                router.push(`/blog/${data.blogId}`)
+                                            } else {
+                                                router.push('/blog/create')
+                                            }
+                                        } catch (err) {
+                                            console.error(err)
+                                            router.push('/blog/create') // 예외 발생 시도 /blog/create로 이동
+                                        }
+                                    }}
                                     className="ml-2 text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
                                 >
                                     <svg
@@ -110,6 +145,7 @@ export default function MyPage() {
                                     </svg>
                                 </button>
                             </div>
+
                             <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
                         </div>
                     </div>
@@ -136,7 +172,7 @@ export default function MyPage() {
                         {/* 톱니바퀴 버튼 추가 */}
                         <button
                             className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                            onClick={() => router.push('/settings')}
+                            onClick={() => router.push('/account/edit')}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -224,14 +260,14 @@ export default function MyPage() {
             <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
                 <h2 className="text-lg font-bold p-6 border-b border-gray-200">카테고리</h2>
                 <div>
-                    {posts.map((post) => (
+                    {categories.map((category) => (
                         <div
-                            key={post.id}
+                            key={category.id}
                             className="p-6 hover:bg-gray-50 transition cursor-pointer"
-                            onClick={() => handleCategoryClick(post.id, post.title)}
+                            onClick={() => handleCategoryClick(category.id, category.name)}
                         >
                             <div className="flex items-center justify-between">
-                                <h3 className="font-medium">{post.title}</h3>
+                                <h3 className="font-medium">{category.name}</h3>
                                 <svg
                                     className="w-5 h-5 text-gray-400"
                                     fill="none"
@@ -246,13 +282,13 @@ export default function MyPage() {
                                     />
                                 </svg>
                             </div>
-                            <div className="flex items-center text-sm text-gray-500 mt-2">
+                            {/* <div className="flex items-center text-sm text-gray-500 mt-2">
                                 <span>{post.date}</span>
                                 <span className="mx-2">•</span>
                                 <span>조회 {post.views}</span>
                                 <span className="mx-2">•</span>
                                 <span>댓글 {post.comments}</span>
-                            </div>
+                            </div> */}
                         </div>
                     ))}
                 </div>

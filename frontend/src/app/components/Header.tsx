@@ -76,7 +76,7 @@ export default function Header() {
                     {/* 🔐 로그인 상태 */}
                     {isLogin ? (
                         <div className="flex items-center space-x-3 pr-5">
-                            <Link href="/mypage" className="text-sm hover:underline">
+                            <Link href={`/mypage/${loginUser.id}`} className="text-sm hover:underline">
                                 {loginUser.username}님
                             </Link>
                             <button

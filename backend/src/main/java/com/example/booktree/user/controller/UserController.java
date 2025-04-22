@@ -2,6 +2,7 @@ package com.example.booktree.user.controller;
 
 
 import com.example.booktree.jwt.util.JwtTokenizer;
+import com.example.booktree.security.CustomUserDetails;
 import com.example.booktree.user.dto.request.UserLoginRequestDto;
 import com.example.booktree.user.dto.response.UserMyPageResponseDto;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
@@ -21,6 +22,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,7 +67,7 @@ public class UserController {
     @GetMapping("/get/token")
     public ResponseEntity getUserByToken() {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.findByToken());
-        System.out.println(response);
+        //System.out.println(response);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -216,6 +219,15 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
+    //만약 oauth 로그인 후 추가정보를 받아야 할 수 있기 때문에 혹시 몰라서 만든 메서드
+    @PostMapping("/api/v1/users/extra-info")
+    public ResponseEntity<?> updateExtraInfo(@Valid@RequestBody UserPhoneNumberRequestDto userPhoneNumberRequestDto, @AuthenticationPrincipal CustomUserDetails user) {
+        userService.updateExtraInfo(user.getUserId(), userPhoneNumberRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
 
 
 

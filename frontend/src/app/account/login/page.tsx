@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import styles from './login.module.css'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function LoginPage() {
     const [rememberLogin, setRememberLogin] = useState(false)
