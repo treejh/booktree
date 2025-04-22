@@ -365,51 +365,52 @@ export default function DetailPage() {
     }, [showPopover, activePopoverAuthor])
 
     // 게시글을 불러오는 함수
-
     useEffect(() => {
         const fetchPost = async () => {
             try {
                 setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/posts/get/${postId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
+                const response = await fetch(`http://localhost:8090/api/v1/posts/get/${postId}`)
 
                 if (!response.ok) {
                     throw new Error('게시글을 불러오는 데 실패했습니다.')
                 }
 
                 const data = await response.json()
+                console.log('받아온 데이터:', data) // 데이터 확인용
 
-                // 받아온 데이터를 PostDetail 인터페이스에 맞게 매핑
+                // Add type for imageUrl
                 const formattedPost: PostDetail = {
                     postId: data.postId,
                     title: data.title,
                     content: data.content,
-                    username: data.username || '',
-                    author: data.author || '',
+                    username: data.username,
+                    imageUrls:
+                        data.imageUrls && Array.isArray(data.imageUrls)
+                            ? data.imageUrls.filter(
+                                  (url: string) =>
+                                      url &&
+                                      url.startsWith('https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/'),
+                              )
+                            : [], // S3 URL만 필터링
+                    viewCount: data.viewCount,
+                    likeCount: data.likeCount,
+                    createdAt: new Date(data.createdAt).toLocaleDateString(),
+                    modifiedAt: new Date(data.modifiedAt).toLocaleDateString(),
+                    author: data.author || data.username,
                     mainCategoryId: data.mainCategoryId,
                     blogId: data.blogId,
                     categoryId: data.categoryId,
                     book: data.book,
                     images: data.images || [],
-                    imageUrls: data.imageUrls || [],
-                    viewCount: data.viewCount || 0,
-                    likeCount: data.likeCount || 0,
-                    createdAt: data.createdAt || new Date().toISOString(),
-                    modifiedAt: data.modifiedAt || new Date().toISOString(),
                 }
 
+                console.log('Formatted Image URLs:', formattedPost.imageUrls) // 디버깅용
+
+                console.log('이미지 URL들:', formattedPost.imageUrls) // 이미지 URL 확인용
                 setPost(formattedPost)
-                setEditedPost({
-                    title: formattedPost.title,
-                    content: formattedPost.content,
-                })
             } catch (err) {
                 console.error('Error fetching post:', err)
-                setError(err.message)
+                setError(err instanceof Error ? err.message : '게시글을 불러오지 못했습니다')
             } finally {
                 setLoading(false)
             }
@@ -561,7 +562,7 @@ export default function DetailPage() {
                                         className="focus:outline-none group"
                                     >
                                         <p className="text-sm font-medium hover:text-[#2E804E] transition-colors duration-200">
-                                            {post.author}
+                                            {post.username}
                                         </p>
                                     </button>
 
@@ -622,11 +623,12 @@ export default function DetailPage() {
                                     )}
 
                                     <div className="flex text-xs text-gray-500">
-                                        <span>{post.date}</span>
                                         <span className="mx-2">•</span>
-                                        <span>조회 {post.views}</span>
+                                        <span>조회수 {post.createdAt}</span>
                                         <span className="mx-2">•</span>
-                                        <span>좋아요 {post.likes}</span>
+                                        <span>조회수 {post.viewCount}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>좋아요 {post.likeCount}</span>
                                     </div>
                                 </div>
                             </div>
@@ -634,22 +636,27 @@ export default function DetailPage() {
                             {/* 게시글 내용 */}
                             <div className="mb-8">
                                 {/* 이미지를 컨텐츠 위로 이동 */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                                    <div className="rounded-lg overflow-hidden h-80">
-                                        <img
-                                            src="https://datacdn.ibtravel.co.kr/files/2023/06/21151732/73204430884c42fb0a503a48b7df3a17_img-1.jpeg"
-                                            alt="포어플랜"
-                                            className="w-full h-full object-cover rounded-lg"
-                                        />
+                                {/* 이미지 목록 */}
+                                {/* 이미지 목록 */}
+                                {post.imageUrls && post.imageUrls.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        {post.imageUrls.map((url: string, index: number) => (
+                                            <div key={index} className="rounded-lg overflow-hidden h-80">
+                                                <img
+                                                    src={url}
+                                                    alt={`게시글 이미지 ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        console.error(`이미지 로드 실패: ${url}`)
+                                                        e.currentTarget.onerror = null
+                                                        e.currentTarget.src = '/placeholder-image.jpg'
+                                                    }}
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="rounded-lg overflow-hidden h-80">
-                                        <img
-                                            src="https://www.shinsegaegroupnewsroom.com/wp-content/uploads/2024/11/%EC%8B%A0%EC%84%B8%EA%B3%84%ED%94%84%EB%9D%BC%ED%8D%BC%ED%8B%B0_%EB%B3%B8%EB%AC%B81.png"
-                                            alt="별마당"
-                                            className="w-full h-full object-cover rounded-lg"
-                                        />
-                                    </div>
-                                </div>
+                                )}
 
                                 {/* 컨텐츠 표시 */}
                                 {isPostEditing ? (
