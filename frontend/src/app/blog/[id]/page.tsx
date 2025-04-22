@@ -1,8 +1,9 @@
 'use client'
-import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { useState } from 'react'
-import AnnouncementModal from '../components/AnnouncementModal'
+import AnnouncementModal from '../../components/AnnouncementModal'
+import { LoginUserContext, useGlobalLoginUser, useLoginUser } from '@/stores/auth/loginMember'
 
 interface Post {
     id: number
@@ -18,6 +19,13 @@ interface Post {
 interface Category {
     name: string
     count: number
+}
+
+interface BlogInfo {
+    name: string
+    profile: string
+    notice: string
+    blogId: number
 }
 
 const categories: Category[] = [
@@ -74,10 +82,43 @@ const posts: Post[] = [
 type TabType = 'latest' | 'popular' | 'bookmarks'
 
 export default function BlogPage() {
+    const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
     const [currentPage, setCurrentPage] = useState(1)
     const [activeTab, setActiveTab] = useState<TabType>('latest')
     const [isFollowing, setIsFollowing] = useState(false)
     const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false)
+
+    //블로그 정보 가져오기
+    const params = useParams()
+    const blogId = params?.blogId
+
+    const [blog, setBlog] = useState<BlogInfo | null>(null)
+
+    useEffect(() => {
+        const fetchBlogInfo = async () => {
+            try {
+                const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // ← 쿠키 포함 필수!
+                })
+
+                if (!res.ok) {
+                    throw new Error('블로그 정보를 가져오지 못했습니다.')
+                }
+
+                const data = await res.json()
+                setBlog(data)
+            } catch (error) {
+                console.error(error)
+            }
+        }
+
+        fetchBlogInfo()
+    }, [])
+
     const [posts, setPosts] = useState<Post[]>([
         {
             id: 1,
@@ -162,11 +203,15 @@ export default function BlogPage() {
             <main className="flex-1 pl-100">
                 <div className="bg-white rounded-xl shadow-lg p-8">
                     {/* 프로필 섹션 */}
-                    <section className="text-center mb-12">
-                        <h1 className="text-3xl font-bold mb-2">Minsu Kim&apos;s Dev Journal</h1>
-                        <p className="text-gray-600 mb-4">@devkim</p>
-                        <p className="text-gray-600 mb-6">A space to document a web developer&apos;s growth journey.</p>
 
+                    <div>
+                        {/* 프로필 섹션 */}
+                        <section className="text-center mb-12">
+                            <h1 className="text-3xl font-bold mb-2">{blog?.name || `${loginUser.username} 블로그`}</h1>
+                            <p className="text-gray-600 mb-6">{blog?.profile || ' '}</p>
+                        </section>
+                    </div>
+                    <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
                             <Link href="/follow?tab=following" className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">125</div>

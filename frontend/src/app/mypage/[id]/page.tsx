@@ -99,8 +99,34 @@ export default function MyPage() {
                             <div className="flex items-center">
                                 <h1 className="text-xl font-bold">김블로그</h1>
                                 <span className="text-gray-500 text-sm ml-2">@blog_kim</span>
+
                                 <button
-                                    onClick={() => router.push('/blog')}
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                                                method: 'GET',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                credentials: 'include', // 쿠키 인증 정보 포함
+                                            })
+
+                                            if (!res.ok) {
+                                                throw new Error('블로그 정보를 가져오는 데 실패했습니다.')
+                                            }
+
+                                            const data = await res.json()
+
+                                            if (data && data.blogId) {
+                                                router.push(`/blog/${data.blogId}`)
+                                            } else {
+                                                router.push('/blog/create')
+                                            }
+                                        } catch (err) {
+                                            console.error(err)
+                                            router.push('/blog/create') // 예외 발생 시도 /blog/create로 이동
+                                        }
+                                    }}
                                     className="ml-2 text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
                                 >
                                     <svg
@@ -119,6 +145,7 @@ export default function MyPage() {
                                     </svg>
                                 </button>
                             </div>
+
                             <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
                         </div>
                     </div>
