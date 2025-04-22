@@ -145,7 +145,7 @@ export default function MyPage() {
                         {/* 톱니바퀴 버튼 추가 */}
                         <button
                             className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                            onClick={() => router.push('/settings')}
+                            onClick={() => router.push('/account/edit')}
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
