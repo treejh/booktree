@@ -105,6 +105,30 @@ export default function EditProfilePage() {
             }
         }
 
+        if (field === 'username') {
+            try {
+                const response = await fetch(
+                    `http://localhost:8090/api/v1/users/patch/username?username=${formData.username}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('닉네임 변경에 실패했습니다.')
+                }
+
+                alert('닉네임이 성공적으로 변경되었습니다!')
+            } catch (error) {
+                console.error(error)
+                alert('닉네임 변경 중 오류가 발생했습니다. 다시 시도해주세요.')
+            }
+        }
+
         setEditState((prev) => ({
             ...prev,
             [field]: false,
