@@ -94,6 +94,7 @@ export default function BlogPage() {
 
     const { id: blogId } = useParams<{ id: string }>() // URL에서 blogId 가져오기
     const [blog, setBlog] = useState<BlogInfo | null>(null)
+    const [userBlogId, setUserBlogId] = useState<string | null>(null) // 로그인 유저의 블로그 ID
 
     useEffect(() => {
         if (!blogId) {
@@ -124,8 +125,38 @@ export default function BlogPage() {
             }
         }
 
+        const fetchUserBlogId = async () => {
+            try {
+                const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!res.ok) {
+                    throw new Error('유저 블로그 ID를 가져오지 못했습니다.(유저가 블로그를 가지지 않았을 수 있음)')
+                }
+
+                const data = await res.json()
+                setUserBlogId(data.blogId) // 유저의 블로그 ID 저장
+            } catch (error) {
+                console.error(error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        if (isLogin) {
+            fetchUserBlogId()
+        }
+
         fetchBlogInfo()
-    }, [blogId]) // blogId가 변경될 때마다 실행
+    }, [blogId, isLogin])
+
+    console.log('blogId:', blogId)
+    console.log('userBlogId:', userBlogId)
 
     const [posts, setPosts] = useState<Post[]>([
         {
@@ -211,7 +242,6 @@ export default function BlogPage() {
             <main className="flex-1 pl-100">
                 <div className="bg-white rounded-xl shadow-lg p-8">
                     {/* 프로필 섹션 */}
-
                     <div>
                         {/* 프로필 섹션 */}
                         <section className="text-center mb-12">
@@ -275,7 +305,6 @@ export default function BlogPage() {
                             )}
                         </div>
                     </section>
-
                     {/* 네비게이션 */}
                     <nav className="border-b border-gray-200 mb-8">
                         <ul className="flex gap-8">
@@ -311,16 +340,15 @@ export default function BlogPage() {
                             </li>
                         </ul>
                     </nav>
-
-                    {/* 새 글 작성 버튼 */}
-                    <div className="flex justify-end mb-8">
-                        <Link href="/post/write">
-                            <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
-                                <span>새 글 작성하기</span>
-                            </button>
-                        </Link>
-                    </div>
-
+                    {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
+                        <div className="flex justify-end mb-8">
+                            <Link href="/post/write">
+                                <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
+                                    <span>새 글 작성하기</span>
+                                </button>
+                            </Link>
+                        </div>
+                    )}
                     {/* 블로그 포스트 목록 */}
                     <div className="space-y-8">
                         <h2 className="text-2xl font-bold mb-6">
@@ -362,7 +390,6 @@ export default function BlogPage() {
                             </article>
                         ))}
                     </div>
-
                     {/* 페이지네이션 */}
                     <div className="flex justify-center gap-2 mt-8">
                         <button
