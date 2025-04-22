@@ -22,6 +22,8 @@ interface PageResponse {
     size: number // 페이지 크기
 }
 
+type SortType = 'latest' | 'popular'
+
 export default function BlogPostListPage() {
     const params = useParams()
     const blogId = params.blogId as string
@@ -29,10 +31,18 @@ export default function BlogPostListPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
+    const [sortType, setSortType] = useState<SortType>('latest')
+
     useEffect(() => {
         if (blogId) {
+            setLoading(true)
+            const endpoint =
+                sortType === 'latest'
+                    ? `http://localhost:8090/api/v1/posts/get/blog/${blogId}?page=0&size=8`
+                    : `http://localhost:8090/api/v1/posts/get/blog/popular/${blogId}?page=0&size=8`
+
             axios
-                .get<PageResponse>(`http://localhost:8090/api/v1/posts/get/blog/${blogId}?page=0&size=8`)
+                .get<PageResponse>(endpoint)
                 .then((res) => {
                     setPosts(res.data.content)
                     setLoading(false)
@@ -43,7 +53,7 @@ export default function BlogPostListPage() {
                     setLoading(false)
                 })
         }
-    }, [blogId])
+    }, [blogId, sortType])
 
     if (loading) return <div>불러오는 중...</div>
     if (error) return <div>{error}</div>
@@ -57,40 +67,32 @@ export default function BlogPostListPage() {
                     <div>{/* 프로필 섹션 */}</div>
 
                     {/* 네비게이션 */}
+
                     <nav className="border-b border-gray-200 mb-8">
-                        {/* <ul className="flex gap-8">
+                        <ul className="flex gap-8">
                             <li
                                 className={`pb-2 border-b-2 ${
-                                    activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
+                                    sortType === 'latest' ? 'border-gray-900' : 'border-transparent'
                                 } cursor-pointer`}
-                                onClick={() => handleTabChange('latest')}
+                                onClick={() => setSortType('latest')}
                             >
-                                <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
+                                <span className={sortType === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
                                     최신순
                                 </span>
                             </li>
                             <li
                                 className={`pb-2 border-b-2 ${
-                                    activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
+                                    sortType === 'popular' ? 'border-gray-900' : 'border-transparent'
                                 } cursor-pointer`}
-                                onClick={() => handleTabChange('popular')}
+                                onClick={() => setSortType('popular')}
                             >
-                                <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
+                                <span className={sortType === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
                                     인기순
                                 </span>
                             </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('bookmarks')}
-                            >
-                                <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
-                                    팔로잉
-                                </span>
-                            </li>
-                        </ul> */}
+                        </ul>
                     </nav>
+
                     {/* {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
                         <div className="flex justify-end mb-8">
                             <Link href="/post/write">
@@ -107,6 +109,10 @@ export default function BlogPostListPage() {
                             {activeTab === 'popular' && '인기 게시물'}
                             {activeTab === 'bookmarks' && '팔로잉 게시글'}
                         </h2> */}
+
+                        <h2 className="text-2xl font-bold mb-6">
+                            {sortType === 'latest' ? '최신 게시물' : '인기 게시물'}
+                        </h2>
                         {posts.map((post) => (
                             <Link href={`/blog/${post.postId}/detail`} key={post.postId} className="block">
                                 <article
