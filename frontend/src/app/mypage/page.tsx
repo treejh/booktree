@@ -115,6 +115,25 @@ export default function MyPage() {
                                         />
                                     </svg>
                                 </button>
+                                <button
+                                    onClick={() => router.push('/mypage')}
+                                    className="ml-2 text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-5 w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M3 9.75L12 4.5l9 5.25v7.5L12 19.5l-9-5.25V9.75z"
+                                        />
+                                    </svg>
+                                </button>
                             </div>
                             <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
                         </div>

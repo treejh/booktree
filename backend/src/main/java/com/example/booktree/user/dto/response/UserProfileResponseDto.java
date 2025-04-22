@@ -23,10 +23,13 @@ public class UserProfileResponseDto {
 
     private String username;
 
+    private Long id;
+
     public UserProfileResponseDto(User user){
         this.username=user.getUsername();
         this.email = user.getEmail();
         this.phoneNumber = user.getPhoneNumber();
+        this.id=user.getId();
 
 
     }
