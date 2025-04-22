@@ -369,45 +369,37 @@ export default function DetailPage() {
         const fetchPost = async () => {
             try {
                 setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/posts/get/${postId}`)
+                const response = await fetch(`http://localhost:8090/api/v1/posts/get/${postId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
 
                 if (!response.ok) {
                     throw new Error('게시글을 불러오는 데 실패했습니다.')
                 }
 
                 const data = await response.json()
-                console.log('받아온 데이터:', data) // 데이터 확인용
+                console.log('API Response:', data) // 응답 확인용
 
-                // Add type for imageUrl
                 const formattedPost: PostDetail = {
                     postId: data.postId,
                     title: data.title,
                     content: data.content,
                     username: data.username,
-                    imageUrls:
-                        data.imageUrls && Array.isArray(data.imageUrls)
-                            ? data.imageUrls.filter(
-                                  (url: string) =>
-                                      url &&
-                                      url.startsWith('https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/'),
-                              )
-                            : [], // S3 URL만 필터링
+                    imageUrls: data.imageUrls || [],
                     viewCount: data.viewCount,
                     likeCount: data.likeCount,
                     createdAt: new Date(data.createdAt).toLocaleDateString(),
                     modifiedAt: new Date(data.modifiedAt).toLocaleDateString(),
-                    author: data.author || data.username,
-                    mainCategoryId: data.mainCategoryId,
-                    blogId: data.blogId,
-                    categoryId: data.categoryId,
-                    book: data.book,
-                    images: data.images || [],
                 }
 
-                console.log('Formatted Image URLs:', formattedPost.imageUrls) // 디버깅용
-
-                console.log('이미지 URL들:', formattedPost.imageUrls) // 이미지 URL 확인용
                 setPost(formattedPost)
+                setEditedPost({
+                    title: formattedPost.title,
+                    content: formattedPost.content,
+                })
             } catch (err) {
                 console.error('Error fetching post:', err)
                 setError(err instanceof Error ? err.message : '게시글을 불러오지 못했습니다')
@@ -638,20 +630,19 @@ export default function DetailPage() {
                                 {/* 이미지를 컨텐츠 위로 이동 */}
                                 {/* 이미지 목록 */}
                                 {/* 이미지 목록 */}
-                                {post.imageUrls && post.imageUrls.length > 0 && (
+                                {post.imageUrls.length > 0 && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                        {post.imageUrls.map((url: string, index: number) => (
+                                        {post.imageUrls.map((url, index) => (
                                             <div key={index} className="rounded-lg overflow-hidden h-80">
                                                 <img
                                                     src={url}
                                                     alt={`게시글 이미지 ${index + 1}`}
                                                     className="w-full h-full object-cover"
                                                     onError={(e) => {
-                                                        console.error(`이미지 로드 실패: ${url}`)
-                                                        e.currentTarget.onerror = null
-                                                        e.currentTarget.src = '/placeholder-image.jpg'
+                                                        // console.error(`이미지 로드 실패: ${url}`)
+                                                        e.currentTarget.src =
+                                                            'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png' // 로드 실패시 기본 이미지
                                                     }}
-                                                    loading="lazy"
                                                 />
                                             </div>
                                         ))}
