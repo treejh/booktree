@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import axios from 'axios'
+import Link from 'next/link'
+// ...existing imports...
 
 interface Post {
     postId: number
@@ -106,37 +108,41 @@ export default function BlogPostListPage() {
                             {activeTab === 'bookmarks' && '팔로잉 게시글'}
                         </h2> */}
                         {posts.map((post) => (
-                            <article
-                                key={post.postId}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                            >
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="bg-gray-100 px-2 py-1 rounded text-sm">{post.category}</span>
-                                        {/* <span className="text-gray-500 text-sm">{post.date}</span> */}
-                                    </div>
-                                    <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-                                    {/* <p className="text-gray-600 mb-4">{post.description}</p> */}
-                                    <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            <span>조회 {post.viewCount}</span>
-                                            {/* <span>댓글 {post.comments}</span> */}
+                            <Link href={`/blog/${post.postId}/detail`} key={post.postId} className="block">
+                                <article
+                                    key={post.postId}
+                                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                                >
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="bg-gray-100 px-2 py-1 rounded text-sm">
+                                                {post.category}
+                                            </span>
+                                            {/* <span className="text-gray-500 text-sm">{post.date}</span> */}
                                         </div>
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            {/* <Link href={`/post/edit/${post.id}`}>
+                                        <h2 className="text-xl font-bold mb-2">{post.title}</h2>
+                                        {/* <p className="text-gray-600 mb-4">{post.description}</p> */}
+                                        <div className="flex items-center justify-between text-sm">
+                                            <div className="flex items-center gap-4 text-gray-500">
+                                                <span>조회 {post.viewCount}</span>
+                                                {/* <span>댓글 {post.comments}</span> */}
+                                            </div>
+                                            <div className="flex items-center gap-4 text-gray-500">
+                                                {/* <Link href={`/post/edit/${post.id}`}>
                                                 <span className="hover:text-gray-900 cursor-pointer">수정</span>
                                             </Link>
  */}
-                                            {/* <span
+                                                {/* <span
                                                 onClick={() => handleDelete(post.id)}
                                                 className="hover:text-gray-900 cursor-pointer"
                                             >
                                                 삭제
                                             </span> */}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </article>
+                                </article>
+                            </Link>
                         ))}
                     </div>
                     {/* 페이지네이션 */}
