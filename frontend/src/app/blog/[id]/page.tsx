@@ -87,22 +87,28 @@ export default function BlogPage() {
     const [activeTab, setActiveTab] = useState<TabType>('latest')
     const [isFollowing, setIsFollowing] = useState(false)
     const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
 
     //블로그 정보 가져오기
-    const params = useParams()
-    const blogId = params?.blogId
 
+    const { id: blogId } = useParams<{ id: string }>() // URL에서 blogId 가져오기
     const [blog, setBlog] = useState<BlogInfo | null>(null)
 
     useEffect(() => {
+        if (!blogId) {
+            console.error('blogId is missing or undefined')
+            return
+        }
+
         const fetchBlogInfo = async () => {
             try {
-                const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                const res = await fetch(`http://localhost:8090/api/v1/blogs/get?blogId=${blogId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'include', // ← 쿠키 포함 필수!
+                    credentials: 'include',
                 })
 
                 if (!res.ok) {
@@ -112,12 +118,14 @@ export default function BlogPage() {
                 const data = await res.json()
                 setBlog(data)
             } catch (error) {
-                console.error(error)
+                setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')
+            } finally {
+                setIsLoading(false)
             }
         }
 
         fetchBlogInfo()
-    }, [])
+    }, [blogId]) // blogId가 변경될 때마다 실행
 
     const [posts, setPosts] = useState<Post[]>([
         {
@@ -238,30 +246,33 @@ export default function BlogPage() {
                             >
                                 {isFollowing ? '팔로잉' : '팔로우'}
                             </button>
-                            <Link href="/announcements">
-                                <button
-                                    className="bg-[#2E804E] text-white p-2 rounded-md hover:bg-[#247040] transition-colors flex items-center justify-center"
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        setIsAnnouncementOpen(true)
-                                    }}
+                            <button
+                                onClick={() => setIsAnnouncementOpen(true)}
+                                className="bg-[#2E804E] text-white p-2 rounded-md hover:bg-[#247040] transition-colors flex items-center justify-center"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="w-6 h-6 ml-2"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46"
-                                        />
-                                    </svg>
-                                </button>
-                            </Link>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46"
+                                    />
+                                </svg>
+                            </button>
+                            {blog && (
+                                <AnnouncementModal
+                                    isOpen={isAnnouncementOpen}
+                                    onClose={() => setIsAnnouncementOpen(false)}
+                                    notice={blog.notice} // 모달에 공지사항 전달
+                                    name={blog.name} // 블로그 이름 전달
+                                />
+                            )}
                         </div>
                     </section>
 
@@ -404,7 +415,12 @@ export default function BlogPage() {
                 </div>
             </aside>
 
-            <AnnouncementModal isOpen={isAnnouncementOpen} onClose={() => setIsAnnouncementOpen(false)} />
+            <AnnouncementModal
+                isOpen={isAnnouncementOpen}
+                onClose={() => setIsAnnouncementOpen(false)}
+                notice={blog?.notice || ''} // blog가 없으면 빈 문자열로 대체
+                name={blog?.name || `${loginUser.username} 블로그`} // blog가 없으면 loginUser의 username을 사용
+            />
         </div>
     )
 }
