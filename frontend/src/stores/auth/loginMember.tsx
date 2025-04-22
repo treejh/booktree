@@ -61,7 +61,7 @@ export function useLoginUser() {
 
   const logout = (callback: () => void) => {
     fetch("http://localhost:8090/api/v1/users/logout", {
-      method: "POST",
+      method: "DELETE",
       credentials: "include",
     }).then(() => {
       removeLoginUser();
