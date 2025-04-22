@@ -68,7 +68,6 @@ public class BlogService {
 
     public Blog updateBlog(BlogRequestDto blogRequestDto) {
         Long userId = tokenService.getIdFromToken();
-        User user = userService.findById(userId);
 
         Blog findBlog = getFirstBlogOfUser(userId);
         // 검증
