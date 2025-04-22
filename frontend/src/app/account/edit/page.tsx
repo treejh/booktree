@@ -147,7 +147,7 @@ export default function EditProfilePage() {
             <div className={styles.mainWrapper}>
                 <div className={styles.formContainer}>
                     <h1 className={styles.title}>회원정보 수정</h1>
-                    <div className={styles.inputGroup}>
+                    <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
                         <label htmlFor="email" className={styles.label}>
                             이메일
                         </label>
@@ -207,7 +207,7 @@ export default function EditProfilePage() {
                         )}
                     </div>
 
-                    <div className={styles.inputGroup}>
+                    <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
                         <label htmlFor="phone" className={styles.label}>
                             핸드폰 번호
                         </label>
@@ -237,7 +237,7 @@ export default function EditProfilePage() {
                             </button>
                         </div>
                     </div>
-                    <div className={styles.inputGroup}>
+                    <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
                         <label htmlFor="username" className={styles.label}>
                             닉네임
                         </label>
@@ -278,7 +278,11 @@ export default function EditProfilePage() {
                         >
                             비밀번호 변경
                         </button>
-                        <button type="button" onClick={() => router.push('/mypage')} className={styles.cancelButton}>
+                        <button
+                            type="button"
+                            onClick={() => router.push(`/mypage/${loginUser.id}`)}
+                            className={styles.cancelButton}
+                        >
                             취소
                         </button>
                     </div>
