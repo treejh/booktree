@@ -67,7 +67,7 @@ public class UserController {
     @GetMapping("/get/token")
     public ResponseEntity getUserByToken() {
         UserProfileResponseDto response = new UserProfileResponseDto(userService.findByToken());
-        System.out.println(response);
+        //System.out.println(response);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
