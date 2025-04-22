@@ -51,6 +51,7 @@ public class BlogService {
     public Blog findBlogByBlogId(Long blogId) {
         return verifiedBlog(blogId);
     }
+
     @Transactional
     public Blog findBlogByToken() {
         Long userId = tokenService.getIdFromToken();
