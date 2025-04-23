@@ -145,7 +145,7 @@ const CategoryDetailPage = () => {
 
                         <div className="grid grid-cols-1 gap-6">
                             {currentBooks.map((post) => (
-                                <Link href={`/post/${post.id}`} key={post.id} className="block">
+                                <Link href={`/blog/get/${post.id}/detail`} key={post.id} className="block">
                                     <div className="flex border border-gray-100 rounded-lg p-4 gap-4 hover:shadow-md transition-shadow cursor-pointer">
                                         <div className="w-24 h-32 relative flex-shrink-0">
                                             <Image
@@ -186,7 +186,7 @@ const CategoryDetailPage = () => {
 
                         <div className="space-y-0">
                             {popularPosts.slice(0, 5).map((post, index) => (
-                                <Link href={`/post/${post.id}`} key={index} className="block">
+                                <Link href={`/blog/get/${post.id}/detail`} key={index} className="block">
                                     <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-md cursor-pointer border-b border-gray-100">
                                         <div className="w-6 h-6 rounded-full bg-[#2E804E] text-white flex items-center justify-center text-sm">
                                             {index + 1}
