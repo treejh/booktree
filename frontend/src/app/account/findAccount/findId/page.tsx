@@ -14,10 +14,10 @@ export default function FindAccountPage() {
         <div className={styles.container}>
             <div className={styles.mainWrapper}>
                 <div className={styles.formContainer}>
-                    <h1 className={styles.title}>아이디 찾기</h1>
+                    <h1 className={styles.title}>이메일 찾기</h1>
                     <div className={styles.form}>
                         <div className={styles.tabContainer}>
-                            <button className={`${styles.tabButton} ${styles.tabButtonActive}`}>아이디 찾기</button>
+                            <button className={`${styles.tabButton} ${styles.tabButtonActive}`}>이메일 찾기</button>
                             <button
                                 className={`${styles.tabButton} ${styles.tabButtonInactive}`}
                                 onClick={() => router.push('/account/findAccount/findPassword')}
@@ -54,7 +54,7 @@ export default function FindAccountPage() {
                             />
                         </div>
 
-                        <button className={styles.submitButton}>아이디 찾기</button>
+                        <button className={styles.submitButton}>이메일 찾기</button>
 
                         <div className={styles.loginLink}>
                             <span>비밀번호를 찾으셨나요?</span>
