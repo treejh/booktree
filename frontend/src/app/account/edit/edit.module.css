@@ -59,7 +59,6 @@
 .input:focus {
     outline: none;
     border-color: #2e804e;
-    ring-color: #2e804e;
 }
 
 .buttonContainer {

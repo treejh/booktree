@@ -31,19 +31,19 @@ public class ImageService {
     private final S3Uploader s3Uploader;
 
 
-    public List<String> saveImages(List<MultipartFile> multipartFiles){
+    public List<String> saveImages(List<MultipartFile> multipartFiles) {
         List<String> imagePathList = new ArrayList<>();
-        multipartFiles.forEach(image->{
+        multipartFiles.forEach(image -> {
             try {
-                s3Uploader.uploadFile(image);
+                String imageUrl = s3Uploader.uploadFile(image); // 업로드 후 URL 반환
+                imagePathList.add(imageUrl); // 리스트에 추가
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
-
-
         return imagePathList;
     }
+
 
     //포스트에 이미지 저장
     public List<Image> saveImagesToPost(ImageRequestDto imageRequestDto){

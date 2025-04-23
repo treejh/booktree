@@ -1,9 +1,12 @@
 interface AnnouncementModalProps {
     isOpen: boolean
     onClose: () => void
+    notice: string
+    name: string // 블로그 이름을 받기 위한 prop 추가
 }
 
-export default function AnnouncementModal({ isOpen, onClose }: AnnouncementModalProps) {
+export default function AnnouncementModal({ isOpen, onClose, notice, name }: AnnouncementModalProps) {
+    // name 추가
     if (!isOpen) return null
 
     return (
@@ -26,9 +29,9 @@ export default function AnnouncementModal({ isOpen, onClose }: AnnouncementModal
 
                 <div className="space-y-4">
                     <div className="border-b border-gray-100 pb-4">
-                        <h3 className="font-semibold text-lg mb-2">Minsu Kim의 공지사항입니다.</h3>
+                        <h3 className="font-semibold text-lg mb-2">{name} 공지사항입니다.</h3>
                         <p className="text-gray-600 text-sm mb-2">
-                            오늘은 2025년 4월 21일입니다. 다들 행복한 하루 되세요.
+                            {notice} {/* 전달받은 notice 데이터 출력 */}
                         </p>
                         <span className="text-gray-400 text-xs">2024.04.21</span>
                     </div>

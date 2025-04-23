@@ -260,8 +260,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public User updateExtraInfo(Long userId, UserPhoneNumberRequestDto userPhoneNumberRequestDto){
+        User user = ownerValidation(userId);  // userId를 직접 사용하는 방식
+        user.setPhoneNumber(userPhoneNumberRequestDto.getPhoneNumber());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
 
-    
+
+
+
     public User ownerValidation(Long userId){
         User user = findById(userId);
 
