@@ -38,22 +38,25 @@ export default function CreateBlogPage() {
         }
 
         // 백엔드로 데이터 전송 (예시)
-        fetch('http://localhost:8090/api/v1/blog/create', {
+        fetch('http://localhost:8090/api/v1/blogs/create', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify(requestData),
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('블로그 생성 실패')
+                }
+                return response.json()
+            })
             .then((data) => {
                 console.log('블로그 생성 성공:', data)
-
-                // 성공 알림
                 alert('블로그가 성공적으로 생성되었습니다!')
-
-                // 블로그 메인 페이지로 이동
-                router.push('/blog')
+                // 응답에서 blogId 가져와서 이동
+                router.push(`/blog/${data.blogId}`)
             })
             .catch((error) => {
                 console.error('블로그 생성 오류:', error)

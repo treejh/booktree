@@ -111,10 +111,6 @@ export default function MyPage() {
                                                 credentials: 'include', // 쿠키 인증 정보 포함
                                             })
 
-                                            if (!res.ok) {
-                                                throw new Error('블로그 정보를 가져오는 데 실패했습니다.')
-                                            }
-
                                             const data = await res.json()
 
                                             if (data && data.blogId) {
