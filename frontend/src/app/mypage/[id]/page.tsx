@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation' // useRouter import 추가
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 
 interface Category {
     id: number
@@ -21,6 +23,7 @@ export default function MyPage() {
     const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
     const [followCount, setFollowCount] = useState<Follow[]>([])
+    const { id: userId } = useParams<{ id: string }>()
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -305,7 +308,17 @@ export default function MyPage() {
 
             {/* 카테고리 섹션 */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-                <h2 className="text-lg font-bold p-6 border-b border-gray-200">카테고리</h2>
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h2 className="text-lg font-bold">카테고리</h2>
+                    <Link href="/mypage/editCategory/${userId}">
+                        <button
+                            // onClick={handleCreateCategory} // 버튼 클릭 시 호출할 함수
+                            className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition"
+                        >
+                            카테고리 생성
+                        </button>
+                    </Link>
+                </div>
                 <div>
                     {categories.map((category) => (
                         <div
@@ -329,13 +342,6 @@ export default function MyPage() {
                                     />
                                 </svg>
                             </div>
-                            {/* <div className="flex items-center text-sm text-gray-500 mt-2">
-                                <span>{post.date}</span>
-                                <span className="mx-2">•</span>
-                                <span>조회 {post.views}</span>
-                                <span className="mx-2">•</span>
-                                <span>댓글 {post.comments}</span>
-                            </div> */}
                         </div>
                     ))}
                 </div>
