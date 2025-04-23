@@ -29,7 +29,7 @@ public class PopularPostController {
             tags = "실시간 인기 게시글 관리 컨트롤러"
     )
     public ResponseEntity<List<PostResponseDto>> getPopularPosts(
-            @RequestParam(defaultValue = "10") int limit, @PathVariable Long mainCategoryId) {
+            @RequestParam(defaultValue = "6") int limit, @PathVariable Long mainCategoryId) {
 
         log.info("뭔데 : " + mainCategoryId);
         List<PostResponseDto> result = popularPostService.getPopularPosts(limit, mainCategoryId);
