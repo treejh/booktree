@@ -18,8 +18,11 @@ export default function EditPassword() {
         if (!isLogin) {
             alert('로그인이 필요합니다.')
             router.push('/account/login')
+        } else if (loginUser?.provider === 'KAKAO' || loginUser?.provider === 'GITHUB') {
+            alert('카카오 또는 깃허브 유저는 비밀번호를 변경할 수 없습니다.')
+            router.push('/account/edit')
         }
-    }, [])
+    }, [isLogin, loginUser, router])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPasswords({
@@ -27,6 +30,7 @@ export default function EditPassword() {
             [e.target.name]: e.target.value,
         })
     }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
@@ -38,7 +42,7 @@ export default function EditPassword() {
 
         // 비밀번호 변경 API 호출
         try {
-            const response = await fetch('/api/v1/users/patch/pw', {
+            const response = await fetch('http://localhost:8090/api/v1/users/patch/pw', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,6 +51,7 @@ export default function EditPassword() {
                     changePassword: passwords.newPassword,
                     beforePassword: passwords.currentPassword,
                 }),
+                credentials: 'include', // 쿠키를 포함하도록 설정
             })
 
             if (response.ok) {
@@ -61,6 +66,7 @@ export default function EditPassword() {
             setErrorMessage('서버와의 통신 중 문제가 발생했습니다.')
         }
     }
+
     return (
         <div className={styles.container}>
             <div className={styles.mainWrapper}>
@@ -97,6 +103,7 @@ export default function EditPassword() {
                                 className={styles.input}
                             />
                         </div>
+                        {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
                         <div className={styles.buttonContainer}>
                             <button type="submit" className={styles.submitButton}>
                                 저장

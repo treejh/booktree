@@ -69,7 +69,7 @@ export default function EditProfilePage() {
             router.push('/account/edit') // 인증 성공 시 이동
         } catch (error) {
             console.error(error)
-            alert('비밀번호 인증 중 오류가 발생했습니다. 다시 시도해주세요.')
+            alert('비밀번호가 일치하지 않습니다.')
         }
     }
 
@@ -223,37 +223,37 @@ export default function EditProfilePage() {
                     )}
 
                     {/* 소셜 인증 섹션 */}
-                    <div className={styles.section}>
-                        <h2 className={styles.subtitle}>소셜 인증</h2>
-
-                        <div className="flex flex-col space-y-8">
-                            {provider === 'KAKAO' && (
-                                <button
-                                    type="button"
-                                    className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-[#FFE812] hover:bg-[#FFE200] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                                    onClick={() => handleSocialAuth('kakao')}
-                                >
-                                    <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current">
-                                        <path d="M12 3C6.5 3 2 6.5 2 11c0 2.5 1.2 4.7 3 6.2l-1 3.8 4-2.4c1.3.4 2.6.6 4 .6 5.5 0 10-3.5 10-8s-4.5-8-10-8z" />
-                                    </svg>
-                                    카카오로 인증
-                                </button>
-                            )}
-
-                            {provider === 'GITHUB' && (
-                                <button
-                                    type="button"
-                                    className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#24292F] hover:bg-[#1C2024] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                                    onClick={() => handleSocialAuth('github')}
-                                >
-                                    <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current">
-                                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                                    </svg>
-                                    GitHub으로 인증
-                                </button>
-                            )}
+                    {provider && (
+                        <div className={styles.section}>
+                            <div className="flex flex-col space-y-8">
+                                <h2 className={styles.subtitle}>소셜 인증</h2>
+                                {provider === 'KAKAO' && (
+                                    <button
+                                        type="button"
+                                        className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-[#FFE812] hover:bg-[#FFE200] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                                        onClick={() => handleSocialAuth('kakao')}
+                                    >
+                                        <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current">
+                                            <path d="M12 3C6.5 3 2 6.5 2 11c0 2.5 1.2 4.7 3 6.2l-1 3.8 4-2.4c1.3.4 2.6.6 4 .6 5.5 0 10-3.5 10-8s-4.5-8-10-8z" />
+                                        </svg>
+                                        카카오로 인증
+                                    </button>
+                                )}
+                                {provider === 'GITHUB' && (
+                                    <button
+                                        type="button"
+                                        className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#24292F] hover:bg-[#1C2024] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                        onClick={() => handleSocialAuth('github')}
+                                    >
+                                        <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current">
+                                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                                        </svg>
+                                        GitHub으로 인증
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         )
