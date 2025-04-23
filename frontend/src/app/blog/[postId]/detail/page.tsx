@@ -633,11 +633,11 @@ export default function DetailPage() {
                                 {post.imageUrls.length > 0 && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                         {post.imageUrls.map((url, index) => (
-                                            <div key={index} className="rounded-lg overflow-hidden h-80">
+                                            <div key={index} className="rounded-lg overflow-hidden h-80 w-full">
                                                 <img
                                                     src={url}
                                                     alt={`게시글 이미지 ${index + 1}`}
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-contain"
                                                     onError={(e) => {
                                                         // console.error(`이미지 로드 실패: ${url}`)
                                                         e.currentTarget.src =

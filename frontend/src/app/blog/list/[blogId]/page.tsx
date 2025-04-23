@@ -20,6 +20,9 @@ interface PageResponse {
     totalElements: number
     number: number // 현재 페이지
     size: number // 페이지 크기
+
+    sorted: boolean // 정렬 여부 추가
+    direction: string
 }
 
 type SortType = 'latest' | 'popular'
@@ -40,6 +43,8 @@ export default function BlogPostListPage() {
                 sortType === 'latest'
                     ? `http://localhost:8090/api/v1/posts/get/blog/${blogId}?page=0&size=8`
                     : `http://localhost:8090/api/v1/posts/get/blog/popular/${blogId}?page=0&size=8`
+
+            console.log('요청 URL:', endpoint) // 요청 URL 확인
 
             axios
                 .get<PageResponse>(endpoint)
