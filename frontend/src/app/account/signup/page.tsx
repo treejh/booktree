@@ -3,9 +3,105 @@
 import { useState } from 'react'
 import styles from './signup.module.css'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function RegisterPage() {
-    const [rememberLogin, setRememberLogin] = useState(false)
+    const router = useRouter()
+    const [username, setUsername] = useState('')
+    const [phoneNumber, setPhoneNumber] = useState('')
+    const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const [errorMessage, setErrorMessage] = useState('')
+    const [emailLocalPart, setEmailLocalPart] = useState('')
+    const [emailDomain, setEmailDomain] = useState('')
+    const [customEmailDomain, setCustomEmailDomain] = useState('')
+
+    const validatePhoneNumber = (phoneNumber: string) => {
+        const regex = /^\d{3}-\d{4}-\d{4}$/
+        return regex.test(phoneNumber)
+    }
+
+    const validatePassword = (password: string) => {
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/ // 영문자, 숫자, 특수문자 포함 8~20자리
+        return passwordRegex.test(password)
+    }
+
+    const fullEmail = `${emailLocalPart}@${emailDomain || customEmailDomain}`
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+
+        const fullEmail = `${emailLocalPart}@${emailDomain || customEmailDomain}`
+
+        // 비어 있는 필드 확인
+        if (!emailLocalPart || (!emailDomain && !customEmailDomain)) {
+            setErrorMessage('이메일을 올바르게 입력해주세요.')
+            return
+        }
+
+        if (username.length > 20) {
+            setErrorMessage('닉네임은 최대 20글자까지 가능합니다.')
+            return
+        }
+        if (!phoneNumber) {
+            setErrorMessage('전화번호 칸이 비었습니다. 입력해주세요.')
+            return
+        }
+        if (!validatePhoneNumber(phoneNumber)) {
+            setErrorMessage('전화번호는 000-0000-0000 형식이어야 합니다.')
+            return
+        }
+        if (!password) {
+            setErrorMessage('비밀번호 칸이 비었습니다. 입력해주세요.')
+            return
+        }
+        if (!validatePassword(password)) {
+            setErrorMessage('비밀번호는 영문자, 숫자, 특수문자를 포함한 8~20자리여야 합니다.')
+            return
+        }
+        if (!confirmPassword) {
+            setErrorMessage('비밀번호 확인 칸이 비었습니다. 입력해주세요.')
+            return
+        }
+        if (password !== confirmPassword) {
+            setErrorMessage('비밀번호와 비밀번호 확인이 일치하지 않습니다.')
+            return
+        }
+
+        setErrorMessage('') // 에러 메시지 초기화
+
+        // requestDto 객체 생성
+        const requestData = {
+            roleId: 1, // 예시로 roleId가 1이라고 가정
+            email: fullEmail, // 생성된 이메일
+            password: password, // 비밀번호
+            phoneNumber: phoneNumber, // 전화번호
+        }
+
+        // 백엔드로 requestDto 전송
+        fetch('http://localhost:8090/api/v1/users/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('회원가입 성공:', data)
+
+                // 회원가입 성공 알림
+                alert('회원가입이 성공적으로 완료되었습니다!')
+
+                // 로그인 페이지로 이동
+                router.push('/account/login') // 로그인 페이지로 이동
+            })
+            .catch((error) => {
+                console.error('회원가입 오류:', error)
+                alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.')
+                router.push('/account/signup')
+            })
+    }
 
     return (
         <div className={styles.container}>
@@ -13,34 +109,83 @@ export default function RegisterPage() {
                 <div className={styles.formContainer}>
                     <h1 className="text-2xl font-bold text-center mb-8">회원가입</h1>
 
-                    <form className={styles.form}>
+                    <form className={styles.form} onSubmit={handleSubmit}>
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                                    이름
+                                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                                    닉네임
                                 </label>
                                 <input
                                     type="text"
-                                    id="name"
-                                    name="name"
+                                    id="username"
+                                    name="username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    maxLength={20} // 최대 20글자 제한
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                    placeholder="이름을 입력하세요"
+                                    placeholder="닉네임을 입력하세요 (최대 20글자)"
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="id" className="block text-sm font-medium text-gray-700">
-                                    아이디
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                    이메일
+                                </label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        id="emailLocalPart"
+                                        name="emailLocalPart"
+                                        value={emailLocalPart}
+                                        onChange={(e) => setEmailLocalPart(e.target.value)}
+                                        className="mt-1 block w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                        placeholder="이메일 입력"
+                                    />
+                                    <span className="mt-2">@</span>
+                                    <select
+                                        id="emailDomain"
+                                        name="emailDomain"
+                                        value={emailDomain}
+                                        onChange={(e) => {
+                                            setEmailDomain(e.target.value)
+                                            setCustomEmailDomain('') // 도메인 선택 시 직접 입력 초기화
+                                        }}
+                                        className="mt-1 block w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                    >
+                                        <option value="">도메인 선택</option>
+                                        <option value="gmail.com">gmail.com</option>
+                                        <option value="naver.com">naver.com</option>
+                                        <option value="daum.net">daum.net</option>
+                                        <option value="custom">직접 입력</option>
+                                    </select>
+                                </div>
+                                {emailDomain === 'custom' && (
+                                    <input
+                                        type="text"
+                                        id="customEmailDomain"
+                                        name="customEmailDomain"
+                                        value={customEmailDomain}
+                                        onChange={(e) => setCustomEmailDomain(e.target.value)}
+                                        className="mt-2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                        placeholder="도메인을 입력하세요 (예: example.com)"
+                                    />
+                                )}
+                            </div>
+
+                            <div>
+                                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                                    전화번호
                                 </label>
                                 <input
                                     type="text"
-                                    id="id"
-                                    name="id"
+                                    id="phone"
+                                    name="phone"
+                                    value={phoneNumber}
+                                    onChange={(e) => setPhoneNumber(e.target.value)}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                    placeholder="아이디를 입력하세요"
+                                    placeholder="000-0000-0000"
                                 />
                             </div>
-
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                     비밀번호
@@ -49,8 +194,10 @@ export default function RegisterPage() {
                                     type="password"
                                     id="password"
                                     name="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                    placeholder="비밀번호를 입력하세요"
+                                    placeholder="영문자, 숫자, 특수문자를 포함한 8~20자리"
                                 />
                             </div>
 
@@ -62,10 +209,14 @@ export default function RegisterPage() {
                                     type="password"
                                     id="confirmPassword"
                                     name="confirmPassword"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
                                     placeholder="비밀번호를 다시 입력하세요"
                                 />
                             </div>
+
+                            {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
 
                             <button
                                 type="submit"
@@ -93,22 +244,6 @@ export default function RegisterPage() {
                                 </svg>
                                 GitHub으로 시작하기
                             </button>
-
-                            <div className="relative py-4">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t border-gray-200"></div>
-                                </div>
-                                <div className="relative flex justify-center">
-                                    <span className="px-4 bg-white text-sm text-gray-500">또는</span>
-                                </div>
-                            </div>
-
-                            <div className="text-center text-sm">
-                                <span className="text-gray-500">이미 계정이 있으신가요? </span>
-                                <Link href="/account/login" className="text-gray-900 hover:text-gray-700 font-medium">
-                                    로그인
-                                </Link>
-                            </div>
                         </div>
                     </form>
                 </div>
