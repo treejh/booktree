@@ -1,161 +1,196 @@
 .container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f4f4f4;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f4f4f4;
 }
 
 .mainWrapper {
-  width: 100%;
-  max-width: 2000px;
-  margin: 5rem 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f4f4f4;
+    width: 100%;
+    max-width: 2000px;
+    margin: 5rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
 }
 
 .formContainer {
-  width: 100%;
-  max-width: 800px;
-  padding: 3rem 4rem;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: 800px;
+    padding: 3rem 4rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 2rem;
-  text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    text-align: center;
 }
 
 .form {
-  width: 100%;
+    width: 100%;
 }
 
 .tabContainer {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 2rem;
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
 }
 
 .tabButton {
-  flex: 1;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
 }
 
 .tabButtonActive {
-  background-color: #2e804e;
-  color: white;
+    background-color: #2e804e;
+    color: white;
 }
 
 .tabButtonActive:hover {
-  background-color: #256d41;
+    background-color: #256d41;
 }
 
 .tabButtonInactive {
-  background-color: white;
-  color: rgb(55 65 81);
-  border: 1px solid rgb(229 231 235);
+    background-color: white;
+    color: rgb(55 65 81);
+    border: 1px solid rgb(229 231 235);
 }
 
 .tabButtonInactive:hover {
-  background-color: rgb(249 250 251);
+    background-color: rgb(249 250 251);
 }
 
 .inputGroup {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: rgb(55 65 81);
-  margin-bottom: 0.25rem;
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(55 65 81);
+    margin-bottom: 0.25rem;
 }
 
 .input {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  border: 1px solid rgb(209 213 219);
-  border-radius: 0.375rem;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(209 213 219);
+    border-radius: 0.375rem;
 }
 
 .input:focus {
-  outline: none;
-  border-color: rgb(21 128 61);
-  ring-color: rgb(21 128 61);
+    outline: none;
+    border-color: rgb(21 128 61);
+    ring-color: rgb(21 128 61);
 }
 
 .submitButton {
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background-color: #2e804e;
-  color: white;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background-color: #2e804e;
+    color: white;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .submitButton:hover {
-  background-color: #256d41;
+    background-color: #256d41;
 }
 
 .loginLink {
-  text-align: center;
-  font-size: 0.875rem;
-  color: rgb(75 85 99);
-  margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: rgb(75 85 99);
+    margin-top: 1.5rem;
 }
 
 .loginLinkText {
-  color: rgb(21 128 61);
-  margin-left: 0.25rem;
+    color: rgb(21 128 61);
+    margin-left: 0.25rem;
 }
 
 .loginLinkText:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 .footer {
-  width: 100%;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
 }
 
 .footerDivider {
-  height: 4rem;
+    height: 4rem;
 }
 
 .footerLine {
-  width: 100%;
-  border-top: 1px solid rgb(229 231 235);
+    width: 100%;
+    border-top: 1px solid rgb(229 231 235);
 }
 
 .footerContent {
-  height: 1.5rem;
+    height: 1.5rem;
 }
 
 .footerText {
-  width: 100%;
-  padding-left: 2rem;
-  padding-right: 2rem;
-  padding-bottom: 1.5rem;
+    width: 100%;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 1.5rem;
 }
 
 .copyright {
-  font-size: 0.875rem;
-  color: rgb(107 114 128);
-  text-align: left;
-  display: block;
-  margin-left: 1rem;
+    font-size: 0.875rem;
+    color: rgb(107 114 128);
+    text-align: left;
+    display: block;
+    margin-left: 1rem;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.closeButton {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background-color: #2e804e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.closeButton:hover {
+    background-color: #256d41;
 }
