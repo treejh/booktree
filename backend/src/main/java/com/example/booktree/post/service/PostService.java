@@ -21,14 +21,20 @@ import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+
 
 
 import java.time.LocalDateTime;
@@ -37,6 +43,7 @@ import java.util.List;
 import com.example.booktree.image.entity.Image;
 import com.example.booktree.image.repository.ImageRepository;
 import com.example.booktree.utils.S3Uploader;
+import org.springframework.transaction.annotation.Propagation;
 
 
 @Service
@@ -263,9 +270,10 @@ public class PostService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
 
+    @Transactional//(propagation = Propagation.REQUIRES_NEW)
     public void increaseViewCount(Post post) {
         post.setView(post.getView() + 1);
-        postRepository.save(post);
+        //postRepository.save(post);
     }
 
 
@@ -273,12 +281,20 @@ public class PostService {
     @Transactional
     public Post findPostById(Long postId) {
 
+        System.out.println("🔥🔥 게시글 조회 서비스 실행됨");
+
+
+
 
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
 
-        //increaseViewCount(post);
+        post.setView(post.getView() + 1); // 영속성 상태에서 직접 수정
+
+
+
+
 
 
 

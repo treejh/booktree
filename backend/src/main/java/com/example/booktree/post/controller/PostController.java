@@ -118,6 +118,9 @@ public class PostController {
     // 게시글 아이디로 해당 게시글 조회
     @GetMapping("/get/{postId}")
     public ResponseEntity<PostDetailResponseDto> getPostById(@PathVariable("postId") Long postId) {
+
+        System.out.println("📥📥 컨트롤러 진입");
+
         Post post = postService.findPostById(postId);
 
 
@@ -142,7 +145,7 @@ public class PostController {
                 .modifiedAt(post.getModifiedAt())
                 .build();
 
-        //popularPostService.increasePopularity(postId);
+
 
         return ResponseEntity.ok(response);
 
