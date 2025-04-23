@@ -1,0 +1,27 @@
+const patchUserField = async (field: 'email' | 'phone' | 'username', value: string) => {
+    const urlMap = {
+        email: `http://localhost:8090/api/v1/users/patch/email?email=${value}`,
+        phone: `http://localhost:8090/api/v1/users/patch/phoneNumber`,
+        username: `http://localhost:8090/api/v1/users/patch/username?username=${value}`,
+    }
+
+    const options: RequestInit = {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+    }
+
+    if (field === 'phone') {
+        options.body = JSON.stringify({ phoneNumber: value })
+    }
+
+    try {
+        const res = await fetch(urlMap[field], options)
+        if (!res.ok) throw new Error()
+        alert(`${field} 변경 성공!`)
+    } catch {
+        alert(`${field} 변경 실패. 다시 시도해주세요.`)
+    }
+
+    setEditState((prev) => ({ ...prev, [field]: false }))
+}

@@ -492,7 +492,7 @@
 //                                                     저장
 //                                                 </button>
 //                                                 <button
-//                                                     onClick={() => {
+//                                     s                onClick={() => {
 //                                                         setIsPostEditing(false)
 //                                                         setEditedPost({
 //                                                             title: post.title,
