@@ -10,11 +10,17 @@ interface Category {
     update_at: string
 }
 
+interface Follow {
+    followerCount: number
+    followingCount: number
+}
+
 export default function MyPage() {
     const router = useRouter() // router 추가
     const [categories, setCategories] = useState<Category[]>([]) // 초기값 빈 배열
     const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
+    const [followCount, setFollowCount] = useState<Follow[]>([])
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -32,6 +38,37 @@ export default function MyPage() {
                 }
                 const data = await response.json()
                 setCategories(data) // 가져온 데이터를 상태에 저장
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    // err가 Error 인스턴스인지 확인
+                    setError(err.message) // 에러 메시지 접근
+                } else {
+                    setError('알 수 없는 오류가 발생했습니다.')
+                }
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchCategories()
+    }, [])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('http://localhost:8090/api/v1/follow/get/followcount', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 추가적인 헤더가 필요하면 여기에 추가
+                    },
+                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
+                })
+                if (!response.ok) {
+                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                }
+                const data = await response.json()
+                setFollowCount(data) // 가져온 데이터를 상태에 저장
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     // err가 Error 인스턴스인지 확인
@@ -228,26 +265,40 @@ export default function MyPage() {
 
                 {/* 통계 섹션 수정 */}
                 <div className="grid grid-cols-3 divide-x divide-gray-200">
-                    <div
-                        className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={handlePostsClick}
-                    >
-                        <h3 className="text-gray-500 mb-2">게시물</h3>
-                        <p className="text-2xl font-bold">42</p>
+                    <div>
+                        <div
+                            className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+                            onClick={handlePostsClick}
+                        >
+                            <h3 className="text-gray-500 mb-2">게시물</h3>
+                            <p className="text-2xl font-bold">42</p>
+                        </div>
                     </div>
-                    <div
-                        className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={handleFollowingClick}
-                    >
-                        <h3 className="text-gray-500 mb-2">팔로잉</h3>
-                        <p className="text-2xl font-bold">128</p>
+                    <div>
+                        {followCount && (
+                            <div>
+                                <div
+                                    className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+                                    onClick={handleFollowingClick}
+                                >
+                                    <h3 className="text-gray-500 mb-2">팔로잉</h3>
+                                    <p className="text-2xl font-bold">{followCount.followingCount}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <div
-                        className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={handleFollowerClick}
-                    >
-                        <h3 className="text-gray-500 mb-2">팔로워</h3>
-                        <p className="text-2xl font-bold">{followerCount}</p>
+                    <div>
+                        {followCount && (
+                            <div>
+                                <div
+                                    className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+                                    onClick={handleFollowerClick}
+                                >
+                                    <h3 className="text-gray-500 mb-2">팔로워</h3>
+                                    <p className="text-2xl font-bold">{followCount.followerCount}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
