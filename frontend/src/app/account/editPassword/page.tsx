@@ -1,15 +1,23 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './editPassword.module.css'
 import { useRouter } from 'next/navigation'
+import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
 export default function EditPassword() {
     const router = useRouter()
+    const { isLogin, loginUser } = useGlobalLoginUser()
     const [passwords, setPasswords] = useState({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
     })
+    useEffect(() => {
+        if (!isLogin) {
+            alert('로그인이 필요합니다.')
+            router.push('/account/login')
+        }
+    }, [])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPasswords({
