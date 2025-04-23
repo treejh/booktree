@@ -21,7 +21,7 @@ const CategoryGrid = () => {
 
     useEffect(() => {
         const currentCategoryId = categoryIdMap[activeTab as keyof typeof categoryIdMap]
-        fetch(`http://localhost:8090/api/v1/posts/get/maincategory/${currentCategoryId}/view`)
+        fetch(`http://localhost:8090/api/v1/popular/get/posts/${currentCategoryId}`)
             .then((result) => {
                 if (!result.ok) {
                     throw new Error('Network response was not ok')
@@ -29,12 +29,13 @@ const CategoryGrid = () => {
                 return result.json()
             })
             .then((result) => {
-                const transformedPopPosts = result.content.map((post) => ({
+                const transformedPopPosts = result.map((post) => ({
                     id: post.postId,
                     title: post.title,
                     viewCount: post.viewCount,
                     ranking: post.ranking,
                     url: 'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png',
+                    score: post.score,
                 }))
 
                 setPopPosts(transformedPopPosts)
@@ -54,7 +55,7 @@ const CategoryGrid = () => {
                         <CategoryBox
                             key={index}
                             title={post.title}
-                            views={post.viewCount}
+                            views={post.score}
                             imageUrl={post.url} // 필요 시 추가
                             // href={item.href} // 필요 시 추가
                         />

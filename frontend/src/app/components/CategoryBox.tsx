@@ -20,7 +20,7 @@ const CategoryBox = ({ title, views, imageUrl }: CategoryBoxProps) => {
             </div>
             <div className="p-4 bg-white">
                 <h3 className="font-medium text-gray-800">{title}</h3>
-                <p className="text-sm text-gray-500 mt-1">조회수 {views}</p>
+                <p className="text-sm text-gray-500 mt-1">월간 조회수 {views}</p>
             </div>
         </div>
         /* </Link> */
