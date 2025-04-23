@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 type User = {
   id: number;
   email: string;
+  provider: string;
   phoneNumber: string;
   username: string;
   createDate: string;
@@ -30,6 +31,7 @@ function createEmptyUser(): User {
   return {
     id: 0,
     createDate: "",
+    provider: "",
     modifyDate: "",
     email: "",
     phoneNumber: "",
