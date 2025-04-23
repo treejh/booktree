@@ -24,6 +24,7 @@ const CategoryGrid = () => {
         fetch(`http://localhost:8090/api/v1/popular/get/posts/${currentCategoryId}`)
             .then((result) => {
                 if (!result.ok) {
+                    setPopPosts([])
                     throw new Error('Network response was not ok')
                 }
                 return result.json()
@@ -55,6 +56,7 @@ const CategoryGrid = () => {
                         <CategoryBox
                             key={index}
                             title={post.title}
+                            alt={'이미지 제목 : ${post.title}'}
                             views={post.score}
                             imageUrl={post.url} // 필요 시 추가
                             // href={item.href} // 필요 시 추가
