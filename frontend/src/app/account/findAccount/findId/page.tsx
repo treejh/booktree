@@ -9,6 +9,7 @@ export default function FindAccountPage() {
     const [phone, setPhone] = useState('')
     const [result, setResult] = useState<{ email: string; message: string } | null>(null)
     const [errorMessage, setErrorMessage] = useState('')
+    const [showErrorModal, setShowErrorModal] = useState(false) // 에러 모달 상태 추가
     const router = useRouter()
 
     const validatePhoneNumber = (phoneNumber: string) => {
@@ -19,6 +20,7 @@ export default function FindAccountPage() {
     const handleSubmit = async () => {
         if (!validatePhoneNumber(phone)) {
             setErrorMessage('전화번호 형식이 올바르지 않습니다. 000-0000-0000 형식으로 입력해주세요.')
+            setShowErrorModal(true) // 에러 모달 표시
             return
         }
 
@@ -37,14 +39,24 @@ export default function FindAccountPage() {
                 setErrorMessage('') // 에러 메시지 초기화
             } else {
                 const errorData = await response.json()
-                setErrorMessage(errorData.message || '이메일 찾기에 실패했습니다.')
+                setErrorMessage(errorData.message || '이메일이 존재하지 않습니다.')
+                setShowErrorModal(true) // 에러 모달 표시
                 setResult(null)
             }
         } catch (error) {
             console.error('이메일 찾기 요청 중 오류 발생:', error)
             setErrorMessage('서버와의 통신 중 문제가 발생했습니다.')
+            setShowErrorModal(true) // 에러 모달 표시
             setResult(null)
         }
+    }
+
+    const closeResult = () => {
+        setResult(null) // 결과 모달 닫기
+    }
+
+    const closeErrorModal = () => {
+        setShowErrorModal(false) // 에러 모달 닫기
     }
 
     return (
@@ -77,16 +89,30 @@ export default function FindAccountPage() {
                             />
                         </div>
 
-                        {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
-
                         <button className={styles.submitButton} onClick={handleSubmit}>
                             이메일 찾기
                         </button>
 
                         {result && (
-                            <div className={styles.result}>
-                                <p>{result.message}</p>
-                                <p>이메일: {result.email}</p>
+                            <div className={styles.modal}>
+                                <div className={styles.modalContent}>
+                                    <p>{result.message}</p>
+                                    <p>이메일: {result.email}</p>
+                                    <button className={styles.closeButton} onClick={closeResult}>
+                                        닫기
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {showErrorModal && (
+                            <div className={styles.modal}>
+                                <div className={styles.modalContent}>
+                                    <p>{errorMessage}</p>
+                                    <button className={styles.closeButton} onClick={closeErrorModal}>
+                                        닫기
+                                    </button>
+                                </div>
                             </div>
                         )}
 
