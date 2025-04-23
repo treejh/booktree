@@ -6,9 +6,46 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function FindAccountPage() {
-    const [email, setEmail] = useState('')
     const [phone, setPhone] = useState('')
+    const [result, setResult] = useState<{ email: string; message: string } | null>(null)
+    const [errorMessage, setErrorMessage] = useState('')
     const router = useRouter()
+
+    const validatePhoneNumber = (phoneNumber: string) => {
+        const phoneRegex = /^\d{3}-\d{4}-\d{4}$/
+        return phoneRegex.test(phoneNumber)
+    }
+
+    const handleSubmit = async () => {
+        if (!validatePhoneNumber(phone)) {
+            setErrorMessage('전화번호 형식이 올바르지 않습니다. 000-0000-0000 형식으로 입력해주세요.')
+            return
+        }
+
+        try {
+            const response = await fetch('http://localhost:8090/api/v1/users/find/email/phone', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ phoneNumber: phone }),
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                setResult({ email: data.data, message: data.message })
+                setErrorMessage('') // 에러 메시지 초기화
+            } else {
+                const errorData = await response.json()
+                setErrorMessage(errorData.message || '이메일 찾기에 실패했습니다.')
+                setResult(null)
+            }
+        } catch (error) {
+            console.error('이메일 찾기 요청 중 오류 발생:', error)
+            setErrorMessage('서버와의 통신 중 문제가 발생했습니다.')
+            setResult(null)
+        }
+    }
 
     return (
         <div className={styles.container}>
@@ -27,20 +64,6 @@ export default function FindAccountPage() {
                         </div>
 
                         <div className={styles.inputGroup}>
-                            <label htmlFor="email" className={styles.label}>
-                                이메일
-                            </label>
-                            <input
-                                id="email"
-                                type="email"
-                                className={styles.input}
-                                placeholder="가입 시 등록한 이메일을 입력하세요"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-
-                        <div className={styles.inputGroup}>
                             <label htmlFor="phone" className={styles.label}>
                                 전화번호
                             </label>
@@ -54,7 +77,18 @@ export default function FindAccountPage() {
                             />
                         </div>
 
-                        <button className={styles.submitButton}>이메일 찾기</button>
+                        {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+
+                        <button className={styles.submitButton} onClick={handleSubmit}>
+                            이메일 찾기
+                        </button>
+
+                        {result && (
+                            <div className={styles.result}>
+                                <p>{result.message}</p>
+                                <p>이메일: {result.email}</p>
+                            </div>
+                        )}
 
                         <div className={styles.loginLink}>
                             <span>비밀번호를 찾으셨나요?</span>
