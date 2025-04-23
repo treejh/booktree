@@ -3,12 +3,46 @@
 import { useState } from 'react'
 import styles from './login.module.css'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
     const [rememberLogin, setRememberLogin] = useState(false)
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     const socialLoginForKakaoUrl = `http://localhost:8090/oauth2/authorization/kakao`
     const socialLoginForGithubUrl = `http://localhost:8090/oauth2/authorization/github`
     const redirectUrlAfterSocialLogin = 'http://localhost:3000'
+    const router = useRouter()
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        const loginData = {
+            email,
+            password,
+        }
+
+        try {
+            const response = await fetch('http://localhost:8090/api/v1/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(loginData),
+            })
+
+            if (response.ok) {
+                // 로그인 성공 후 리다이렉트
+                window.location.href = '/'
+            } else {
+                console.error('로그인 실패:', response.status)
+                // 에러 처리
+            }
+        } catch (error) {
+            console.error('로그인 요청 중 오류 발생:', error)
+        }
+    }
 
     return (
         <div className={styles.container}>
@@ -16,18 +50,20 @@ export default function LoginPage() {
                 <div className={styles.formContainer}>
                     <h1 className="text-2xl font-bold text-center mb-8">로그인</h1>
 
-                    <form className={styles.form}>
+                    <form className={styles.form} onSubmit={handleSubmit}>
                         <div className="space-y-6">
                             <div>
-                                <label htmlFor="id" className="block text-sm font-medium text-gray-700">
-                                    아이디
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                    이메일
                                 </label>
                                 <input
-                                    type="text"
-                                    id="id"
-                                    name="id"
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                    placeholder="아이디를 입력하세요"
+                                    placeholder="이메일을 입력하세요"
                                 />
                             </div>
 
@@ -39,6 +75,8 @@ export default function LoginPage() {
                                     type="password"
                                     id="password"
                                     name="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
                                     placeholder="비밀번호를 입력하세요"
                                 />
