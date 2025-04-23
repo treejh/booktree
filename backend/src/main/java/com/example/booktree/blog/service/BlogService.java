@@ -6,7 +6,7 @@ import com.example.booktree.blog.repository.BlogRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,6 +51,7 @@ public class BlogService {
     public Blog findBlogByBlogId(Long blogId) {
         return verifiedBlog(blogId);
     }
+
     @Transactional
     public Blog findBlogByToken() {
         Long userId = tokenService.getIdFromToken();
@@ -68,7 +69,6 @@ public class BlogService {
 
     public Blog updateBlog(BlogRequestDto blogRequestDto) {
         Long userId = tokenService.getIdFromToken();
-        User user = userService.findById(userId);
 
         Blog findBlog = getFirstBlogOfUser(userId);
         // 검증

@@ -27,6 +27,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
                                              Pageable pageable);
 
     Page<Post> findByUserIdInOrderByCreatedAtDesc(List<Long> userIds, Pageable pageable);
+
     // 블로그별 게시글 조회
     List<Post> findByBlogId(Long blogId);
 
@@ -53,6 +54,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Page<Post> findByAuthorContainingIgnoreCase(String author, Pageable pageable); // 작성자 검색
 
     Page<Post> findByBookContainingIgnoreCase(String book, Pageable pageable); // 책 제목 검색
+
+
+    @Query("SELECT p FROM Post p WHERE p.blog.id = :blogId ORDER BY p.likeCount DESC")
+    Page<Post> findPopularPostsByBlogId(@Param("blogId") Long blogId, Pageable pageable);
 
 
 

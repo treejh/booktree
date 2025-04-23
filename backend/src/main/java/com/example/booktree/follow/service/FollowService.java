@@ -8,9 +8,8 @@ import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
 import com.example.booktree.follow.dto.response.FollowCountDto;
 import com.example.booktree.follow.entity.Follow;
 import com.example.booktree.follow.repository.FollowRepository;
-import com.example.booktree.maincategory.dto.response.AllMainCategoryResponseDto;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,6 +82,10 @@ public class FollowService {
         User follower = userService.findById(userId);
         User followed = userService.findById(followRequestDto.getFolloweeId());
 
+        if(follower.equals(followed)) {
+            throw new BusinessLogicException(ExceptionCode.SELF_FOLLOW);
+        }
+
         if (isIn(userId,followRequestDto.getFolloweeId())) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_FOLLOW);
         }
@@ -139,4 +142,15 @@ public class FollowService {
             return false;
         }
     }
+
+    //팔로우 엔티티에서 본인이 팔로우한 아이디 빼오기
+    public List<Long> followingList(){
+        List<Follow> followingList = followRepository.findByFollower_Id(tokenService.getIdFromToken());
+        return followingList.stream()
+                .map(follow ->follow.getFollowed().getId())  // 상대방 ID
+                .toList();
+
+    }
+
+
 }

@@ -1,10 +1,10 @@
 package com.example.booktree.user.service;
 
 
-import com.example.booktree.blog.entity.Blog;
 import com.example.booktree.enums.RoleType;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.role.entity.Role;
 import com.example.booktree.role.repository.RoleRepository;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
@@ -19,8 +19,6 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -74,6 +72,29 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public User createAdmin(UserPostRequestDto userPostRequestDto){
+        //이메일, 전화번호, 역할 검증
+        UserValidation(userPostRequestDto);
+
+        // username 비어있으면 랜덤 UUID 일부로 생성
+        String username = userPostRequestDto.getUsername();
+        if (username == null || username.trim().isEmpty()) {
+            username = "Admin_" + CreateRandomNumber.randomNumber();
+        }
+
+        User user = User.builder()
+                .email(userPostRequestDto.getEmail())
+                .password(passwordEncoder.encode(userPostRequestDto.getPassword()))
+                .phoneNumber(userPostRequestDto.getPhoneNumber())
+                //이미 UserValidation에서 검증을 했기 때문에 get() 사용
+                .role(roleRepository.findById(userPostRequestDto.getRoleId()).get())
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .username(username).build();
+
+        return userRepository.save(user);
+    }
+
 
 
     public User findUserByEmail(String email){
@@ -87,7 +108,8 @@ public class UserService {
 
         User user = findUserByEmail(email);
         String randomPassword = CreateRandomNumber.randomNumber();
-        user.setPassword(randomPassword);
+        user.setPassword(passwordEncoder.encode(randomPassword));
+        userRepository.save(user);
         return randomPassword;
     }
 
@@ -96,7 +118,9 @@ public class UserService {
 
         User user = findUserByPhoneNumber(phoneNumber);
         String randomPassword = CreateRandomNumber.randomNumber();
-        user.setPassword(randomPassword);
+        user.setPassword(passwordEncoder.encode(randomPassword));
+
+        userRepository.save(user);
         return randomPassword;
     }
 
@@ -236,8 +260,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public User updateExtraInfo(Long userId, UserPhoneNumberRequestDto userPhoneNumberRequestDto){
+        User user = ownerValidation(userId);  // userId를 직접 사용하는 방식
+        user.setPhoneNumber(userPhoneNumberRequestDto.getPhoneNumber());
+        user.setModifiedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
 
-    
+
+
+
     public User ownerValidation(Long userId){
         User user = findById(userId);
 
@@ -320,8 +352,8 @@ public class UserService {
 
 
     @Transactional
-    public Optional<User> findByProviderAndUuidAndSocialId(String socialId, String ssoProvider, String username){
-        return userRepository.findBySocialIdAndSsoProviderAndUsername(socialId, ssoProvider, username);
+    public Optional<User> findBySocialIdAndSsoProvider(String socialId, String ssoProvider){
+        return userRepository.findBySocialIdAndSsoProvider(socialId, ssoProvider);
     }
 
 

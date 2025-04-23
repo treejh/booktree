@@ -8,6 +8,7 @@ import com.example.booktree.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,15 +33,21 @@ public class PopularPostService {
 
     // 인기 게시글 TOP N 조회
     public List<Post> getPopularPosts(int limit) {
-        Set<String> postIds = redisTemplate.opsForZSet()
-                .reverseRange(REDIS_KEY, 0, limit - 1);
+        Set<ZSetOperations.TypedTuple<String>> postScores = redisTemplate.opsForZSet()
+                .reverseRangeWithScores(REDIS_KEY, 0, limit - 1);
 
-        if (postIds == null || postIds.isEmpty()) {
-            throw new BusinessLogicException(ExceptionCode.VIEW_NOT_FOUNd);
+        if (postScores == null || postScores.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.VIEW_NOT_FOUND);
         }
 
-        // Redis에서 가져온 postId를 기반으로 DB에서 조회
-        List<Long> ids = postIds.stream().map(Long::parseLong).collect(Collectors.toList());
+        // Redis에서 가져온 postId와 score를 기반으로 DB에서 조회
+        List<Long> ids = new ArrayList<>();
+        for (ZSetOperations.TypedTuple<String> tuple : postScores) {
+            String postId = tuple.getValue();
+            Double score = tuple.getScore();
+            log.info("Post ID: {}, Score: {}", postId, score); // score 출력
+            ids.add(Long.parseLong(postId));
+        }
 
         // 순서 보장을 안해줌
         List<Post> posts = postService.findAllById(ids);

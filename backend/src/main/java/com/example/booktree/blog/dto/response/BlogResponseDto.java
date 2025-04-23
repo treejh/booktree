@@ -20,7 +20,6 @@ public class BlogResponseDto {
 
     public BlogResponseDto(Blog blog){
 
-        this.name= blog.getName();
         this.blogId = blog.getId();
         this.profile= blog.getProfile();
         this.notice = blog.getNotice();

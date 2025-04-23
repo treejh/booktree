@@ -10,6 +10,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -55,7 +57,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String email =providerTypeCode+"__"+oauthId;
 
-        Optional<User> validUser = userService.findByProviderAndUuidAndSocialId(oauthId,providerTypeCode,nickname);
+        Optional<User> validUser = userService.findBySocialIdAndSsoProvider(oauthId,providerTypeCode);
 
         //만약 회원이 존재한다면 -> 회원가입이 된 사용자라면 ?
         User user;
@@ -67,16 +69,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
 
-        return new SecurityUser(
+        // Authentication 생성 (SecurityUser를 사용)
+        SecurityUser securityUser = new SecurityUser(
                 user.getId(),
                 user.getEmail(),
                 " ",
                 user.getUsername(),
-                user.getAuthorities(user.getRole()));
+                user.getAuthorities(user.getRole())
+        );
 
+        // Authentication 객체 설정
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
 
+        // SecurityContext에 인증된 사용자 정보 설정
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
+        return securityUser; // 반환 값도 SecurityUser로
     }
+
+
 
 
 

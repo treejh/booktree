@@ -1,7 +1,6 @@
 package com.example.booktree.post.service;
 
 import com.example.booktree.LikePost.repository.LikePostRepository;
-import com.example.booktree.LikePost.service.LikePostService;
 import com.example.booktree.blog.entity.Blog;
 
 import com.example.booktree.blog.service.BlogService;
@@ -10,6 +9,7 @@ import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
+import com.example.booktree.follow.entity.Follow;
 import com.example.booktree.follow.service.FollowService;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
@@ -19,12 +19,11 @@ import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.user.service.TokenService;
+import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -233,19 +232,15 @@ public class PostService {
     @Transactional
     public Page<Post> getPostsFromFollowing(Pageable pageable){
 
+        //id가 userid인듯( 내가 팔로잉한 사람들 )
+        List<Long> followingList = followService.followingList();
 
-        //id가 userid인듯
-        List<AllFollowListResponseDto> followingList = followService.getAllFollowedList();
-        List<Long> followingUserIds = followingList.stream()
-                .map(AllFollowListResponseDto::getId)
-                .toList();
 
-        if (followingUserIds.isEmpty()) {
+        if (followingList.isEmpty()) {
+            System.out.println("여기 들어오나?");
             return Page.empty(pageable);
         }
-
-        return postRepository.findByUserIdInOrderByCreatedAtDesc(followingUserIds, pageable);
-
+        return postRepository.findByUserIdInOrderByCreatedAtDesc(followingList, pageable);
     }
 
     //사용자가 좋아요 누른 게시글 가져오기
@@ -283,7 +278,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
 
-        increaseViewCount(post);
+        //increaseViewCount(post);
 
 
 
@@ -366,7 +361,7 @@ public class PostService {
                 .build());
     }
 
-    public Page<PostResponseDto> getPopularPostsByBlog(Long blogId, int page, int size) {
+    public Page<PostResponseDto> getPopularWeekPostsByBlog(Long blogId, int page, int size) {
         Blog blog = blogService.findBlogByBlogId(blogId);
         if (blog == null) {
             throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
@@ -377,7 +372,7 @@ public class PostService {
 
         Page<Post> posts = postRepository.findPopularPostsByLikesInLastWeek(blogId, oneWeekAgo, pageable);
 
-        List<Post> debugList = postRepository.findByBlogId(2L);
+        //List<Post> debugList = postRepository.findByBlogId(2L);
 
 
 
@@ -395,6 +390,26 @@ public class PostService {
     public List<Post> findAllById(List<Long> allId){
         return postRepository.findAllById(allId);
     }
+
+
+    public Page<PostResponseDto> getPopularPostsByBlog(Long blogId, int page, int size) {
+        Blog blog = blogService.findBlogByBlogId(blogId);
+        if (blog == null) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts = postRepository.findPopularPostsByBlogId(blogId, pageable);
+
+        return posts.map(post -> PostResponseDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .viewCount(post.getView())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .build());
+    }
+
 
 
 }

@@ -2,7 +2,7 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-import com.example.booktree.popularpost.service.PopularPostService;
+//import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
@@ -36,7 +36,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
-    private final PopularPostService popularPostService;
+    //private final PopularPostService popularPostService;
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
@@ -142,6 +142,7 @@ public class PostController {
                 .modifiedAt(post.getModifiedAt())
                 .build();
 
+        //popularPostService.increasePopularity(postId);
 
         return ResponseEntity.ok(response);
 
@@ -167,13 +168,13 @@ public class PostController {
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
-    @GetMapping("/get/blog/popular/{blogId}")
-    public ResponseEntity<Page<PostResponseDto>> getPopularPostsByBlog(
+    @GetMapping("/get/blog/popularWeek/{blogId}")
+    public ResponseEntity<Page<PostResponseDto>> getPopularWeekPostsByBlog(
             @PathVariable("blogId") Long blogId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "8") int size) {
 
-        Page<PostResponseDto> posts = postService.getPopularPostsByBlog(blogId, page, size);
+        Page<PostResponseDto> posts = postService.getPopularWeekPostsByBlog(blogId, page, size);
         return ResponseEntity.ok(posts);
     }
 
@@ -221,6 +222,17 @@ public class PostController {
 
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+    @GetMapping("/get/blog/popular/{blogId}")
+    public ResponseEntity<Page<PostResponseDto>> getPopularPostsByBlog(
+            @PathVariable("blogId") Long blogId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
+
+        Page<PostResponseDto> posts = postService.getPopularPostsByBlog(blogId, page, size);
+        return ResponseEntity.ok(posts);
+    }
+
 
 
 
