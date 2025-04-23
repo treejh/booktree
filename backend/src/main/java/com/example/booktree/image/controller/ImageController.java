@@ -40,7 +40,6 @@ public class ImageController {
     }
 
 
-
     //파일 이름으로 삭제
     @DeleteMapping
     public ResponseEntity<String> deleteFileByName(@RequestParam String filePath){

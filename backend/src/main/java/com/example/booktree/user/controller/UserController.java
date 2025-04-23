@@ -170,9 +170,9 @@ public class UserController {
     }
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader(value = "Authorization", required = false) String authorization, HttpServletResponse response) {
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().body("Authorization header is missing or invalid");
-        }
+//        if (authorization == null || !authorization.startsWith("Bearer ")) {
+//            return ResponseEntity.badRequest().body("Authorization header is missing or invalid");
+//        }
 
         //String token = authorization.substring(7); // "Bearer " 제거
 
