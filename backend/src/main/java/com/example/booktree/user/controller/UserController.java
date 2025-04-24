@@ -230,6 +230,17 @@ public class UserController {
 
 
 
+    //이메일, 핸드폰 번호로 비밀번호 찾기
+    @PostMapping("/find/pw/emailAndPhone")
+    public ResponseEntity findPwByEmailAndPhone(@Valid @RequestBody UserPasswordRequestDto.FindPwByEmailAndPhone findPwByEmailAndPhone) {
+        String password = userService.findPasswordByEmailAndPhone(findPwByEmailAndPhone) ;
+        ApiResponseDto response = ApiResponseDto.builder()
+                .data(password)
+                .message("임시 비밀번호 입니다.")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
 
 }
