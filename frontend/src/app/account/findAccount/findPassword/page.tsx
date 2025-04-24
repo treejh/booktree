@@ -103,7 +103,8 @@ export default function FindPasswordPage() {
                                 이메일로 찾기
                             </button>
                         </div>
-
+                    </div>
+                    <div className={styles.form}>
                         {/* 핸드폰 번호로 찾기 */}
                         <div className={styles.inputGroup}>
                             <label htmlFor="phone" className={styles.label}>

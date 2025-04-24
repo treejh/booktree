@@ -24,6 +24,72 @@ export default function MyPage() {
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
     const [followCount, setFollowCount] = useState<Follow[]>([])
     const { id: userId } = useParams<{ id: string }>()
+    const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
+    const [editedCategoryName, setEditedCategoryName] = useState<string>('')
+
+    const startEditingCategory = (categoryId: number, currentName: string) => {
+        setEditingCategoryId(categoryId)
+        setEditedCategoryName(currentName)
+    }
+
+    const saveEditedCategory = async (categoryId: number) => {
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/categories/patch/${categoryId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ categoryName: editedCategoryName }),
+            })
+
+            if (!response.ok) {
+                throw new Error('카테고리 수정에 실패했습니다.')
+            }
+
+            setCategories((prev) =>
+                prev.map((category) =>
+                    category.id === categoryId ? { ...category, name: editedCategoryName } : category,
+                ),
+            )
+
+            setEditingCategoryId(null)
+            setEditedCategoryName('')
+        } catch (error) {
+            console.error(error)
+            alert('수정 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleEditCategory = (categoryId: number) => {
+        router.push(`/mypage/editCategory/${categoryId}`)
+    }
+
+    const handleDeleteCategory = async (categoryId: number) => {
+        const confirmed = window.confirm('정말 이 카테고리를 삭제하시겠습니까?')
+        if (!confirmed) return
+
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/categories/delete/${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            })
+
+            if (!response.ok) {
+                throw new Error('카테고리 삭제에 실패했습니다.')
+            }
+
+            // 성공적으로 삭제된 경우 상태 업데이트
+            setCategories((prev) => prev.filter((category) => category.id !== categoryId))
+            alert('카테고리가 성공적으로 삭제되었습니다!')
+        } catch (error) {
+            console.error(error)
+            alert('카테고리 삭제 중 오류가 발생했습니다. 다시 시도해주세요.')
+        }
+    }
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -323,24 +389,39 @@ export default function MyPage() {
                     {categories.map((category) => (
                         <div
                             key={category.id}
-                            className="p-6 hover:bg-gray-50 transition cursor-pointer"
-                            onClick={() => handleCategoryClick(category.id, category.name)}
+                            className="p-6 hover:bg-gray-50 transition cursor-pointer flex justify-between items-center"
                         >
-                            <div className="flex items-center justify-between">
-                                <h3 className="font-medium">{category.name}</h3>
-                                <svg
-                                    className="w-5 h-5 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5l7 7-7 7"
+                            <div className="flex-1">
+                                {editingCategoryId === category.id ? (
+                                    <input
+                                        type="text"
+                                        value={editedCategoryName}
+                                        onChange={(e) => setEditedCategoryName(e.target.value)}
+                                        className="border p-2 rounded w-full"
                                     />
-                                </svg>
+                                ) : (
+                                    <h3
+                                        className="font-medium"
+                                        onClick={() => handleCategoryClick(category.id, category.name)}
+                                    >
+                                        {category.name}
+                                    </h3>
+                                )}
+                            </div>
+                            <div className="flex space-x-2 text-gray-500">
+                                {editingCategoryId === category.id ? (
+                                    <button
+                                        onClick={() => saveEditedCategory(category.id)}
+                                        className="text-green-600 font-semibold"
+                                    >
+                                        완료
+                                    </button>
+                                ) : (
+                                    <button onClick={() => startEditingCategory(category.id, category.name)}>
+                                        수정
+                                    </button>
+                                )}
+                                <button onClick={() => handleDeleteCategory(category.id)}>삭제</button>
                             </div>
                         </div>
                     ))}
