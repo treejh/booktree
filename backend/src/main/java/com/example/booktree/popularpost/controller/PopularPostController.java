@@ -22,6 +22,7 @@ public class PopularPostController {
     private final PopularPostService popularPostService;
 
     // 실시간 인기 게시글 목록 가져오기
+
     @GetMapping("/get/posts/{mainCategoryId}")
     @Operation(
             summary = "실시간 조회수 높은 게시글 불러오기 기능",

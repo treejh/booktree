@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function FindAccountPage() {
+
     const [phone, setPhone] = useState('')
     const [result, setResult] = useState<{ email: string; message: string } | null>(null)
     const [errorMessage, setErrorMessage] = useState('')
@@ -115,6 +116,7 @@ export default function FindAccountPage() {
                                 </div>
                             </div>
                         )}
+
 
                         <div className={styles.loginLink}>
                             <span>비밀번호를 찾으셨나요?</span>

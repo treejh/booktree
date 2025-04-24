@@ -8,12 +8,14 @@ import styles from './edit.module.css'
 export default function EditProfilePage() {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
+
     const [password, setPassword] = useState('')
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const socialLoginForKakaoUrl = `http://localhost:8090/oauth2/authorization/kakao`
     const socialLoginForGithubUrl = `http://localhost:8090/oauth2/authorization/github`
     const redirectUrlAfterSocialLogin = 'http://localhost:3000/account/edit'
     const [provider, setProvider] = useState<string | null>(null)
+
 
     const [phoneNumber, setPhoneNumber] = useState('')
     const [emailLocalPart, setEmailLocalPart] = useState('')
@@ -45,6 +47,7 @@ export default function EditProfilePage() {
                 phone: loginUser.phoneNumber || '',
                 username: loginUser.username || '',
             })
+
             setProvider(loginUser.provider || null)
         }
     }, [isLogin, loginUser, router])
@@ -128,7 +131,9 @@ export default function EditProfilePage() {
         }
 
         if (field === 'phone') {
+
             const phoneRegex = /^\d{3}-\d{4}-\d{4}$/
+
             if (!phoneRegex.test(formData.phone)) {
                 alert('핸드폰 번호는 000-0000-0000 형식이어야 합니다.')
                 return
@@ -142,7 +147,9 @@ export default function EditProfilePage() {
                     },
                     credentials: 'include',
                     body: JSON.stringify({
+
                         phoneNumber: formData.phone,
+
                     }),
                 })
 
@@ -193,6 +200,7 @@ export default function EditProfilePage() {
             [field]: true,
         }))
     }
+
 
     if (!isAuthenticated) {
         return (
@@ -258,6 +266,7 @@ export default function EditProfilePage() {
             </div>
         )
     }
+
 
     return (
         <div className={styles.container}>

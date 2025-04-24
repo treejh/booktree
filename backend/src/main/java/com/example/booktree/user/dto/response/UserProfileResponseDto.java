@@ -26,6 +26,7 @@ public class UserProfileResponseDto {
 
     private String provider;
 
+
     private Long id;
 
     private LocalDateTime createDate;
@@ -39,7 +40,9 @@ public class UserProfileResponseDto {
         this.id=user.getId();
         this.createDate=user.getCreatedAt();
         this.modifyDate=user.getModifiedAt();
+
         this.provider = user.getSsoProvider();
+
 
     }
 
