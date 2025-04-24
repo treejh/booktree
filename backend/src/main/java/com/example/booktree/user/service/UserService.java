@@ -113,6 +113,21 @@ public class UserService {
         return randomPassword;
     }
 
+    //임시 비밀번호 발급 - 이메일, 핸드폰으로 비밀번호
+    public String findPasswordByEmailAndPhone(UserPasswordRequestDto.FindPwByEmailAndPhone findPwByEmailAndPhone){
+
+        User user = userRepository.findByEmailAndPhoneNumber(findPwByEmailAndPhone.getEmail(), findPwByEmailAndPhone.getPhoneNumber())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+
+        String randomPassword = CreateRandomNumber.randomNumber();
+        user.setPassword(passwordEncoder.encode(randomPassword));
+        userRepository.save(user);
+
+        return randomPassword;
+    }
+
+
+
     //임시 비밀번호 발급 - 핸드폰 번호로 비밀번호
     public String findPasswordByPhoneNumber(String phoneNumber){
 

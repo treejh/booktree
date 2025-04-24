@@ -234,14 +234,7 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/get/userid/{postId}")
-    public ResponseEntity<?> getUserIdfindByPostId(@PathVariable("postId") Long postId) {
 
-        Long response = postService.findUserId(postId);
-
-        return new ResponseEntity<>(response,HttpStatus.OK);
-
-    }
 
 
 
