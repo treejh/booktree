@@ -261,8 +261,8 @@ public class UserController {
 
     @GetMapping(value="/get/image")
     public ResponseEntity getImagesToUser() {
-
-        return ResponseEntity.ok(userService.getImageToUser());
+        UserImageResponseDto response = new UserImageResponseDto(userService.getImageToUser());
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping(value="/delete/image")
