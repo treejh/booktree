@@ -58,4 +58,10 @@ public class BlogController {
         blogService.deleteBlog();
         return new ResponseEntity<>("삭제 완료",HttpStatus.OK);
     }
+
+    @GetMapping("/get/findUserId/{blogId}")
+    public ResponseEntity<?> findBlogByUserId(@PathVariable Long blogId) {
+        Long response = blogService.findUserIdByBlogId(blogId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

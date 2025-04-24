@@ -425,6 +425,14 @@ public class PostService {
                 .build());
     }
 
+    public Long findUserId(Long postId){
+
+        Long userId = postRepository.findUserIdByPostId(postId);
+        if (userId == null) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+        return userId;
+    }
 
 
 }
