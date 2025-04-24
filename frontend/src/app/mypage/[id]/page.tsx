@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation' // useRouter import 추가
+import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
 interface Category {
     id: number
@@ -15,6 +16,7 @@ export default function MyPage() {
     const [categories, setCategories] = useState<Category[]>([]) // 초기값 빈 배열
     const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
+    const { isLogin, loginUser } = useGlobalLoginUser()
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -97,9 +99,7 @@ export default function MyPage() {
                         </div>
                         <div>
                             <div className="flex items-center">
-                                <h1 className="text-xl font-bold">김블로그</h1>
-                                <span className="text-gray-500 text-sm ml-2">@blog_kim</span>
-
+                                <h1 className="text-xl font-bold">{loginUser.username}의 블로그</h1>
                                 <button
                                     onClick={async () => {
                                         try {
@@ -142,7 +142,9 @@ export default function MyPage() {
                                 </button>
                             </div>
 
-                            <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
+                            <p className="text-gray-500 text-sm">
+                                가입일: {new Date(loginUser.createDate).toLocaleDateString()}
+                            </p>
                         </div>
                     </div>
                     <div className="flex space-x-2">
