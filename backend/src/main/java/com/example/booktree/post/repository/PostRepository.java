@@ -2,6 +2,7 @@ package com.example.booktree.post.repository;
 
 import com.example.booktree.post.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -54,6 +55,12 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Page<Post> findByAuthorContainingIgnoreCase(String author, Pageable pageable); // 작성자 검색
 
     Page<Post> findByBookContainingIgnoreCase(String book, Pageable pageable); // 책 제목 검색
+
+
+    @Query("SELECT p FROM Post p WHERE p.blog.id = :blogId ORDER BY p.likeCount DESC")
+    Page<Post> findPopularPostsByBlogId(@Param("blogId") Long blogId, Pageable pageable);
+
+
 
 
 

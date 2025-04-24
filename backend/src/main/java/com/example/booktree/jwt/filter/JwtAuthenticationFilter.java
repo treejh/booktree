@@ -100,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         List<GrantedAuthority> grantedAuthorities = getGrantedAuthority(claims);
 
         //userDetails
-        CustomUserDetails customUserDetails = new CustomUserDetails(username,"",email,userId,grantedAuthorities);
+        CustomUserDetails customUserDetails = new CustomUserDetails("",email,userId,grantedAuthorities);
 
 
         return new JwtAuthenticationToken(grantedAuthorities,customUserDetails,null);

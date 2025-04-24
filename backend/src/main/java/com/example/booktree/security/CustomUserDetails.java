@@ -2,6 +2,7 @@ package com.example.booktree.security;
 
 import java.util.Collection;
 import java.util.List;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,16 +10,15 @@ public class CustomUserDetails implements UserDetails {
 
 
     private final String email;
+    @Getter
     private final Long userId;
     private final String password;
-    private final String username;
     private final List<GrantedAuthority> authorities;
 
-    public CustomUserDetails(String username, String password, String email, Long userId,List<GrantedAuthority> roles) {
+    public CustomUserDetails(String password, String email, Long userId,List<GrantedAuthority> roles) {
         this.email = email;
         this.userId = userId;
         this.password = password;
-        this.username = username;
         this.authorities = roles;
     }
 

@@ -28,7 +28,7 @@ public class S3Uploader {
 
     // S3에 이미지 등록
 
-    public String S3_FIX_URL = "https://mot-bucket.s3.ap-northeast-2.amazonaws.com/";
+    public String S3_FIX_URL = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/";
 
     // S3에 이미지 등록
     public String uploadFile(MultipartFile multipartFile) throws IOException {
