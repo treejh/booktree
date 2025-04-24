@@ -289,26 +289,12 @@ public class PostService {
 
         System.out.println("🔥🔥 게시글 조회 서비스 실행됨");
 
-
-
-
-
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
 
         post.setView(post.getView() + 1); // 영속성 상태에서 직접 수정
 
-
-
-
-
-
-
-
-
         return post;
-
-
     }
 
     // 블로그별로 게시글 목록 조회
