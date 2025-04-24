@@ -70,7 +70,9 @@ export default function Home() {
                 </section>
 
                 <section>
+
                     <h2 className="text-xl font-semibold mb-6">카테고리별 월간 인기 게시물</h2>
+
                     <CategoryGrid />
                 </section>
             </div>

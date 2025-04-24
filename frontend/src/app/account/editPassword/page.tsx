@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect } from 'react'
 import styles from './editPassword.module.css'
 import { useRouter } from 'next/navigation'
@@ -8,11 +9,13 @@ export default function EditPassword() {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
     const [errorMessage, setErrorMessage] = useState('') // 에러 메시지 상태 추가
+
     const [passwords, setPasswords] = useState({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
     })
+
 
     useEffect(() => {
         if (!isLogin) {
@@ -24,6 +27,7 @@ export default function EditPassword() {
         }
     }, [isLogin, loginUser, router])
 
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPasswords({
             ...passwords,
@@ -33,6 +37,7 @@ export default function EditPassword() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
 
         // 새 비밀번호와 확인 비밀번호가 다를 경우 에러 메시지 표시
         if (passwords.newPassword !== passwords.confirmPassword) {
@@ -65,6 +70,7 @@ export default function EditPassword() {
             console.error('비밀번호 변경 요청 중 오류 발생:', error)
             setErrorMessage('서버와의 통신 중 문제가 발생했습니다.')
         }
+
     }
 
     return (
@@ -103,7 +109,9 @@ export default function EditPassword() {
                                 className={styles.input}
                             />
                         </div>
+
                         {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+
                         <div className={styles.buttonContainer}>
                             <button type="submit" className={styles.submitButton}>
                                 저장
@@ -124,7 +132,9 @@ export default function EditPassword() {
                 <div className={styles.footerLine}></div>
                 <div className={styles.footerContent}>
                     <div className={styles.footerText}>
+
                         <span className={styles.copyright}>© 2025 BookTree. All rights reserved.</span>
+
                     </div>
                 </div>
             </footer>
