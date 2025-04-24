@@ -2,7 +2,7 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-//import com.example.booktree.popularpost.service.PopularPostService;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -192,15 +193,42 @@ public class PostController {
         // 최신순
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
-        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+
+        Page<PostResponseDto> dtoPage = postPage.map(post -> PostResponseDto.builder()
+                .postId(post.getId())
                 .title(post.getTitle())
+                .viewCount(post.getView())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
-                .postId(post.getId())
-                .viewCount(post.getView())
                 .build());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return new ResponseEntity<>(dtoPage, HttpStatus.OK);
     }
+
+    /**
+     * 전체 검색 (제목, 내용, 작성자, 책 기준 모두 포함)
+     * 호출 URL: GET /api/v1/posts/search/all?keyword=검색어
+     */
+    @GetMapping("/search/all")
+    public ResponseEntity<Page<PostResponseDto>> searchAll(
+            @RequestParam("q") String q,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<PostResponseDto> dtos = postService.searchAll(q, pageable)
+                .map(post -> PostResponseDto.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .createdAt(post.getCreatedAt())
+                        .modifiedAt(post.getModifiedAt())
+                        .build()
+                );
+        return ResponseEntity.ok(dtos);
+    }
+
+
 
     @GetMapping("/get/followingPost")
     public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
@@ -234,7 +262,14 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
+    @GetMapping("/get/userid/{postId}")
+    public ResponseEntity<?> getUserIdfindByPostId(@PathVariable("postId") Long postId) {
 
+        Long response = postService.findUserId(postId);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+
+    }
 
 
 

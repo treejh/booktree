@@ -83,9 +83,9 @@ public class S3Uploader {
             String key = imageUrl.contains(".com/") ? imageUrl.split(".com/")[1] : imageUrl;
             System.out.println("!! imageurl : " + key);
             amazonS3.deleteObject(bucket, key);
+
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
-//            System.exit(1); // 종료
         } catch (Exception exception) {
             throw new BusinessLogicException(ExceptionCode.S3_DELETE_ERROR);
         }
@@ -97,21 +97,23 @@ public class S3Uploader {
         beforePostImages.replaceAll(s -> s.split(".com/")[1]);
 
         // 변경된 이미지 리스트
-        List<String> afterRoomImages = new ArrayList<>();
+        List<String> afterPostImages = new ArrayList<>();
+        
         // 새로 추가된 이미지
-        List<String> newRoomImages = new ArrayList<>();
+        List<String> newPostImages = new ArrayList<>();
 
         for (MultipartFile multipartFile : multipartFiles) {
-            afterRoomImages.add(multipartFile.getOriginalFilename());
-            newRoomImages.add(multipartFile.getOriginalFilename());
+            afterPostImages.add(multipartFile.getOriginalFilename());
+            newPostImages.add(multipartFile.getOriginalFilename());
         }
-        System.out.println("!! " + afterRoomImages.toString());
+        //System.out.println("!! " + afterPostImages.toString());
 
         // 새로 추가된 이미지
-        newRoomImages.removeAll(beforePostImages);
-        System.out.println("!! 새로 추가됨 : " + newRoomImages.toString());
-        if (!newRoomImages.isEmpty()) {
-            newRoomImages.stream()
+        newPostImages.removeAll(beforePostImages);
+        //System.out.println("!! 새로 추가됨 : " + newPostImages.toString());
+
+        if (!newPostImages.isEmpty()) {
+            newPostImages.stream()
                     .forEach(imageName -> {
                         MultipartFile upload = multipartFiles.stream()
                                 .filter(multipartFile -> multipartFile.getOriginalFilename().equals(imageName))
@@ -128,18 +130,18 @@ public class S3Uploader {
         }
 
         // 삭제된 이미지
-        beforePostImages.removeAll(afterRoomImages);
-        System.out.println("!! 삭제됨 : " + beforePostImages.toString());
+        beforePostImages.removeAll(afterPostImages);
+        //System.out.println("!! 삭제됨 : " + beforePostImages.toString());
         if (!beforePostImages.isEmpty()) {
             beforePostImages.stream().forEach(imageName -> deleteFile(imageName));
         }
 
         // 새로운 이미지 설정
-        for (int i = 0; i < afterRoomImages.size(); i++) {
-            afterRoomImages.set(i, S3_FIX_URL + afterRoomImages.get(i));
+        for (int i = 0; i < afterPostImages.size(); i++) {
+            afterPostImages.set(i, S3_FIX_URL + afterPostImages.get(i));
         }
 
-        return afterRoomImages;
+        return afterPostImages;
     }
 
 }
