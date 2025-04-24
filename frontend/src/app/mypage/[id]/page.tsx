@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation' // useRouter import 추가
+import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
@@ -22,6 +23,29 @@ export default function MyPage() {
     const [categories, setCategories] = useState<Category[]>([]) // 초기값 빈 배열
     const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
+    const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
+    const [isAuthorized, setIsAuthorized] = useState(false)
+    const { id: userId } = useParams<{ id: string }>() // URL에서 userId
+
+    useEffect(() => {
+        const checkAuthorization = () => {
+            if (!isLogin) {
+                alert('로그인이 필요합니다.')
+                router.push('/account/login')
+                return
+            }
+
+            // URL의 id와 로그인된 사용자의 id 비교
+            if (loginUser.id === parseInt(userId)) {
+                setIsAuthorized(true)
+            } else {
+                alert('접근 권한이 없습니다.')
+                router.push('/') // 메인 페이지로 리다이렉트
+            }
+        }
+
+        checkAuthorization()
+    }, [isLogin, loginUser, userId, router])
     const [followCount, setFollowCount] = useState<Follow[]>([])
     const { id: userId } = useParams<{ id: string }>()
     const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
