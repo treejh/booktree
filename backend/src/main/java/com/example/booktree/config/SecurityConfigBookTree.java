@@ -115,7 +115,8 @@ public class SecurityConfigBookTree {
 
                         //팔로우 /api/v1/follow/create
                         .requestMatchers(
-                                "/api/v1/follow/create/follow"
+                                "/api/v1/follow/create/follow",
+                                "/api/v1/follow/get/**"
                         )
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 

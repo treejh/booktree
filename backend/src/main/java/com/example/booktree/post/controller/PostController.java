@@ -2,8 +2,6 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-//import com.example.booktree.popularpost.service.PopularPostService;
-//import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
