@@ -23,11 +23,14 @@ interface PostDetail {
     images?: string[]
 }
 
+
 interface Category {
     id: number
     name: string
     postCount: number
 }
+
+
 
 export default function DetailPage() {
     // 라우터 초기화
@@ -65,10 +68,12 @@ export default function DetailPage() {
     const [commentFollowStatus, setCommentFollowStatus] = useState<{ [key: string]: boolean }>({})
     const [isListVisible, setIsListVisible] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
+
     const [userId, setUserId] = useState()
 
     // 5. 카테고리 상태
     const [categories, setCategories] = useState<Category[]>([])
+
 
     // 6. 관련 게시물 상태
     const [relatedPosts] = useState<RelatedPost[]>([
@@ -369,6 +374,7 @@ export default function DetailPage() {
         }
     }, [showPopover, activePopoverAuthor])
 
+
     useEffect(() => {
         const fetchUserId = async () => {
             try {
@@ -425,6 +431,8 @@ export default function DetailPage() {
             fetchCategories()
         }
     }, [userId])
+
+
 
     // 게시글을 불러오는 함수
     useEffect(() => {
@@ -1384,7 +1392,9 @@ export default function DetailPage() {
                                                         className="flex items-center justify-between w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                                     >
                                                         <span>
+
                                                             {category.name}({category.postCount})
+
                                                         </span>
                                                         <svg
                                                             className={`w-4 h-4 transform transition-transform ${
@@ -1423,7 +1433,10 @@ export default function DetailPage() {
                                                 onClick={() => router.push(category.path)}
                                                 className="w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                             >
+
                                                 {category.name} ({category.postCount})
+
+
                                             </button>
                                         )}
                                     </li>

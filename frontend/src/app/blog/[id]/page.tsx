@@ -65,7 +65,7 @@ const posts: Post[] = [
     },
 ]
 
-type TabType = 'latest' | 'popular' | 'bookmarks'
+type TabType = 'latest' | 'popular' | 'bookmarks' | 'scraps'
 
 export default function BlogPage() {
     const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
@@ -248,6 +248,8 @@ export default function BlogPage() {
                 return [...posts].sort((a, b) => b.views - a.views)
             case 'bookmarks':
                 return posts.filter((post) => post.isBookmarked)
+            case 'scraps':
+                return posts.filter((post) => post.isBookmarked) // 스크랩된 게시물 필터링 (임시로 bookmarked와 동일하게 처리)
             default:
                 return posts
         }
@@ -409,6 +411,16 @@ export default function BlogPage() {
                             >
                                 <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
                                     팔로잉
+                                </span>
+                            </li>
+                            <li
+                                className={`pb-2 border-b-2 ${
+                                    activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
+                                } cursor-pointer`}
+                                onClick={() => handleTabChange('scraps')}
+                            >
+                                <span className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}>
+                                    스크랩
                                 </span>
                             </li>
                         </ul>
