@@ -18,8 +18,9 @@ interface Post {
 }
 
 interface Category {
+    id: number
     name: string
-    count: number
+    postCount: number
 }
 
 interface BlogInfo {
@@ -28,22 +29,6 @@ interface BlogInfo {
     notice: string
     blogId: number
 }
-
-const categories: Category[] = [
-    { name: '전체보기', count: 86 },
-    { name: '형영 플러스', count: 12 },
-    { name: '인턴일지', count: 11 },
-    { name: 'WIL', count: 10 },
-    { name: '프로그래머스', count: 6 },
-    { name: '지원여정', count: 5 },
-    { name: '우아한테크코스', count: 5 },
-    { name: 'vue.js', count: 5 },
-    { name: 'programmers', count: 4 },
-    { name: 'Vue.js 오류', count: 4 },
-    { name: 'JavaScript', count: 4 },
-    { name: '회고', count: 4 },
-    { name: '개발일지', count: 4 },
-]
 
 const posts: Post[] = [
     {
@@ -91,12 +76,69 @@ export default function BlogPage() {
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
+    const [userId, setUserId] = useState<number | null>(null)
+    const [categories, setCategories] = useState<Category>([])
 
     //블로그 정보 가져오기
 
     const { id: blogId } = useParams<{ id: string }>() // URL에서 blogId 가져오기
     const [blog, setBlog] = useState<BlogInfo | null>(null)
     const [userBlogId, setUserBlogId] = useState<string | null>(null) // 로그인 유저의 블로그 ID
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${blogId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 ID를 불러오는데 실패했습니다다.')
+                }
+
+                const data = await response.json()
+                console.log('UserId : ', data)
+                setUserId(data)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 ID를 불러오지 못했습니다')
+            }
+        }
+        fetchUserId()
+    }, [blogId])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/categories/get/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('카테고리 : ', data)
+                setCategories(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchCategories()
+        }
+    }, [userId])
 
     useEffect(() => {
         if (!blogId) {
@@ -477,7 +519,7 @@ export default function BlogPage() {
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"
                                 >
                                     <span>{category.name}</span>
-                                    <span className="text-gray-500">({category.count})</span>
+                                    <span className="text-gray-500">({category.postCount})</span>
                                 </Link>
                             </li>
                         ))}

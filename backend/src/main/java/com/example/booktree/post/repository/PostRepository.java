@@ -47,7 +47,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
 
 
-
+    @Query("SELECT p.user.id FROM Post p WHERE p.id = :postId")
+    Long findUserIdByPostId(@Param("postId") Long postId);
 
 
     Page<Post> findByTitleContainingIgnoreCase(String title, Pageable pageable); // 제목 검색
