@@ -4,6 +4,7 @@ package com.example.booktree.user.controller;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.security.CustomUserDetails;
 import com.example.booktree.user.dto.request.UserLoginRequestDto;
+import com.example.booktree.user.dto.response.UserImageResponseDto;
 import com.example.booktree.user.dto.response.UserMyPageResponseDto;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
 import com.example.booktree.user.dto.request.UserPatchRequestDto;
@@ -246,12 +247,16 @@ public class UserController {
 
     @PostMapping(value="/create/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity saveImagesToUser(@RequestParam MultipartFile images) {
-        return ResponseEntity.ok(userService.saveImageToUser(images));
+
+        UserImageResponseDto response = new UserImageResponseDto(userService.saveImageToUser(images));
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping(value="/patch/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity updateImagesToUser(@RequestParam MultipartFile images) {
-        return ResponseEntity.ok(userService.updateImageToUser(images));
+
+        UserImageResponseDto response = new UserImageResponseDto(userService.updateImageToUser(images));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value="/get/image")
