@@ -3,29 +3,52 @@
 import { useState, useEffect, useRef, MouseEvent } from 'react'
 import Link from 'next/link'
 
+
+import { useRouter } from 'next/navigation'
+import { useGlobalLoginUser } from '@/stores/auth/loginMember'
+
+// 카테고리 인터페이스 추가
 interface Category {
     id: number
     name: string
-    postCount: number
-}
-
-interface MainCategory {
-    id: number
-    name: string
+    create_at: string
+    update_at: string
 }
 
 export default function PostWritePage() {
+    const router = useRouter()
+    const { isLogin, loginUser } = useGlobalLoginUser()
+
+
+
+// interface MainCategory {
+//     id: number
+//     name: string
+// }
+
+
     // State for the form fields
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
     const [bookTitle, setBookTitle] = useState('')
     const [content, setContent] = useState('')
     const [tags, setTags] = useState('')
-    const [category, setCategory] = useState('전체')
-    const [mainCategory, setMainCategory] = useState('전체')
-    const [categories, setCategories] = useState<Category>([])
-    const [mainCategories, setMainCategories] = useState<MainCategory>([])
-    const [error, setError] = useState<string | null>(null)
+
+    //const [category, setCategory] = useState('전체')
+    //const [mainCategory, setMainCategory] = useState('전체')
+
+    // 카테고리 관련 상태 수정
+    const [categories, setCategories] = useState<Category[]>([])
+    const [mainCategories, setMainCategories] = useState<Category[]>([])
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0)
+    const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<number>(0)
+
+    // const [category, setCategory] = useState('전체')
+    // const [mainCategory, setMainCategory] = useState('전체')
+    // const [categories, setCategories] = useState<Category>([])
+    // const [mainCategories, setMainCategories] = useState<MainCategory>([])
+    // const [error, setError] = useState<string | null>(null)
+
 
     // State for UI rendering
     const [isClient, setIsClient] = useState(false)
@@ -38,15 +61,43 @@ export default function PostWritePage() {
     const [isBulletList, setIsBulletList] = useState(false)
     const [isNumberedList, setIsNumberedList] = useState(false)
 
-    // This ensures hydration errors are prevented by only rendering on the client
+
+    // 로그인 체크
     useEffect(() => {
-        setIsClient(true)
-    }, [])
+        const checkAuth = async () => {
+            try {
+                const response = await fetch('http://localhost:8090/api/v1/users/get/token', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // 쿠키 포함
+                })
+
+                if (!response.ok) {
+                    alert('로그인이 필요한 서비스입니다.')
+                    router.push('/login')
+                    return
+                }
+            } catch (error) {
+                console.error('인증 확인 실패:', error)
+                alert('로그인이 필요한 서비스입니다.')
+                router.push('/login')
+            }
+        }
+
+        checkAuth()
+    }, [router])
+
+    // 카테고리 데이터 불러오기
+
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/categories/get/allcategory`, {
+
+                // 메인 카테고리 가져오기
+                const mainResponse = await fetch('http://localhost:8090/api/v1/maincategories/get', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -54,49 +105,54 @@ export default function PostWritePage() {
                     credentials: 'include',
                 })
 
-                if (!response.ok) {
-                    throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
+                const mainData = await mainResponse.json()
+                console.log('메인 카테고리 데이터:', mainData)
+
+                // 메인 카테고리 설정
+                if (Array.isArray(mainData)) {
+                    setMainCategories(mainData)
+                } else {
+                    console.error('메인 카테고리 데이터 형식 오류:', mainData)
+                    setMainCategories([])
                 }
 
-                const data = await response.json()
-                console.log('카테고리 : ', data)
-                setCategories(data)
-                console.log(categories)
-            } catch (err) {
-                console.error('Error fetching post:', err)
-                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+                // 유저의 카테고리 가져오기
+                const categoryResponse = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
+
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+
+                const categoryData = await categoryResponse.json()
+                console.log('카테고리 데이터:', categoryData)
+
+                // 카테고리 설정
+                if (Array.isArray(categoryData)) {
+                    setCategories(categoryData)
+                } else {
+                    console.error('카테고리 데이터 형식 오류:', categoryData)
+                    setCategories([])
+                }
+            } catch (error) {
+                console.error('카테고리 로드 에러:', error)
+                setMainCategories([])
+                setCategories([])
             }
         }
 
-        fetchCategories()
-    }, [])
+        // 로그인된 경우에만 카테고리 데이터 로드
+        if (isLogin) {
+            fetchCategories()
+        }
+    }, [isLogin])
 
+    // This ensures hydration errors are prevented by only rendering on the client
     useEffect(() => {
-        const fetchMainCategories = async () => {
-            try {
-                const response = await fetch(`http://localhost:8090/api/v1/maincategories/get`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                })
-
-                if (!response.ok) {
-                    throw new Error('메인 카테고리를 불러오는데 실패했습니다.')
-                }
-
-                const data = await response.json()
-                console.log('카테고리 : ', data)
-                setMainCategories(data)
-                console.log(categories)
-            } catch (err) {
-                console.error('Error fetching post:', err)
-                setError(err instanceof Error ? err.message : '메인 카테고리를 불러오지 못했습니다')
-            }
-        }
-
-        fetchMainCategories()
+        setIsClient(true)
     }, [])
 
     // Initialize editor once it's rendered
@@ -114,12 +170,90 @@ export default function PostWritePage() {
     }, [isClient])
 
     // Handle form submission
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (!isLogin || !loginUser) {
+            alert('로그인이 필요합니다.')
+            router.push('/login')
+            return
+        }
+                          
+        // 필수 값 체크
+        if (!selectedMainCategoryId) {
+            alert('메인 카테고리를 선택해주세요.')
+            return
+        }               
+                          
+                          
+
         // Get the content from the contentEditable div
         const editorContent = editorRef.current?.innerHTML || ''
+
+        // FormData 객체 생성
+        const formData = new FormData()
+        // formData.append('mainCategoryId', selectedMainCategoryId.toString())
+        // formData.append('blogId', loginUser?.blogId.toString() || '')
+        // formData.append('title', title)
+        // formData.append('content', editorContent)
+        // formData.append('author', author)
+        // formData.append('book', bookTitle)
+        // if (selectedCategoryId !== 0) {
+        //     // 수정
+        //     formData.append('categoryId', selectedCategoryId.toString())
+        // }
+        
+        // null 체크를 하면서 formData에 추가
+        if (selectedMainCategoryId) {
+            formData.append('mainCategoryId', selectedMainCategoryId.toString())
+        }
+
+        if (loginUser.blogId) {
+            formData.append('blogId', loginUser.blogId.toString())
+        }
+
+        formData.append('title', title)
+        formData.append('content', editorContent)
+
+        // 선택적 필드들
+        if (author) formData.append('author', author)
+        if (bookTitle) formData.append('book', bookTitle)
+        if (selectedCategoryId && selectedCategoryId !== 0) {
+            formData.append('categoryId', selectedCategoryId.toString())
+        }
+
+        try {
+            const response = await fetch('http://localhost:8090/api/v1/posts/create', {
+                method: 'POST',
+                credentials: 'include', // 쿠키 포함
+                body: formData,
+            })
+
+            if (!response.ok) {
+                throw new Error('게시글 등록에 실패했습니다.')
+            }
+
+            alert('게시글이 성공적으로 등록되었습니다.')
+            router.push(`/blog/list/${loginUser.blogId}`)
+        } catch (error) {
+            console.error('Error:', error)
+            alert('게시글 등록에 실패했습니다.')
+        }
+
         console.log({ title, author, bookTitle, content: editorContent, tags, category, mainCategory })
         // Here you would typically make an API call to save the post
+    }
+
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const categoryId = Number(e.target.value)
+        setSelectedCategoryId(categoryId)
+        //setCategory(categoryId.toString())
+    }
+
+    const handleMainCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const mainCategoryId = Number(e.target.value)
+        setSelectedMainCategoryId(mainCategoryId)
+        //setMainCategory(mainCategoryId.toString())
     }
 
     // Format handlers using document.execCommand for direct formatting
@@ -248,6 +382,7 @@ export default function PostWritePage() {
         }, 10)
     }
 
+
     // Check if selection exists in editor (helper function)
     const hasSelection = (): boolean => {
         const selection = window.getSelection()
@@ -257,6 +392,21 @@ export default function PostWritePage() {
     // If not yet client-side rendered, show a loading state or nothing
     if (!isClient) {
         return <div className="flex max-w-7xl mx-auto p-6">Loading...</div>
+    }
+
+
+    if (!isClient || !isLogin) {
+        return (
+            <div className="flex max-w-7xl mx-auto p-6">
+                <div className="text-center w-full">
+                    <p className="text-xl">로그인 한 사용자만 게시글을 작성하실 수 있습니다.</p>
+                    <Link href="/account/login" className="text-blue-500 hover:underline mt-4 inline-block">
+                        로그인하러 가기
+                    </Link>
+                </div>
+
+            </div>
+        )
     }
 
     return (
@@ -381,14 +531,14 @@ export default function PostWritePage() {
                             <h3 className="text-lg font-medium mb-4">카테고리 선택</h3>
                             <div className="relative mb-4">
                                 <select
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.key)}
+                                    value={selectedCategoryId}
+                                    onChange={handleCategoryChange}
                                     className="w-full p-2 border border-gray-300 rounded appearance-none"
                                 >
-                                    <option value="전체">전체</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.name}>
-                                            {cat.name}
+                                    <option value={0}>전체</option>
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
                                         </option>
                                     ))}
                                 </select>
@@ -400,19 +550,22 @@ export default function PostWritePage() {
                             </div>
                         </div>
 
+
                         {/* Main Category */}
                         <div>
                             <h3 className="text-lg font-medium mb-4">메인 카테고리 선택</h3>
                             <div className="relative mb-4">
                                 <select
-                                    value={mainCategory}
-                                    onChange={(e) => setMainCategory(e.target.key)}
+
+                                    value={selectedMainCategoryId}
+                                    onChange={handleMainCategoryChange}
                                     className="w-full p-2 border border-gray-300 rounded appearance-none"
                                 >
-                                    <option value="전체">전체</option>
-                                    {mainCategories.map((cat) => (
-                                        <option key={cat.id} value={cat.name}>
-                                            {cat.name}
+                                    <option value={0}>전체</option>
+                                    {mainCategories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+
                                         </option>
                                     ))}
                                 </select>
