@@ -23,6 +23,12 @@ interface PostDetail {
     images?: string[]
 }
 
+interface Category {
+    id: number
+    name: string
+    postCount: number
+}
+
 export default function DetailPage() {
     // 라우터 초기화
     const router = useRouter()
@@ -59,11 +65,10 @@ export default function DetailPage() {
     const [commentFollowStatus, setCommentFollowStatus] = useState<{ [key: string]: boolean }>({})
     const [isListVisible, setIsListVisible] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
+    const [userId, setUserId] = useState()
 
     // 5. 카테고리 상태
-    const [categories, setCategories] = useState<Category[]>([
-        /* 기존 카테고리 데이터 유지 */
-    ])
+    const [categories, setCategories] = useState<Category[]>([])
 
     // 6. 관련 게시물 상태
     const [relatedPosts] = useState<RelatedPost[]>([
@@ -363,6 +368,63 @@ export default function DetailPage() {
             document.removeEventListener('mousedown', handleClickOutside)
         }
     }, [showPopover, activePopoverAuthor])
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                setLoading(true)
+                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${postId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 ID를 불러오는데 실패했습니다다.')
+                }
+
+                const data = await response.json()
+                console.log('UserId : ', data)
+                setUserId(data)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 ID를 불러오지 못했습니다')
+            }
+        }
+        fetchUserId()
+    }, [postId])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                setLoading(true)
+                const response = await fetch(`http://localhost:8090/api/v1/categories/get/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('카테고리 : ', data)
+                setCategories(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchCategories()
+        }
+    }, [userId])
 
     // 게시글을 불러오는 함수
     useEffect(() => {
@@ -1322,7 +1384,7 @@ export default function DetailPage() {
                                                         className="flex items-center justify-between w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                                     >
                                                         <span>
-                                                            {category.name} ({category.count})
+                                                            {category.name}({category.postCount})
                                                         </span>
                                                         <svg
                                                             className={`w-4 h-4 transform transition-transform ${
@@ -1361,7 +1423,7 @@ export default function DetailPage() {
                                                 onClick={() => router.push(category.path)}
                                                 className="w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                             >
-                                                {category.name} ({category.count})
+                                                {category.name} ({category.postCount})
                                             </button>
                                         )}
                                     </li>
