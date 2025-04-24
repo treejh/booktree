@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation' // useRouter import 추가
+import { useGlobalLoginUser } from '@/stores/auth/loginMember'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+
 
 interface Category {
     id: number
@@ -10,11 +14,107 @@ interface Category {
     update_at: string
 }
 
+interface Follow {
+    followerCount: number
+    followingCount: number
+}
+
 export default function MyPage() {
     const router = useRouter() // router 추가
     const [categories, setCategories] = useState<Category[]>([]) // 초기값 빈 배열
     const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
+    const { isLogin, loginUser } = useGlobalLoginUser()
+    const [isAuthorized, setIsAuthorized] = useState(false)
+    const { id: userId } = useParams<{ id: string }>() // URL에서 userId
+
+    useEffect(() => {
+        const checkAuthorization = () => {
+            if (!isLogin) {
+                alert('로그인이 필요합니다.')
+                router.push('/account/login')
+                return
+            }
+
+            // URL의 id와 로그인된 사용자의 id 비교
+            if (loginUser.id === parseInt(userId)) {
+                setIsAuthorized(true)
+            } else {
+                alert('접근 권한이 없습니다.')
+                router.push('/') // 메인 페이지로 리다이렉트
+            }
+        }
+
+        checkAuthorization()
+    }, [isLogin, loginUser, userId, router])
+    const [followCount, setFollowCount] = useState<Follow[]>([])
+    const { id: userId } = useParams<{ id: string }>()
+    const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
+    const [editedCategoryName, setEditedCategoryName] = useState<string>('')
+
+    const startEditingCategory = (categoryId: number, currentName: string) => {
+        setEditingCategoryId(categoryId)
+        setEditedCategoryName(currentName)
+    }
+
+    const saveEditedCategory = async (categoryId: number) => {
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/categories/patch/${categoryId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ categoryName: editedCategoryName }),
+            })
+
+            if (!response.ok) {
+                throw new Error('카테고리 수정에 실패했습니다.')
+            }
+
+            setCategories((prev) =>
+                prev.map((category) =>
+                    category.id === categoryId ? { ...category, name: editedCategoryName } : category,
+                ),
+            )
+
+            setEditingCategoryId(null)
+            setEditedCategoryName('')
+        } catch (error) {
+            console.error(error)
+            alert('수정 중 오류가 발생했습니다.')
+        }
+    }
+
+    const handleEditCategory = (categoryId: number) => {
+        router.push(`/mypage/editCategory/${categoryId}`)
+    }
+
+    const handleDeleteCategory = async (categoryId: number) => {
+        const confirmed = window.confirm('정말 이 카테고리를 삭제하시겠습니까?')
+        if (!confirmed) return
+
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/categories/delete/${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            })
+
+            if (!response.ok) {
+                throw new Error('카테고리 삭제에 실패했습니다.')
+            }
+
+            // 성공적으로 삭제된 경우 상태 업데이트
+            setCategories((prev) => prev.filter((category) => category.id !== categoryId))
+            alert('카테고리가 성공적으로 삭제되었습니다!')
+        } catch (error) {
+            console.error(error)
+            alert('카테고리 삭제 중 오류가 발생했습니다. 다시 시도해주세요.')
+        }
+    }
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -32,6 +132,37 @@ export default function MyPage() {
                 }
                 const data = await response.json()
                 setCategories(data) // 가져온 데이터를 상태에 저장
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    // err가 Error 인스턴스인지 확인
+                    setError(err.message) // 에러 메시지 접근
+                } else {
+                    setError('알 수 없는 오류가 발생했습니다.')
+                }
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchCategories()
+    }, [])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('http://localhost:8090/api/v1/follow/get/followcount', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 추가적인 헤더가 필요하면 여기에 추가
+                    },
+                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
+                })
+                if (!response.ok) {
+                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                }
+                const data = await response.json()
+                setFollowCount(data) // 가져온 데이터를 상태에 저장
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     // err가 Error 인스턴스인지 확인
@@ -97,9 +228,7 @@ export default function MyPage() {
                         </div>
                         <div>
                             <div className="flex items-center">
-                                <h1 className="text-xl font-bold">김블로그</h1>
-                                <span className="text-gray-500 text-sm ml-2">@blog_kim</span>
-
+                                <h1 className="text-xl font-bold">{loginUser.username}의 블로그</h1>
                                 <button
                                     onClick={async () => {
                                         try {
@@ -142,7 +271,9 @@ export default function MyPage() {
                                 </button>
                             </div>
 
-                            <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
+                            <p className="text-gray-500 text-sm">
+                                가입일: {new Date(loginUser.createDate).toLocaleDateString()}
+                            </p>
                         </div>
                     </div>
                     <div className="flex space-x-2">
@@ -194,7 +325,7 @@ export default function MyPage() {
                     </div>
                 </div>
 
-                {/* 소개글 */}
+                {/* 소개글
                 <div className="mb-6 pb-6 border-b border-gray-200">
                     {isEditing ? (
                         <div className="flex flex-col gap-2">
@@ -224,67 +355,99 @@ export default function MyPage() {
                     ) : (
                         <p className="text-gray-600">{introduction}</p>
                     )}
-                </div>
+                </div> */}
 
                 {/* 통계 섹션 수정 */}
                 <div className="grid grid-cols-3 divide-x divide-gray-200">
-                    <div
-                        className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={handlePostsClick}
-                    >
-                        <h3 className="text-gray-500 mb-2">게시물</h3>
-                        <p className="text-2xl font-bold">42</p>
+                    <div>
+                        <div
+                            className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+                            onClick={handlePostsClick}
+                        >
+                            <h3 className="text-gray-500 mb-2">게시물</h3>
+                            <p className="text-2xl font-bold">42</p>
+                        </div>
                     </div>
-                    <div
-                        className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={handleFollowingClick}
-                    >
-                        <h3 className="text-gray-500 mb-2">팔로잉</h3>
-                        <p className="text-2xl font-bold">128</p>
+                    <div>
+                        {followCount && (
+                            <div>
+                                <div
+                                    className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+                                    onClick={handleFollowingClick}
+                                >
+                                    <h3 className="text-gray-500 mb-2">팔로잉</h3>
+                                    <p className="text-2xl font-bold">{followCount.followingCount}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <div
-                        className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={handleFollowerClick}
-                    >
-                        <h3 className="text-gray-500 mb-2">팔로워</h3>
-                        <p className="text-2xl font-bold">{followerCount}</p>
+                    <div>
+                        {followCount && (
+                            <div>
+                                <div
+                                    className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
+                                    onClick={handleFollowerClick}
+                                >
+                                    <h3 className="text-gray-500 mb-2">팔로워</h3>
+                                    <p className="text-2xl font-bold">{followCount.followerCount}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* 카테고리 섹션 */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
-                <h2 className="text-lg font-bold p-6 border-b border-gray-200">카테고리</h2>
+                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h2 className="text-lg font-bold">카테고리</h2>
+                    <Link href="/mypage/editCategory/${userId}">
+                        <button
+                            // onClick={handleCreateCategory} // 버튼 클릭 시 호출할 함수
+                            className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition"
+                        >
+                            카테고리 생성
+                        </button>
+                    </Link>
+                </div>
                 <div>
                     {categories.map((category) => (
                         <div
                             key={category.id}
-                            className="p-6 hover:bg-gray-50 transition cursor-pointer"
-                            onClick={() => handleCategoryClick(category.id, category.name)}
+                            className="p-6 hover:bg-gray-50 transition cursor-pointer flex justify-between items-center"
                         >
-                            <div className="flex items-center justify-between">
-                                <h3 className="font-medium">{category.name}</h3>
-                                <svg
-                                    className="w-5 h-5 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5l7 7-7 7"
+                            <div className="flex-1">
+                                {editingCategoryId === category.id ? (
+                                    <input
+                                        type="text"
+                                        value={editedCategoryName}
+                                        onChange={(e) => setEditedCategoryName(e.target.value)}
+                                        className="border p-2 rounded w-full"
                                     />
-                                </svg>
+                                ) : (
+                                    <h3
+                                        className="font-medium"
+                                        onClick={() => handleCategoryClick(category.id, category.name)}
+                                    >
+                                        {category.name}
+                                    </h3>
+                                )}
                             </div>
-                            {/* <div className="flex items-center text-sm text-gray-500 mt-2">
-                                <span>{post.date}</span>
-                                <span className="mx-2">•</span>
-                                <span>조회 {post.views}</span>
-                                <span className="mx-2">•</span>
-                                <span>댓글 {post.comments}</span>
-                            </div> */}
+                            <div className="flex space-x-2 text-gray-500">
+                                {editingCategoryId === category.id ? (
+                                    <button
+                                        onClick={() => saveEditedCategory(category.id)}
+                                        className="text-green-600 font-semibold"
+                                    >
+                                        완료
+                                    </button>
+                                ) : (
+                                    <button onClick={() => startEditingCategory(category.id, category.name)}>
+                                        수정
+                                    </button>
+                                )}
+                                <button onClick={() => handleDeleteCategory(category.id)}>삭제</button>
+                            </div>
                         </div>
                     ))}
                 </div>

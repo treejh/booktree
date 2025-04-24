@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef, MouseEvent } from 'react'
 import Link from 'next/link'
-import axios from 'axios'
+
+// import axios from 'axios'
+
 import { useRouter } from 'next/navigation'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
@@ -32,12 +34,18 @@ export default function PostWritePage() {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
 
+    // interface MainCategory {
+    //     id: number
+    //     name: string
+    // }
+
     // State for the form fields
     const [title, setTitle] = useState('')
     const [author, setAuthor] = useState('')
     const [bookTitle, setBookTitle] = useState('')
     const [content, setContent] = useState('')
     const [tags, setTags] = useState('')
+
     //const [category, setCategory] = useState('전체')
     //const [mainCategory, setMainCategory] = useState('전체')
 
@@ -46,6 +54,12 @@ export default function PostWritePage() {
     const [mainCategories, setMainCategories] = useState<Category[]>([])
     const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0)
     const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<number>(0)
+
+    // const [category, setCategory] = useState('전체')
+    // const [mainCategory, setMainCategory] = useState('전체')
+    // const [categories, setCategories] = useState<Category>([])
+    // const [mainCategories, setMainCategories] = useState<MainCategory>([])
+    // const [error, setError] = useState<string | null>(null)
 
     // State for UI rendering
     const [isClient, setIsClient] = useState(false)
@@ -215,6 +229,7 @@ export default function PostWritePage() {
         if (!blogInfo.blogId) {
             console.error('블로그 정보가 없습니다:', blogInfo)
             alert('블로그 정보를 불러오는데 실패했습니다.')
+
             return
         }
 
@@ -223,6 +238,12 @@ export default function PostWritePage() {
             alert('제목을 입력해주세요.')
             return
         }
+
+        // 필수 값 체크
+        /* if (!selectedMainCategoryId) {
+            alert('메인 카테고리를 선택해주세요.')
+            return
+        }   */
 
         if (!selectedMainCategoryId || selectedMainCategoryId === 0) {
             alert('메인 카테고리를 선택해주세요.')

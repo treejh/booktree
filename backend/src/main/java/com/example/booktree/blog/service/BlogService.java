@@ -130,4 +130,7 @@ public class BlogService {
         return blog.orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
     }
 
+    public Long findUserIdByBlogId(Long blogId){
+        return blogRepository.findUserIdByBlogId(blogId);
+    }
     }

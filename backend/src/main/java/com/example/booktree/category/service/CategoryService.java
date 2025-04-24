@@ -31,20 +31,18 @@ public class CategoryService {
     // read
     @Transactional
     public List<AllCategoryResponseDto> findAllcategory(Long userId){
-        // User 정보를 통해 카테고리들 불러오기
         List<Category> categories = categoryRepository.findByUser(userService.findById(userId));
 
-        // 응답 dto로 변환
         List<AllCategoryResponseDto> lstDto = categories.stream()
                 .map(category -> AllCategoryResponseDto.builder()
                         .id(category.getId())
                         .create_at(category.getCreatedAt())
                         .update_at(category.getModifiedAt())
                         .name(category.getName())
+                        .postCount((long) category.getPostList().size()) // 리스트의 크기로 count
                         .build())
                 .collect(Collectors.toList());
 
-        // 전송
         return lstDto;
     }
 
