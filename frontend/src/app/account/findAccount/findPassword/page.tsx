@@ -74,7 +74,12 @@ export default function FindPasswordPage() {
                             />
                         </div>
 
-                        {/* 전화번호 입력 */}
+
+
+
+                    </div>
+                    <div className={styles.form}>
+                        {/* 핸드폰 번호로 찾기 */}
                         <div className={styles.inputGroup}>
                             <label htmlFor="phone" className={styles.label}>
                                 전화번호
