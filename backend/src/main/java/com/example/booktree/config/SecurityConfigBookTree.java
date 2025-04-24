@@ -58,7 +58,7 @@ public class SecurityConfigBookTree {
 
                         ).permitAll()
                         .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
-                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
+                        ,"/api/v1/users/logout","/api/v1/users/validation/**","/api/v1/users/create/image",
                                 "/api/v1/users/delete/**")
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 

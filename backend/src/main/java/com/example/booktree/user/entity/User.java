@@ -58,6 +58,9 @@ public class User extends Auditable {
     @Column(length = 255)
     private String password;
 
+    @Column
+    private String image;
+
     @Column(name = "phone_number", length = 255)
     private String phoneNumber;
 

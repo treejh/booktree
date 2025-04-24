@@ -21,6 +21,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -240,6 +242,30 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
+    @PostMapping(value="/create/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity saveImagesToUser(@RequestParam MultipartFile images) {
+        return ResponseEntity.ok(userService.saveImageToUser(images));
+    }
+
+    @PatchMapping(value="/patch/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity updateImagesToUser(@RequestParam MultipartFile images) {
+        return ResponseEntity.ok(userService.updateImageToUser(images));
+    }
+
+    @GetMapping(value="/get/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity getImagesToUser() {
+
+        return ResponseEntity.ok(userService.getImageToUser());
+    }
+
+    @DeleteMapping(value="/delete/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity deleteImagesToUser() {
+        userService.deleteImageToUser();
+        return ResponseEntity.ok("이미지 삭제 완료 ");
+    }
+
 
 
 

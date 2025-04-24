@@ -4,6 +4,7 @@ package com.example.booktree.user.service;
 import com.example.booktree.enums.RoleType;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+import com.example.booktree.image.service.ImageService;
 import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.role.entity.Role;
 import com.example.booktree.role.repository.RoleRepository;
@@ -15,6 +16,7 @@ import com.example.booktree.user.dto.request.UserPostRequestDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
 import com.example.booktree.utils.CreateRandomNumber;
+import com.example.booktree.utils.S3Uploader;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final ImageService imageService;
 
 
     public User findById(Long userId) {
@@ -372,6 +376,51 @@ public class UserService {
     }
 
 
+    //사용자 이미지 저장
+    public String saveImageToUser(MultipartFile image){
+        Long userId = tokenService.getIdFromToken();
+        User user = findById(userId);
+        String imageUrl = imageService.saveUserImage(image);
+        user.setImage(imageUrl);
 
-    
+        return imageUrl;
+
+    }
+
+    //사용자 이미지 수정
+    public String updateImageToUser(MultipartFile image){
+        Long userId = tokenService.getIdFromToken();
+        User user = findById(userId);
+        //이미지 삭제
+        imageService.deleteFile(user.getImage());
+
+        //새로운 이이미지 저장
+        String imageUrl = imageService.saveUserImage(image);
+        user.setImage(imageUrl);
+
+        return imageUrl;
+
+    }
+
+    //사용자 이미지 삭제
+    public void deleteImageToUser(){
+        Long userId = tokenService.getIdFromToken();
+        User user = findById(userId);
+
+        //이미지 삭제
+        imageService.deleteFile(user.getImage());
+
+        //새로운 이미지 저장
+        user.setImage(null);
+    }
+
+
+    //사용자 이미지 조회
+    public String getImageToUser(){
+        Long userId = tokenService.getIdFromToken();
+        User user = findById(userId);
+
+       return user.getImage();
+    }
+
 }
