@@ -169,6 +169,9 @@ public class SecurityConfigBookTree {
                         .requestMatchers("/api/*/**")
                         .authenticated()
 
+                        // 검색 엔드포인트는 누구나 접근 가능
+                        .requestMatchers("/api/v1/search", "/api/v1/search/all").permitAll()
+
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2Login -> {

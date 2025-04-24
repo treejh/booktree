@@ -55,7 +55,20 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     Page<Post> findByBookContainingIgnoreCase(String book, Pageable pageable); // 책 제목 검색
 
+    Page<Post> findByTitleContainingOrContentContaining(
+            String titleKeyword,
+            String contentKeyword,
+            Pageable pageable
+    );
 
-
+    @Query("""
+      SELECT p
+      FROM Post p
+      WHERE LOWER(p.title)  LIKE LOWER(CONCAT('%', :q, '%'))
+         OR LOWER(p.content) LIKE LOWER(CONCAT('%', :q, '%'))
+         OR LOWER(p.author)  LIKE LOWER(CONCAT('%', :q, '%'))
+         OR LOWER(p.book)    LIKE LOWER(CONCAT('%', :q, '%'))
+      """)
+    Page<Post> searchAll(@Param("q") String q, Pageable pageable);
 
 }

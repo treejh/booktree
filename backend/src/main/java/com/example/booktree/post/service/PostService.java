@@ -215,17 +215,24 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    // 검색 기능 : searchType은 title, author, book 중 하나 선택
+    // 검색 기능 : searchType은 title, author, book 중 하나 선택, 전체 검색도 추가
     public Page<Post> searchPosts(String searchType, String keyword, Pageable pageable) {
-        if ("title".equalsIgnoreCase(searchType)) {
-            return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
-        } else if ("author".equalsIgnoreCase(searchType)) {
-            return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
-        } else if ("book".equalsIgnoreCase(searchType)) {
-            return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
-        } else {
-            throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
+        switch (searchType.toLowerCase()) {
+            case "title":
+                return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+            case "author":
+                return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
+            case "book":
+                return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
+            case "all":
+                return postRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
+            default:
+                throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
         }
+    }
+
+    public Page<Post> searchAll(String keyword, Pageable pageable) {
+        return postRepository.searchAll(keyword, pageable);
     }
 
     //팔로잉 한 유저들의 게시글을 최신순으로 가져오기
