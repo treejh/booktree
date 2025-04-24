@@ -254,13 +254,13 @@ public class UserController {
         return ResponseEntity.ok(userService.updateImageToUser(images));
     }
 
-    @GetMapping(value="/get/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @GetMapping(value="/get/image")
     public ResponseEntity getImagesToUser() {
 
         return ResponseEntity.ok(userService.getImageToUser());
     }
 
-    @DeleteMapping(value="/delete/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @DeleteMapping(value="/delete/image")
     public ResponseEntity deleteImagesToUser() {
         userService.deleteImageToUser();
         return ResponseEntity.ok("이미지 삭제 완료 ");

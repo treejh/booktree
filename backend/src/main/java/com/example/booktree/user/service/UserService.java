@@ -382,25 +382,31 @@ public class UserService {
         User user = findById(userId);
         String imageUrl = imageService.saveUserImage(image);
         user.setImage(imageUrl);
+        userRepository.save(user);
 
         return imageUrl;
 
     }
 
     //사용자 이미지 수정
-    public String updateImageToUser(MultipartFile image){
-        Long userId = tokenService.getIdFromToken();
-        User user = findById(userId);
-        //이미지 삭제
-        imageService.deleteFile(user.getImage());
-
-        //새로운 이이미지 저장
+    public String updateImageToUser(MultipartFile image) {
+        User user = findById(tokenService.getIdFromToken());
         String imageUrl = imageService.saveUserImage(image);
-        user.setImage(imageUrl);
+
+        if (user.getImage() == null || user.getImage().isEmpty()) {
+            // 이미지가 없거나 비어있는 경우 새 이미지 URL을 저장
+            user.setImage(imageUrl);
+            userRepository.save(user);
+        } else {
+            // 기존 이미지가 있으면 삭제 후 새 이미지 저장
+            imageService.deleteFile(user.getImage());
+            user.setImage(imageUrl);
+            userRepository.save(user);
+        }
 
         return imageUrl;
-
     }
+
 
     //사용자 이미지 삭제
     public void deleteImageToUser(){
@@ -410,8 +416,8 @@ public class UserService {
         //이미지 삭제
         imageService.deleteFile(user.getImage());
 
-        //새로운 이미지 저장
         user.setImage(null);
+        userRepository.save(user);
     }
 
 

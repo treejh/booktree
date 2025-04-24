@@ -76,9 +76,8 @@ public class ImageService {
         return resultImages;
     }
 
-    public String deleteFile(String fileName){
+    public void deleteFile(String fileName){
         s3Uploader.deleteFile(fileName);
-        return fileName;
     }
 
     public Image getImage(Long imageId){
