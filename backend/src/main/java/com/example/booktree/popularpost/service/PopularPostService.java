@@ -38,6 +38,7 @@ public class PopularPostService {
         redisTemplate.opsForZSet().incrementScore(key, postId.toString(), 1);
     }
 
+
     // 메인 카테고리 별 인기 게시글 TOP N 조회
 // 메인 카테고리 별 인기 게시글 TOP N 조회
     public List<PostResponseDto> getPopularPosts(int limit, Long mainCategoryId) {
@@ -48,19 +49,25 @@ public class PopularPostService {
 
         log.info("postScore : " + postScores.toString());
 
+
         if (postScores == null || postScores.isEmpty()) {
             throw new BusinessLogicException(ExceptionCode.VIEW_NOT_FOUND);
         }
 
         // Redis에서 가져온 postId와 score를 기반으로 DB에서 조회
         List<Long> ids = new ArrayList<>();
+
         List<Double> scores = new ArrayList<>(); // score를 저장할 리스트 추가
+
         for (ZSetOperations.TypedTuple<String> tuple : postScores) {
             String postId = tuple.getValue();
             Double score = tuple.getScore();
             log.info("Post ID: {}, Score: {}", postId, score); // score 출력
             ids.add(Long.parseLong(postId));
+
+
             scores.add(score); // score 리스트에 추가
+
         }
 
         // 순서 보장을 안해줌

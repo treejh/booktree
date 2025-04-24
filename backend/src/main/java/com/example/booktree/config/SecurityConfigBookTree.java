@@ -163,7 +163,11 @@ public class SecurityConfigBookTree {
 
                         //실시간 조회수순 인기 게시글 가져오기
                         .requestMatchers(
+
+                                "/api/v1/popular/get/posts",
+
                                 "/api/v1/popular/get/posts/**"
+
                         ).permitAll()
                         //추가
                         .requestMatchers("/api/*/**")
