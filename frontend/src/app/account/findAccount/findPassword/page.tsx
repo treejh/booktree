@@ -15,49 +15,24 @@ export default function FindPasswordPage() {
         return phoneRegex.test(phoneNumber)
     }
 
-    const handleFindByEmail = async () => {
+    const handleFindPassword = async () => {
         if (!email) {
             setErrorMessage('이메일을 입력해주세요.')
             return
         }
 
-        try {
-            const response = await fetch(`http://localhost:8090/api/v1/users/find/pw/email?email=${email}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-
-            if (response.ok) {
-                const data = await response.json()
-                setResult({ tempPassword: data.data, message: data.message })
-                setErrorMessage('') // 에러 메시지 초기화
-            } else {
-                const errorData = await response.json()
-                setErrorMessage(errorData.message || '비밀번호 찾기에 실패했습니다.')
-                setResult(null)
-            }
-        } catch (error) {
-            console.error('비밀번호 찾기 요청 중 오류 발생:', error)
-            setErrorMessage('서버와의 통신 중 문제가 발생했습니다.')
-            setResult(null)
-        }
-    }
-
-    const handleFindByPhone = async () => {
         if (!validatePhoneNumber(phone)) {
             setErrorMessage('전화번호 형식이 올바르지 않습니다. 000-0000-0000 형식으로 입력해주세요.')
             return
         }
 
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/find/pw/phone', {
+            const response = await fetch('http://localhost:8090/api/v1/users/find/pw/emailAndPhone', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ phoneNumber: phone }),
+                body: JSON.stringify({ email, phoneNumber: phone }),
             })
 
             if (response.ok) {
@@ -85,8 +60,13 @@ export default function FindPasswordPage() {
             <div className={styles.mainWrapper}>
                 <div className={styles.formContainer}>
                     <h1 className={styles.title}>비밀번호 찾기</h1>
+                    <p className={styles.notice}>
+                        소셜 로그인 사용자는 <br />
+                        비밀번호 찾기를 이용할 수 없습니다.
+                    </p>
+
                     <div className={styles.form}>
-                        {/* 이메일로 찾기 */}
+                        {/* 이메일 입력 */}
                         <div className={styles.inputGroup}>
                             <label htmlFor="email" className={styles.label}>
                                 이메일
@@ -99,12 +79,9 @@ export default function FindPasswordPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
-                            <button className={styles.submitButton} onClick={handleFindByEmail}>
-                                이메일로 찾기
-                            </button>
                         </div>
 
-                        {/* 핸드폰 번호로 찾기 */}
+                        {/* 전화번호 입력 */}
                         <div className={styles.inputGroup}>
                             <label htmlFor="phone" className={styles.label}>
                                 전화번호
@@ -117,10 +94,12 @@ export default function FindPasswordPage() {
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
                             />
-                            <button className={styles.submitButton} onClick={handleFindByPhone}>
-                                핸드폰 번호로 찾기
-                            </button>
                         </div>
+
+                        {/* 비밀번호 찾기 버튼 */}
+                        <button className={styles.submitButton} onClick={handleFindPassword}>
+                            비밀번호 찾기
+                        </button>
                     </div>
 
                     {result && (
@@ -159,7 +138,7 @@ export default function FindPasswordPage() {
                 <div className={styles.footerLine}></div>
                 <div className={styles.footerContent}></div>
                 <div className={styles.footerText}>
-                    <span className={styles.copyright}>© 2025 All rights reserved.</span>
+                    <span>© 2025 All rights reserved.</span>
                 </div>
             </footer>
         </div>
