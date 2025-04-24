@@ -196,7 +196,7 @@ export default function MyPage() {
                     </div>
                 </div>
 
-                {/* 소개글 */}
+                {/* 소개글
                 <div className="mb-6 pb-6 border-b border-gray-200">
                     {isEditing ? (
                         <div className="flex flex-col gap-2">
@@ -226,7 +226,7 @@ export default function MyPage() {
                     ) : (
                         <p className="text-gray-600">{introduction}</p>
                     )}
-                </div>
+                </div> */}
 
                 {/* 통계 섹션 수정 */}
                 <div className="grid grid-cols-3 divide-x divide-gray-200">
