@@ -55,7 +55,8 @@ export default function FindPasswordPage() {
                 <div className={styles.formContainer}>
                     <h1 className={styles.title}>비밀번호 찾기</h1>
                     <p className={styles.notice}>
-                        소셜 로그인(카카오, 깃허브) 사용자는 비밀번호 찾기를 이용할 수 없습니다.
+                        카카오, 깃허브 사용자는 <br />
+                        비밀번호 찾기를 이용할 수 없습니다.
                     </p>
                     <div className={styles.form}>
                         {/* 이메일 입력 */}
