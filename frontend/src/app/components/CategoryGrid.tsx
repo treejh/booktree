@@ -55,6 +55,7 @@ const CategoryGrid = () => {
                     {popPosts.map((post, index) => (
                         <CategoryBox
                             key={index}
+                            href={`blog/get/${post.id}/detail`}
                             title={post.title}
                             alt={'이미지 제목 : ${post.title}'}
                             views={post.score}

@@ -628,16 +628,16 @@ export default function DetailPage() {
                             {/* 게시글 내용 */}
                             <div className="mb-8">
                                 {/* 이미지를 컨텐츠 위로 이동 */}
-                                {/* 이미지 목록 */}
+
                                 {/* 이미지 목록 */}
                                 {post.imageUrls.length > 0 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <div className="flex flex-col gap-4 mb-8">
                                         {post.imageUrls.map((url, index) => (
-                                            <div key={index} className="rounded-lg overflow-hidden h-80 w-full">
+                                            <div key={index} className="w-full rounded-lg overflow-hidden">
                                                 <img
                                                     src={url}
                                                     alt={`게시글 이미지 ${index + 1}`}
-                                                    className="w-full h-full object-contain"
+                                                    className="w-full h-auto object-contain max-h-[600px]"
                                                     onError={(e) => {
                                                         // console.error(`이미지 로드 실패: ${url}`)
                                                         e.currentTarget.src =

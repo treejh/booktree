@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -37,8 +38,10 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+
     private final PopularPostService popularPostService;
     private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
+
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
@@ -121,6 +124,9 @@ public class PostController {
     // 게시글 아이디로 해당 게시글 조회
     @GetMapping("/get/{postId}")
     public ResponseEntity<PostDetailResponseDto> getPostById(@PathVariable("postId") Long postId) {
+
+        System.out.println("📥📥 컨트롤러 진입");
+
         Post post = postService.findPostById(postId);
 
         // 조회수 업데이트
@@ -140,6 +146,7 @@ public class PostController {
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
+
 
         return ResponseEntity.ok(response);
     }
@@ -163,13 +170,13 @@ public class PostController {
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
-    @GetMapping("/get/blog/popular/{blogId}")
-    public ResponseEntity<Page<PostResponseDto>> getPopularPostsByBlog(
+    @GetMapping("/get/blog/popularWeek/{blogId}")
+    public ResponseEntity<Page<PostResponseDto>> getPopularWeekPostsByBlog(
             @PathVariable("blogId") Long blogId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "8") int size) {
 
-        Page<PostResponseDto> posts = postService.getPopularPostsByBlog(blogId, page, size);
+        Page<PostResponseDto> posts = postService.getPopularWeekPostsByBlog(blogId, page, size);
         return ResponseEntity.ok(posts);
     }
 
@@ -186,15 +193,42 @@ public class PostController {
         // 최신순
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
-        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+
+        Page<PostResponseDto> dtoPage = postPage.map(post -> PostResponseDto.builder()
+                .postId(post.getId())
                 .title(post.getTitle())
+                .viewCount(post.getView())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
-                .postId(post.getId())
-                .viewCount(post.getView())
                 .build());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return new ResponseEntity<>(dtoPage, HttpStatus.OK);
     }
+
+    /**
+     * 전체 검색 (제목, 내용, 작성자, 책 기준 모두 포함)
+     * 호출 URL: GET /api/v1/posts/search/all?keyword=검색어
+     */
+    @GetMapping("/search/all")
+    public ResponseEntity<Page<PostResponseDto>> searchAll(
+            @RequestParam("q") String q,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<PostResponseDto> dtos = postService.searchAll(q, pageable)
+                .map(post -> PostResponseDto.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .createdAt(post.getCreatedAt())
+                        .modifiedAt(post.getModifiedAt())
+                        .build()
+                );
+        return ResponseEntity.ok(dtos);
+    }
+
+
 
     @GetMapping("/get/followingPost")
     public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
@@ -217,6 +251,17 @@ public class PostController {
 
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+    @GetMapping("/get/blog/popular/{blogId}")
+    public ResponseEntity<Page<PostResponseDto>> getPopularPostsByBlog(
+            @PathVariable("blogId") Long blogId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "8") int size) {
+
+        Page<PostResponseDto> posts = postService.getPopularPostsByBlog(blogId, page, size);
+        return ResponseEntity.ok(posts);
+    }
+
 
 
 

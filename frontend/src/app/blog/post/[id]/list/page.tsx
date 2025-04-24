@@ -29,7 +29,7 @@ type SortType = 'latest' | 'popular'
 
 export default function BlogPostListPage() {
     const params = useParams()
-    const blogId = params.blogId as string
+    const blogId = params.id as string
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -64,9 +64,9 @@ export default function BlogPostListPage() {
     if (error) return <div>{error}</div>
 
     return (
-        <div className="flex gap-8 max-w-8xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-8">
             {/* 메인 컨텐츠 */}
-            <main className="flex-1 pl-100">
+            <main>
                 <div className="bg-white rounded-xl shadow-lg p-8">
                     {/* 프로필 섹션 */}
                     <div>{/* 프로필 섹션 */}</div>
@@ -119,7 +119,7 @@ export default function BlogPostListPage() {
                             {sortType === 'latest' ? '최신 게시물' : '인기 게시물'}
                         </h2>
                         {posts.map((post) => (
-                            <Link href={`/blog/${post.postId}/detail`} key={post.postId} className="block">
+                            <Link href={`/blog/get/${post.postId}/detail`} key={post.postId} className="block">
                                 <article
                                     key={post.postId}
                                     className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"

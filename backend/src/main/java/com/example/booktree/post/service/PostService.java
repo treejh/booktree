@@ -21,7 +21,7 @@ import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,12 +31,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+
+
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import com.example.booktree.image.entity.Image;
 import com.example.booktree.image.repository.ImageRepository;
 import com.example.booktree.utils.S3Uploader;
+import org.springframework.transaction.annotation.Propagation;
 
 
 @Service
@@ -215,17 +221,24 @@ public class PostService {
         postRepository.delete(post);
     }
 
-    // 검색 기능 : searchType은 title, author, book 중 하나 선택
+    // 검색 기능 : searchType은 title, author, book 중 하나 선택, 전체 검색도 추가
     public Page<Post> searchPosts(String searchType, String keyword, Pageable pageable) {
-        if ("title".equalsIgnoreCase(searchType)) {
-            return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
-        } else if ("author".equalsIgnoreCase(searchType)) {
-            return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
-        } else if ("book".equalsIgnoreCase(searchType)) {
-            return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
-        } else {
-            throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
+        switch (searchType.toLowerCase()) {
+            case "title":
+                return postRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+            case "author":
+                return postRepository.findByAuthorContainingIgnoreCase(keyword, pageable);
+            case "book":
+                return postRepository.findByBookContainingIgnoreCase(keyword, pageable);
+            case "all":
+                return postRepository.findByTitleContainingOrContentContaining(keyword, keyword, pageable);
+            default:
+                throw new BusinessLogicException(ExceptionCode.INVALID_SEARCH_TYPE);
         }
+    }
+
+    public Page<Post> searchAll(String keyword, Pageable pageable) {
+        return postRepository.searchAll(keyword, pageable);
     }
 
     //팔로잉 한 유저들의 게시글을 최신순으로 가져오기
@@ -263,9 +276,10 @@ public class PostService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
     }
 
+    @Transactional//(propagation = Propagation.REQUIRES_NEW)
     public void increaseViewCount(Post post) {
         post.setView(post.getView() + 1);
-        postRepository.save(post);
+        //postRepository.save(post);
     }
 
 
@@ -273,20 +287,14 @@ public class PostService {
     @Transactional
     public Post findPostById(Long postId) {
 
-
+        System.out.println("🔥🔥 게시글 조회 서비스 실행됨");
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
 
-        increaseViewCount(post);
-
-
-
-
+        post.setView(post.getView() + 1); // 영속성 상태에서 직접 수정
 
         return post;
-
-
     }
 
     // 블로그별로 게시글 목록 조회
@@ -361,7 +369,7 @@ public class PostService {
                 .build());
     }
 
-    public Page<PostResponseDto> getPopularPostsByBlog(Long blogId, int page, int size) {
+    public Page<PostResponseDto> getPopularWeekPostsByBlog(Long blogId, int page, int size) {
         Blog blog = blogService.findBlogByBlogId(blogId);
         if (blog == null) {
             throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
@@ -372,7 +380,7 @@ public class PostService {
 
         Page<Post> posts = postRepository.findPopularPostsByLikesInLastWeek(blogId, oneWeekAgo, pageable);
 
-        List<Post> debugList = postRepository.findByBlogId(2L);
+        //List<Post> debugList = postRepository.findByBlogId(2L);
 
 
 
@@ -390,6 +398,26 @@ public class PostService {
     public List<Post> findAllById(List<Long> allId){
         return postRepository.findAllById(allId);
     }
+
+
+    public Page<PostResponseDto> getPopularPostsByBlog(Long blogId, int page, int size) {
+        Blog blog = blogService.findBlogByBlogId(blogId);
+        if (blog == null) {
+            throw new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND);
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts = postRepository.findPopularPostsByBlogId(blogId, pageable);
+
+        return posts.map(post -> PostResponseDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .viewCount(post.getView())
+                .createdAt(post.getCreatedAt())
+                .modifiedAt(post.getModifiedAt())
+                .build());
+    }
+
 
 
 }

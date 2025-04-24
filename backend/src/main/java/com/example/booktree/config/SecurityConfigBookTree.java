@@ -115,7 +115,8 @@ public class SecurityConfigBookTree {
 
                         //팔로우 /api/v1/follow/create
                         .requestMatchers(
-                                "/api/v1/follow/create/follow"
+                                "/api/v1/follow/create/follow",
+                                "/api/v1/follow/get/**"
                         )
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
@@ -163,11 +164,18 @@ public class SecurityConfigBookTree {
 
                         //실시간 조회수순 인기 게시글 가져오기
                         .requestMatchers(
+
+                                "/api/v1/popular/get/posts",
+
                                 "/api/v1/popular/get/posts/**"
+
                         ).permitAll()
                         //추가
                         .requestMatchers("/api/*/**")
                         .authenticated()
+
+                        // 검색 엔드포인트는 누구나 접근 가능
+                        .requestMatchers("/api/v1/search", "/api/v1/search/all").permitAll()
 
                         .anyRequest().permitAll()
                 )
