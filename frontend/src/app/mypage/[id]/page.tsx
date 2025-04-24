@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation' // useRouter import 추가
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
+import { useParams } from 'next/navigation'
 
 interface Category {
     id: number
@@ -11,40 +12,34 @@ interface Category {
     update_at: string
 }
 
-export default function MyPage({ params }: { params: { id: number } }) {
+export default function MyPage() {
     const router = useRouter() // router 추가
     const [categories, setCategories] = useState<Category[]>([]) // 초기값 빈 배열
     const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
-    const [isAuthorized, setIsAuthorized] = useState(false) // 인증 상태 추가
     const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
+    const [isAuthorized, setIsAuthorized] = useState(false)
+    const { id: userId } = useParams<{ id: string }>() // URL에서 userId
 
     useEffect(() => {
-        const fetchUserAuthorization = async () => {
-            try {
-                if (!isLogin) {
-                    alert('로그인 해주세요')
-                    router.push('/account/login')
-                }
+        const checkAuthorization = () => {
+            if (!isLogin) {
+                alert('로그인이 필요합니다.')
+                router.push('/account/login')
+                return
+            }
 
-                // 현재 로그인한 사용자 ID와 페이지 주인의 ID 비교
-                if (loginUser.id === params.id) {
-                    setIsAuthorized(true)
-                } else {
-                    alert('접근 권한이 없습니다.')
-                    router.push('/') 
-                }
-            } catch (err) {
-                console.error('인증 확인 중 오류 발생:', err)
+            // URL의 id와 로그인된 사용자의 id 비교
+            if (loginUser.id === parseInt(userId)) {
+                setIsAuthorized(true)
+            } else {
                 alert('접근 권한이 없습니다.')
-                router.push('/') 
-            } finally {
-                setIsLoading(false)
+                router.push('/') // 메인 페이지로 리다이렉트
             }
         }
 
-        fetchUserAuthorization()
-    }, [params.id, router])
+        checkAuthorization()
+    }, [isLogin, loginUser, userId, router])
 
     useEffect(() => {
         const fetchCategories = async () => {
