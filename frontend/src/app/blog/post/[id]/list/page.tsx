@@ -29,7 +29,7 @@ type SortType = 'latest' | 'popular'
 
 export default function BlogPostListPage() {
     const params = useParams()
-    const blogId = params.blogId as string
+    const blogId = params.id as string
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
