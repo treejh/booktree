@@ -26,14 +26,27 @@ public class CategoryController {
     @GetMapping("/get/allcategory")
     @Operation(
             summary = "유저의 모든 카테고리 찾기 기능",
-            description = "유저의 ID를 통해 유저가 등록한 모든 카테고리를 반환하는 메서드",
+            description = "로그인한 유저의 ID를 통해 유저가 등록한 모든 카테고리를 반환하는 메서드 (마이 페이지)",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?>  getAllCategory() {
+    public ResponseEntity<?> getAllCategory() {
 
         Long userId = tokenService.getIdFromToken();
         // 인가 로직
         List<AllCategoryResponseDto> response = categoryService.findAllcategory(userId);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/get/{userid}")
+    @Operation(
+            summary = "유저의 모든 카테고리 찾기 기능",
+            description = "선택한 유저의 ID를 통해 유저가 등록한 모든 카테고리를 반환하는 메서드 (게시글 상세 보기)",
+            tags = "카테고리 관리 컨트롤러"
+    )
+    public ResponseEntity<?> getAllCategory(@PathVariable Long userid) {
+
+        // 인가 로직
+        List<AllCategoryResponseDto> response = categoryService.findAllcategory(userid);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

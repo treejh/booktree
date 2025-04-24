@@ -10,54 +10,19 @@ export default function FindPasswordPage() {
     const [result, setResult] = useState<{ tempPassword: string; message: string } | null>(null)
     const [errorMessage, setErrorMessage] = useState('')
 
-    const validatePhoneNumber = (phoneNumber: string) => {
-        const phoneRegex = /^\d{3}-\d{4}-\d{4}$/
-        return phoneRegex.test(phoneNumber)
-    }
-
-    const handleFindByEmail = async () => {
-        if (!email) {
-            setErrorMessage('이메일을 입력해주세요.')
+    const handleFindPassword = async () => {
+        if (!email || !phone) {
+            setErrorMessage('이메일과 전화번호를 모두 입력해주세요.')
             return
         }
 
         try {
-            const response = await fetch(`http://localhost:8090/api/v1/users/find/pw/email?email=${email}`, {
+            const response = await fetch('/api/v1/users/find/pw/emailAndPhone', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-            })
-
-            if (response.ok) {
-                const data = await response.json()
-                setResult({ tempPassword: data.data, message: data.message })
-                setErrorMessage('') // 에러 메시지 초기화
-            } else {
-                const errorData = await response.json()
-                setErrorMessage(errorData.message || '비밀번호 찾기에 실패했습니다.')
-                setResult(null)
-            }
-        } catch (error) {
-            console.error('비밀번호 찾기 요청 중 오류 발생:', error)
-            setErrorMessage('서버와의 통신 중 문제가 발생했습니다.')
-            setResult(null)
-        }
-    }
-
-    const handleFindByPhone = async () => {
-        if (!validatePhoneNumber(phone)) {
-            setErrorMessage('전화번호 형식이 올바르지 않습니다. 000-0000-0000 형식으로 입력해주세요.')
-            return
-        }
-
-        try {
-            const response = await fetch('http://localhost:8090/api/v1/users/find/pw/phone', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ phoneNumber: phone }),
+                body: JSON.stringify({ email, phoneNumber: phone }),
             })
 
             if (response.ok) {
@@ -80,13 +45,21 @@ export default function FindPasswordPage() {
         setResult(null) // 결과 모달 닫기
     }
 
+    const closeError = () => {
+        setErrorMessage('') // 에러 메시지 모달 닫기
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.mainWrapper}>
                 <div className={styles.formContainer}>
                     <h1 className={styles.title}>비밀번호 찾기</h1>
+                    <p className={styles.notice}>
+                        카카오, 깃허브 사용자는 <br />
+                        비밀번호 찾기를 이용할 수 없습니다.
+                    </p>
                     <div className={styles.form}>
-                        {/* 이메일로 찾기 */}
+                        {/* 이메일 입력 */}
                         <div className={styles.inputGroup}>
                             <label htmlFor="email" className={styles.label}>
                                 이메일
@@ -99,11 +72,13 @@ export default function FindPasswordPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
-                            <button className={styles.submitButton} onClick={handleFindByEmail}>
-                                이메일로 찾기
-                            </button>
                         </div>
 
+
+
+
+                    </div>
+                    <div className={styles.form}>
                         {/* 핸드폰 번호로 찾기 */}
                         <div className={styles.inputGroup}>
                             <label htmlFor="phone" className={styles.label}>
@@ -117,49 +92,53 @@ export default function FindPasswordPage() {
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
                             />
-                            <button className={styles.submitButton} onClick={handleFindByPhone}>
-                                핸드폰 번호로 찾기
-                            </button>
                         </div>
-                    </div>
 
-                    {result && (
-                        <div className={styles.modal}>
-                            <div className={styles.modalContent}>
-                                <p>{result.message}</p>
-                                <p>임시 비밀번호: {result.tempPassword}</p>
-                                <button className={styles.closeButton} onClick={closeResult}>
-                                    닫기
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {errorMessage && (
-                        <div className={styles.modal}>
-                            <div className={styles.modalContent}>
-                                <p>{errorMessage}</p>
-                                <button className={styles.closeButton} onClick={() => setErrorMessage('')}>
-                                    닫기
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className={styles.loginLink}>
-                        <span>비밀번호를 찾으셨나요?</span>
-                        <Link href="/account/login" className={styles.loginLinkText}>
-                            로그인하기
-                        </Link>
+                        {/* 비밀번호 찾기 버튼 */}
+                        <button className={styles.submitButton} onClick={handleFindPassword}>
+                            비밀번호 찾기
+                        </button>
                     </div>
                 </div>
+            </div>
+
+            {/* 결과 모달 */}
+            {result && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <p>{result.message}</p>
+                        <p>임시 비밀번호: {result.tempPassword}</p>
+                        <button className={styles.closeButton} onClick={closeResult}>
+                            닫기
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 에러 메시지 모달 */}
+            {errorMessage && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <p>{errorMessage}</p>
+                        <button className={styles.closeButton} onClick={closeError}>
+                            닫기
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            <div className={styles.loginLink}>
+                <span>비밀번호를 찾으셨나요?</span>
+                <Link href="/account/login" className={styles.loginLinkText}>
+                    로그인하기
+                </Link>
             </div>
             <footer className={styles.footer}>
                 <div className={styles.footerDivider}></div>
                 <div className={styles.footerLine}></div>
                 <div className={styles.footerContent}></div>
                 <div className={styles.footerText}>
-                    <span className={styles.copyright}>© 2025 All rights reserved.</span>
+                    <span>© 2025 All rights reserved.</span>
                 </div>
             </footer>
         </div>
