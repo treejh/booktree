@@ -10,24 +10,14 @@ export default function FindPasswordPage() {
     const [result, setResult] = useState<{ tempPassword: string; message: string } | null>(null)
     const [errorMessage, setErrorMessage] = useState('')
 
-    const validatePhoneNumber = (phoneNumber: string) => {
-        const phoneRegex = /^\d{3}-\d{4}-\d{4}$/
-        return phoneRegex.test(phoneNumber)
-    }
-
     const handleFindPassword = async () => {
-        if (!email) {
-            setErrorMessage('이메일을 입력해주세요.')
-            return
-        }
-
-        if (!validatePhoneNumber(phone)) {
-            setErrorMessage('전화번호 형식이 올바르지 않습니다. 000-0000-0000 형식으로 입력해주세요.')
+        if (!email || !phone) {
+            setErrorMessage('이메일과 전화번호를 모두 입력해주세요.')
             return
         }
 
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/find/pw/emailAndPhone', {
+            const response = await fetch('/api/v1/users/find/pw/emailAndPhone', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,16 +45,18 @@ export default function FindPasswordPage() {
         setResult(null) // 결과 모달 닫기
     }
 
+    const closeError = () => {
+        setErrorMessage('') // 에러 메시지 모달 닫기
+    }
+
     return (
         <div className={styles.container}>
             <div className={styles.mainWrapper}>
                 <div className={styles.formContainer}>
                     <h1 className={styles.title}>비밀번호 찾기</h1>
                     <p className={styles.notice}>
-                        소셜 로그인 사용자는 <br />
-                        비밀번호 찾기를 이용할 수 없습니다.
+                        소셜 로그인(카카오, 깃허브) 사용자는 비밀번호 찾기를 이용할 수 없습니다.
                     </p>
-
                     <div className={styles.form}>
                         {/* 이메일 입력 */}
                         <div className={styles.inputGroup}>
@@ -101,37 +93,39 @@ export default function FindPasswordPage() {
                             비밀번호 찾기
                         </button>
                     </div>
+                </div>
+            </div>
 
-                    {result && (
-                        <div className={styles.modal}>
-                            <div className={styles.modalContent}>
-                                <p>{result.message}</p>
-                                <p>임시 비밀번호: {result.tempPassword}</p>
-                                <button className={styles.closeButton} onClick={closeResult}>
-                                    닫기
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {errorMessage && (
-                        <div className={styles.modal}>
-                            <div className={styles.modalContent}>
-                                <p>{errorMessage}</p>
-                                <button className={styles.closeButton} onClick={() => setErrorMessage('')}>
-                                    닫기
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className={styles.loginLink}>
-                        <span>비밀번호를 찾으셨나요?</span>
-                        <Link href="/account/login" className={styles.loginLinkText}>
-                            로그인하기
-                        </Link>
+            {/* 결과 모달 */}
+            {result && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <p>{result.message}</p>
+                        <p>임시 비밀번호: {result.tempPassword}</p>
+                        <button className={styles.closeButton} onClick={closeResult}>
+                            닫기
+                        </button>
                     </div>
                 </div>
+            )}
+
+            {/* 에러 메시지 모달 */}
+            {errorMessage && (
+                <div className={styles.modal}>
+                    <div className={styles.modalContent}>
+                        <p>{errorMessage}</p>
+                        <button className={styles.closeButton} onClick={closeError}>
+                            닫기
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            <div className={styles.loginLink}>
+                <span>비밀번호를 찾으셨나요?</span>
+                <Link href="/account/login" className={styles.loginLinkText}>
+                    로그인하기
+                </Link>
             </div>
             <footer className={styles.footer}>
                 <div className={styles.footerDivider}></div>
