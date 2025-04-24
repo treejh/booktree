@@ -145,7 +145,7 @@ const CategoryDetailPage = () => {
 
                         <div className="grid grid-cols-1 gap-6">
                             {currentBooks.map((post) => (
-                                <Link href={`/blog/get/${post.id}/detail`} key={post.id} className="block">
+                                <Link href={`/post/${post.id}/detail/get`} key={post.id} className="block">
                                     <div className="flex border border-gray-100 rounded-lg p-4 gap-4 hover:shadow-md transition-shadow cursor-pointer">
                                         <div className="w-24 h-32 relative flex-shrink-0">
                                             <Image
