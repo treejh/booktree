@@ -6,6 +6,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
+// 카테고리 인터페이스 추가
+interface Category {
+    id: number
+    name: string
+    create_at: string
+    update_at: string
+}
+
 export default function PostWritePage() {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
@@ -16,8 +24,14 @@ export default function PostWritePage() {
     const [bookTitle, setBookTitle] = useState('')
     const [content, setContent] = useState('')
     const [tags, setTags] = useState('')
-    const [category, setCategory] = useState('전체')
-    const [mainCategory, setMainCategory] = useState('전체')
+    //const [category, setCategory] = useState('전체')
+    //const [mainCategory, setMainCategory] = useState('전체')
+
+    // 카테고리 관련 상태 수정
+    const [categories, setCategories] = useState<Category[]>([])
+    const [mainCategories, setMainCategories] = useState<Category[]>([])
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0)
+    const [selectedMainCategoryId, setSelectedMainCategoryId] = useState<number>(0)
 
     // State for UI rendering
     const [isClient, setIsClient] = useState(false)
@@ -57,6 +71,63 @@ export default function PostWritePage() {
         checkAuth()
     }, [router])
 
+    // 카테고리 데이터 불러오기
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                // 메인 카테고리 가져오기
+                const mainResponse = await fetch('http://localhost:8090/api/v1/maincategories/get', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                const mainData = await mainResponse.json()
+                console.log('메인 카테고리 데이터:', mainData)
+
+                // 메인 카테고리 설정
+                if (Array.isArray(mainData)) {
+                    setMainCategories(mainData)
+                } else {
+                    console.error('메인 카테고리 데이터 형식 오류:', mainData)
+                    setMainCategories([])
+                }
+
+                // 유저의 카테고리 가져오기
+                const categoryResponse = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                const categoryData = await categoryResponse.json()
+                console.log('카테고리 데이터:', categoryData)
+
+                // 카테고리 설정
+                if (Array.isArray(categoryData)) {
+                    setCategories(categoryData)
+                } else {
+                    console.error('카테고리 데이터 형식 오류:', categoryData)
+                    setCategories([])
+                }
+            } catch (error) {
+                console.error('카테고리 로드 에러:', error)
+                setMainCategories([])
+                setCategories([])
+            }
+        }
+
+        // 로그인된 경우에만 카테고리 데이터 로드
+        if (isLogin) {
+            fetchCategories()
+        }
+    }, [isLogin])
+
     // This ensures hydration errors are prevented by only rendering on the client
     useEffect(() => {
         setIsClient(true)
@@ -91,14 +162,15 @@ export default function PostWritePage() {
 
         // FormData 객체 생성
         const formData = new FormData()
-        formData.append('mainCategoryId', mainCategory)
+        formData.append('mainCategoryId', selectedMainCategoryId.toString())
         formData.append('blogId', loginUser?.blogId.toString() || '')
         formData.append('title', title)
         formData.append('content', editorContent)
         formData.append('author', author)
         formData.append('book', bookTitle)
-        if (category !== '전체') {
-            formData.append('categoryId', category)
+        if (selectedCategoryId !== 0) {
+            // 수정
+            formData.append('categoryId', selectedCategoryId.toString())
         }
 
         try {
@@ -121,6 +193,18 @@ export default function PostWritePage() {
 
         console.log({ title, author, bookTitle, content: editorContent, tags, category, mainCategory })
         // Here you would typically make an API call to save the post
+    }
+
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const categoryId = Number(e.target.value)
+        setSelectedCategoryId(categoryId)
+        //setCategory(categoryId.toString())
+    }
+
+    const handleMainCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const mainCategoryId = Number(e.target.value)
+        setSelectedMainCategoryId(mainCategoryId)
+        //setMainCategory(mainCategoryId.toString())
     }
 
     // Format handlers using document.execCommand for direct formatting
@@ -395,15 +479,16 @@ export default function PostWritePage() {
                             <h3 className="text-lg font-medium mb-4">카테고리 선택</h3>
                             <div className="relative mb-4">
                                 <select
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
+                                    value={selectedCategoryId}
+                                    onChange={handleCategoryChange}
                                     className="w-full p-2 border border-gray-300 rounded appearance-none"
                                 >
-                                    <option value="전체">전체</option>
-                                    <option value="소설">소설</option>
-                                    <option value="시">시</option>
-                                    <option value="에세이">에세이</option>
-                                    <option value="자기계발">자기계발</option>
+                                    <option value={0}>전체</option>
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+                                        </option>
+                                    ))}
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -418,15 +503,16 @@ export default function PostWritePage() {
                             <h3 className="text-lg font-medium mb-4">메인 카테고리 선택</h3>
                             <div className="relative mb-4">
                                 <select
-                                    value={mainCategory}
-                                    onChange={(e) => setMainCategory(e.target.value)}
+                                    value={selectedMainCategoryId}
+                                    onChange={handleMainCategoryChange}
                                     className="w-full p-2 border border-gray-300 rounded appearance-none"
                                 >
-                                    <option value="전체">전체</option>
-                                    <option value="소설">소설</option>
-                                    <option value="시">시</option>
-                                    <option value="에세이">에세이</option>
-                                    <option value="자기계발">자기계발</option>
+                                    <option value={0}>전체</option>
+                                    {mainCategories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+                                        </option>
+                                    ))}
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
