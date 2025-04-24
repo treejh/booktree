@@ -6,6 +6,7 @@ import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
+
 interface Category {
     id: number
     name: string
@@ -23,7 +24,7 @@ export default function MyPage() {
     const [categories, setCategories] = useState<Category[]>([]) // 초기값 빈 배열
     const [isLoading, setIsLoading] = useState(true) // 로딩 상태 추가
     const [error, setError] = useState<string | null>(null) // 에러 상태 추가
-    const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
+    const { isLogin, loginUser } = useGlobalLoginUser()
     const [isAuthorized, setIsAuthorized] = useState(false)
     const { id: userId } = useParams<{ id: string }>() // URL에서 userId
 
@@ -227,9 +228,7 @@ export default function MyPage() {
                         </div>
                         <div>
                             <div className="flex items-center">
-                                <h1 className="text-xl font-bold">김블로그</h1>
-                                <span className="text-gray-500 text-sm ml-2">@blog_kim</span>
-
+                                <h1 className="text-xl font-bold">{loginUser.username}의 블로그</h1>
                                 <button
                                     onClick={async () => {
                                         try {
@@ -272,7 +271,9 @@ export default function MyPage() {
                                 </button>
                             </div>
 
-                            <p className="text-gray-500 text-sm">가입일: 2024년 1월 15일</p>
+                            <p className="text-gray-500 text-sm">
+                                가입일: {new Date(loginUser.createDate).toLocaleDateString()}
+                            </p>
                         </div>
                     </div>
                     <div className="flex space-x-2">
@@ -324,7 +325,7 @@ export default function MyPage() {
                     </div>
                 </div>
 
-                {/* 소개글 */}
+                {/* 소개글
                 <div className="mb-6 pb-6 border-b border-gray-200">
                     {isEditing ? (
                         <div className="flex flex-col gap-2">
@@ -354,7 +355,7 @@ export default function MyPage() {
                     ) : (
                         <p className="text-gray-600">{introduction}</p>
                     )}
-                </div>
+                </div> */}
 
                 {/* 통계 섹션 수정 */}
                 <div className="grid grid-cols-3 divide-x divide-gray-200">
