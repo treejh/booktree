@@ -4,9 +4,7 @@ import { useRouter } from "next/navigation";
 type User = {
   id: number;
   email: string;
-
   provider: string;
-
   phoneNumber: string;
   username: string;
   createDate: string;
@@ -33,9 +31,7 @@ function createEmptyUser(): User {
   return {
     id: 0,
     createDate: "",
-
     provider: "",
-
     modifyDate: "",
     email: "",
     phoneNumber: "",
@@ -45,10 +41,8 @@ function createEmptyUser(): User {
 
 export function useLoginUser() {
   const router = useRouter();
-
   const [isLoginUserPending, setLoginUserPending] = useState(true);
   const [loginUser, _setLoginUser] = useState<User>(createEmptyUser());
-
   const removeLoginUser = () => {
     _setLoginUser(createEmptyUser());
     setLoginUserPending(false);
