@@ -57,14 +57,17 @@ export default function MyPage() {
 
     const saveEditedCategory = async (categoryId: number) => {
         try {
-            const response = await fetch(`http://localhost:8090/api/v1/categories/patch/${categoryId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/patch/${categoryId}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ categoryName: editedCategoryName }),
                 },
-                credentials: 'include',
-                body: JSON.stringify({ categoryName: editedCategoryName }),
-            })
+            )
 
             if (!response.ok) {
                 throw new Error('카테고리 수정에 실패했습니다.')
@@ -93,13 +96,16 @@ export default function MyPage() {
         if (!confirmed) return
 
         try {
-            const response = await fetch(`http://localhost:8090/api/v1/categories/delete/${categoryId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/delete/${categoryId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
                 },
-                credentials: 'include',
-            })
+            )
 
             if (!response.ok) {
                 throw new Error('카테고리 삭제에 실패했습니다.')
@@ -117,14 +123,16 @@ export default function MyPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/allcategory`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
-                })
+                )
                 if (!response.ok) {
                     throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
                 }
@@ -146,18 +154,17 @@ export default function MyPage() {
     }, [])
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchFollowCount = async () => {
             try {
-                const response = await fetch('http://localhost:8090/api/v1/follow/get/followcount', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/followcount`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
                     },
                     credentials: 'include', // 쿠키를 포함시키기 위한 설정
                 })
                 if (!response.ok) {
-                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                    throw new Error('팔로우 데이터를 가져오는 데 실패했습니다.')
                 }
                 const data = await response.json()
                 setFollowCount(data) // 가져온 데이터를 상태에 저장
@@ -173,7 +180,7 @@ export default function MyPage() {
             }
         }
 
-        fetchCategories()
+        fetchFollowCount()
     }, [])
 
     const [isEditing, setIsEditing] = useState(false)
@@ -190,7 +197,7 @@ export default function MyPage() {
 
     // 팔로잉 클릭 핸들러 추가
     const handleFollowingClick = () => {
-        router.push(`/follow/${userId}`)
+        router.push('/follow')
     }
 
     // 팔로워 클릭 핸들러 추가
