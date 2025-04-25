@@ -37,9 +37,9 @@ public class CommentService {
         }
         Post post = postOptional.get();
 
-        // 현재 로그인한 사용자의 이메일을 토큰에서 추출하고, 해당 User 조회
-        String userEmail = tokenService.getEmailFromToken();
-        User user = userService.findUserByEmail(userEmail);
+        // 이메일 대신 ID로 조회
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
 
         Comment comment = Comment.builder()
                 .content(dto.getContent())
