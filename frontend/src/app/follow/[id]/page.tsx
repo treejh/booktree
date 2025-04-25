@@ -62,7 +62,7 @@ export default function FollowPage() {
 
     const followUser = async (followeeId: number) => {
         try {
-            const res = await fetch('http://localhost:8090/api/v1/follow/create/follow', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export default function FollowPage() {
 
     const unfollowUser = async (followeeId: number) => {
         try {
-            const res = await fetch('http://localhost:8090/api/v1/follow/delete/unfollow', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -132,14 +132,17 @@ export default function FollowPage() {
     useEffect(() => {
         const fetchFollower = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/followed/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/followed/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 추가적인 헤더가 필요하면 여기에 추가
+                        },
+                        credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
-                })
+                )
                 if (!response.ok) {
                     throw new Error('팔로워 데이터를 가져오는 데 실패했습니다.')
                 }
@@ -161,14 +164,17 @@ export default function FollowPage() {
     useEffect(() => {
         const fetchFollowed = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/follower/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/follower/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 추가적인 헤더가 필요하면 여기에 추가
+                        },
+                        credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
-                })
+                )
                 if (!response.ok) {
                     throw new Error('팔로워 데이터를 가져오는 데 실패했습니다.')
                 }
