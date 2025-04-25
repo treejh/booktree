@@ -10,9 +10,9 @@ export default function LoginPage() {
     const [rememberLogin, setRememberLogin] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const socialLoginForKakaoUrl = `http://localhost:8090/oauth2/authorization/kakao`
-    const socialLoginForGithubUrl = `http://localhost:8090/oauth2/authorization/github`
-    const redirectUrlAfterSocialLogin = 'http://localhost:3000'
+    const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao`
+    const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
+    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_FRONT_BASE_URL}`
     const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -24,7 +24,7 @@ export default function LoginPage() {
         }
 
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/login', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export default function LoginPage() {
                             </button>
 
                             <Link
-                                href={`${socialLoginForKakaoUrl}?redirectUrl=http://localhost:3000`}
+                                href={`${socialLoginForKakaoUrl}?redirectUrl=${redirectUrlAfterSocialLogin}`}
                                 className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                             >
                                 <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current">
