@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false,
   images: {
-    domains: ['booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com'],
+    domains: ["booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com"],
   },
 };
 

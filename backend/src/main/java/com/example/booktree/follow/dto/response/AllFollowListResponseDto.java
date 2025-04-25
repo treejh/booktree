@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 public class AllFollowListResponseDto {
 
     private Long id;
+    // 팔로워 혹은 팔로잉 유저 id를 담을 그릇
+    private Long userId;
     private int count;
     private String username;
     private LocalDateTime create_at;

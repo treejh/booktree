@@ -42,6 +42,7 @@ public class FollowService {
                     return AllFollowListResponseDto.builder()
                             .id(follower.getId())
                             .count(index + 1)
+                            .userId(follower.getFollowed().getId())
                             .username(follower.getFollowed().getUsername())
                             .create_at(follower.getCreatedAt())
                             .update_at(follower.getModifiedAt())
@@ -64,6 +65,7 @@ public class FollowService {
                     return AllFollowListResponseDto.builder()
                             .id(followed.getId())
                             .count(index + 1)
+                            .userId(followed.getFollower().getId())
                             .username(followed.getFollower().getUsername())
                             .create_at(followed.getCreatedAt())
                             .update_at(followed.getModifiedAt())
@@ -109,8 +111,7 @@ public class FollowService {
     }
 
     // 팔로워, 팔로잉 수 dto 반환
-    public FollowCountDto getCount() {
-        Long userId = tokenService.getIdFromToken();
+    public FollowCountDto getCount(Long userId) {
 
         FollowCountDto followCountDto = new FollowCountDto();
 

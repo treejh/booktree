@@ -4,6 +4,7 @@ import com.example.booktree.post.entity.Post;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +14,10 @@ public class PostResponseDto {
     private Long postId;
     private String title;
     private Long viewCount;
+    private int ranking;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private String imageUrl;
+    private double score;
 
 }

@@ -2,7 +2,7 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-//import com.example.booktree.popularpost.service.PopularPostService;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
@@ -29,14 +29,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
+@Slf4j
 public class PostController {
 
     private final PostService postService;
-    //private final PopularPostService popularPostService;
+
+    private final PopularPostService popularPostService;
+    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
+
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
@@ -56,8 +61,10 @@ public class PostController {
         // 추천 순
 
         Page<Post> postPage = postService.getPost(PageRequest.of(page -1, size, Sort.by(Sort.Direction.DESC, type)), maincategoryId);
+
         Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
                         .title(post.getTitle())
+                        .imageUrl(post.getImageList().isEmpty() ? defaultImageUrl : post.getImageList().get(0).getImageUrl())
                         .createdAt(post.getCreatedAt())
                         .modifiedAt(post.getModifiedAt())
                         .postId(post.getId())
@@ -71,11 +78,10 @@ public class PostController {
     @GetMapping("/get/maincategory/{maincategoryId}/view")
     public ResponseEntity<?> getPostByViews(@PathVariable Long maincategoryId,
                                                     @RequestParam(name = "page", defaultValue = "1") int page,
-                                                    @RequestParam(name="size", defaultValue = "6") int size
+                                                    @RequestParam(name="size", defaultValue = "5") int size
                                                     ) {
         // 추천 순
         Page<Post> postPage = postService.getPostByViews(PageRequest.of(page -1, size), maincategoryId);
-
         Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
                 .title(post.getTitle())
                 .createdAt(post.getCreatedAt())
@@ -123,10 +129,8 @@ public class PostController {
 
         Post post = postService.findPostById(postId);
 
-
-
-
-
+        // 조회수 업데이트
+        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
 
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
@@ -137,19 +141,14 @@ public class PostController {
                 .imageUrls(post.getImageList().stream()
                         .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
                         .toList())
-
-                .viewCount(post.getView())
-
+                .viewCount(post.getView()) // 업데이트된 조회수
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
                 .build();
 
 
-
         return ResponseEntity.ok(response);
-
-
     }
 
 
@@ -194,15 +193,42 @@ public class PostController {
         // 최신순
         PageRequest pageRequest = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postService.searchPosts(type, keyword, pageRequest);
-        Page<PostResponseDto> response = postPage.map(post -> PostResponseDto.builder()
+
+        Page<PostResponseDto> dtoPage = postPage.map(post -> PostResponseDto.builder()
+                .postId(post.getId())
                 .title(post.getTitle())
+                .viewCount(post.getView())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
-                .postId(post.getId())
-                .viewCount(post.getView())
                 .build());
-        return new ResponseEntity<>(response, HttpStatus.OK);
+
+        return new ResponseEntity<>(dtoPage, HttpStatus.OK);
     }
+
+    /**
+     * 전체 검색 (제목, 내용, 작성자, 책 기준 모두 포함)
+     * 호출 URL: GET /api/v1/posts/search/all?keyword=검색어
+     */
+    @GetMapping("/search/all")
+    public ResponseEntity<Page<PostResponseDto>> searchAll(
+            @RequestParam("q") String q,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<PostResponseDto> dtos = postService.searchAll(q, pageable)
+                .map(post -> PostResponseDto.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .createdAt(post.getCreatedAt())
+                        .modifiedAt(post.getModifiedAt())
+                        .build()
+                );
+        return ResponseEntity.ok(dtos);
+    }
+
+
 
     @GetMapping("/get/followingPost")
     public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
@@ -236,7 +262,14 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
+    @GetMapping("/get/userid/{postId}")
+    public ResponseEntity<?> getUserIdfindByPostId(@PathVariable("postId") Long postId) {
 
+        Long response = postService.findUserId(postId);
+
+        return new ResponseEntity<>(response,HttpStatus.OK);
+
+    }
 
 
 

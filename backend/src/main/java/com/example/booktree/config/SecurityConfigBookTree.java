@@ -53,12 +53,13 @@ public class SecurityConfigBookTree {
 
                         ).permitAll()
                         //회원 /api/v1/users
-                        .requestMatchers("/api/v1/users/get/profile/**", "/api/v1/users/create","api/v1/users/create/admin"
+                        .requestMatchers("/api/v1/users/get/profile/**", "/api/v1g/users/create","api/v1/users/create/admin"
                                 ,"/api/v1/users/login","/api/v1/users/find/**"
 
                         ).permitAll()
                         .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
-                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
+                        ,"/api/v1/users/logout","/api/v1/users/validation/**","/api/v1/users/create/image",
+                                "/api/v1/users/patch/image","/api/v1/users/delete/image","/api/v1/users/get/image",
                                 "/api/v1/users/delete/**")
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
@@ -82,7 +83,7 @@ public class SecurityConfigBookTree {
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         //메인 카테고리 /api/v1/maincategories
-                        .requestMatchers("/api/v1/maincategories/get"
+                        .requestMatchers("/api/v1/maincategories/get/**"
 
                         ).permitAll()
                         .requestMatchers(
@@ -115,7 +116,8 @@ public class SecurityConfigBookTree {
 
                         //팔로우 /api/v1/follow/create
                         .requestMatchers(
-                                "/api/v1/follow/create/follow"
+                                "/api/v1/follow/create/follow",
+                                "/api/v1/follow/get/**"
                         )
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
@@ -163,11 +165,18 @@ public class SecurityConfigBookTree {
 
                         //실시간 조회수순 인기 게시글 가져오기
                         .requestMatchers(
-                                "/api/v1/popular/get/posts"
+
+                                "/api/v1/popular/get/posts",
+
+                                "/api/v1/popular/get/posts/**"
+
                         ).permitAll()
                         //추가
                         .requestMatchers("/api/*/**")
                         .authenticated()
+
+                        // 검색 엔드포인트는 누구나 접근 가능
+                        .requestMatchers("/api/v1/search", "/api/v1/search/all").permitAll()
 
                         .anyRequest().permitAll()
                 )

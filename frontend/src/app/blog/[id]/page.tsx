@@ -18,8 +18,9 @@ interface Post {
 }
 
 interface Category {
+    id: number
     name: string
-    count: number
+    postCount: number
 }
 
 interface BlogInfo {
@@ -28,22 +29,6 @@ interface BlogInfo {
     notice: string
     blogId: number
 }
-
-const categories: Category[] = [
-    { name: '전체보기', count: 86 },
-    { name: '형영 플러스', count: 12 },
-    { name: '인턴일지', count: 11 },
-    { name: 'WIL', count: 10 },
-    { name: '프로그래머스', count: 6 },
-    { name: '지원여정', count: 5 },
-    { name: '우아한테크코스', count: 5 },
-    { name: 'vue.js', count: 5 },
-    { name: 'programmers', count: 4 },
-    { name: 'Vue.js 오류', count: 4 },
-    { name: 'JavaScript', count: 4 },
-    { name: '회고', count: 4 },
-    { name: '개발일지', count: 4 },
-]
 
 const posts: Post[] = [
     {
@@ -80,7 +65,7 @@ const posts: Post[] = [
     },
 ]
 
-type TabType = 'latest' | 'popular' | 'bookmarks'
+type TabType = 'latest' | 'popular' | 'bookmarks' | 'scraps'
 
 export default function BlogPage() {
     const { isLogin, loginUser, logoutAndHome } = useGlobalLoginUser()
@@ -91,12 +76,102 @@ export default function BlogPage() {
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
+    const [userId, setUserId] = useState<number | null>(null)
+    const [categories, setCategories] = useState<Category>([])
+    const [followCount, setFollowCount] = useState([])
 
     //블로그 정보 가져오기
 
     const { id: blogId } = useParams<{ id: string }>() // URL에서 blogId 가져오기
     const [blog, setBlog] = useState<BlogInfo | null>(null)
     const [userBlogId, setUserBlogId] = useState<string | null>(null) // 로그인 유저의 블로그 ID
+
+    useEffect(() => {
+        const fetchFollowCount = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/follow/get/followcount/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 추가적인 헤더가 필요하면 여기에 추가
+                    },
+                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
+                })
+                if (!response.ok) {
+                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                }
+                const data = await response.json()
+                setFollowCount(data) // 가져온 데이터를 상태에 저장
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    // err가 Error 인스턴스인지 확인
+                    setError(err.message) // 에러 메시지 접근
+                } else {
+                    setError('알 수 없는 오류가 발생했습니다.')
+                }
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        if (userId) {
+            fetchFollowCount()
+        }
+    }, [userId])
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${blogId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 ID를 불러오는데 실패했습니다다.')
+                }
+
+                const data = await response.json()
+                console.log('UserId : ', data)
+                setUserId(data)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 ID를 불러오지 못했습니다')
+            }
+        }
+        fetchUserId()
+    }, [blogId])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/categories/get/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('카테고리 : ', data)
+                setCategories(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchCategories()
+        }
+    }, [userId])
 
     useEffect(() => {
         if (!blogId) {
@@ -206,6 +281,8 @@ export default function BlogPage() {
                 return [...posts].sort((a, b) => b.views - a.views)
             case 'bookmarks':
                 return posts.filter((post) => post.isBookmarked)
+            case 'scraps':
+                return posts.filter((post) => post.isBookmarked) // 스크랩된 게시물 필터링 (임시로 bookmarked와 동일하게 처리)
             default:
                 return posts
         }
@@ -283,11 +360,11 @@ export default function BlogPage() {
                     <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
                             <Link href="/follow?tab=following" className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">125</div>
+                                <div className="text-xl font-bold">{followCount.followerCount}</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
                             <Link href="/follow?tab=followers" className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">238</div>
+                                <div className="text-xl font-bold">{followCount.followingCount}</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
                             <div className="text-center">
@@ -367,6 +444,16 @@ export default function BlogPage() {
                             >
                                 <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
                                     팔로잉
+                                </span>
+                            </li>
+                            <li
+                                className={`pb-2 border-b-2 ${
+                                    activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
+                                } cursor-pointer`}
+                                onClick={() => handleTabChange('scraps')}
+                            >
+                                <span className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}>
+                                    스크랩
                                 </span>
                             </li>
                         </ul>
@@ -465,7 +552,7 @@ export default function BlogPage() {
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"
                                 >
                                     <span>{category.name}</span>
-                                    <span className="text-gray-500">({category.count})</span>
+                                    <span className="text-gray-500">({category.postCount})</span>
                                 </Link>
                             </li>
                         ))}

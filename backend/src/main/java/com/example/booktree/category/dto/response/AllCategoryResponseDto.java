@@ -15,4 +15,5 @@ public class AllCategoryResponseDto {
     private String name;
     private LocalDateTime create_at;
     private LocalDateTime update_at;
+    private Long postCount;
 }
