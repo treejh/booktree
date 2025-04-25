@@ -88,13 +88,28 @@ export default function Header() {
 
                 {/* 로그인/아웃 */}
                 {isLogin ? (
-                    <div className="flex items-center space-x-3 pr-5">
-                        <Link href={`/mypage/${loginUser.id}`} className="text-sm hover:underline">
-                            {loginUser.username}님
-                        </Link>
+                    <div className="flex items-center pr-5">
+                        <div className="flex items-center space-x-1">
+                            <Link
+                                href={`/mypage/${loginUser.id}`}
+                                className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden"
+                            >
+                                <img
+                                    src={
+                                        loginUser.image ||
+                                        'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                    }
+                                    alt="프로필 이미지"
+                                    className="w-full h-full object-cover"
+                                />
+                            </Link>
+                            <Link href={`/mypage/${loginUser.id}`} className="text-sm hover:underline">
+                                {loginUser.username}님
+                            </Link>
+                        </div>
                         <button
                             onClick={logoutAndHome}
-                            className="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
+                            className="ml-4 px-4 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
                         >
                             로그아웃
                         </button>

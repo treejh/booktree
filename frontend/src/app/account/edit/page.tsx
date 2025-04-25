@@ -310,10 +310,10 @@ export default function EditProfilePage() {
 
                     {/* 이미지 업로드 섹션 */}
                     <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
-                        <label htmlFor="profileImage" className={styles.label}>
-                            프로필 이미지
-                        </label>
                         <div className="flex flex-col items-center">
+                            <label htmlFor="profileImage" className={styles.label} style={{ marginBottom: '0.5rem' }}>
+                                프로필 이미지
+                            </label>
                             {imagePreview ? (
                                 <img
                                     src={imagePreview}
@@ -322,7 +322,15 @@ export default function EditProfilePage() {
                                 />
                             ) : (
                                 <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                                    <span className="text-gray-500 text-sm">이미지 없음</span>
+                                    {loginUser.image ? (
+                                        <img
+                                            src={loginUser.image}
+                                            alt="프로필 이미지"
+                                            className="w-full h-full object-cover rounded-full"
+                                        />
+                                    ) : (
+                                        <span className="text-gray-500 text-sm">이미지 없음</span>
+                                    )}
                                 </div>
                             )}
                             <div className="flex items-center">
@@ -346,7 +354,7 @@ export default function EditProfilePage() {
                             <button
                                 type="button"
                                 onClick={handleImageUpload}
-                                className="mt-2 px-4 py-2 bg-[#2E804E] text-white rounded-md hover:bg-[#256d41] transition"
+                                className="mt-4 px-4 py-2 bg-[#2E804E] text-white rounded-md hover:bg-[#256d41] transition"
                             >
                                 이미지 업로드
                             </button>

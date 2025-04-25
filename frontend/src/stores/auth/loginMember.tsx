@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 type User = {
   id: number;
   email: string;
-
   provider: string;
   image: string;
   phoneNumber: string;
