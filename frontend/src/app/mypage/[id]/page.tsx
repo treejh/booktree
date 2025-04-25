@@ -219,10 +219,7 @@ export default function MyPage() {
                     <div className="flex items-center">
                         <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden mr-4">
                             <img
-                                src={
-                                    loginUser.image ||
-                                    'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
-                                }
+                                src="https://randomuser.me/api/portraits/women/44.jpg"
                                 alt="프로필"
                                 className="w-full h-full object-cover"
                             />
