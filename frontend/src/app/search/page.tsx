@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 interface SearchResult {
     postId: number
@@ -14,6 +14,7 @@ interface SearchResult {
 
 export default function SearchPage() {
     const params = useSearchParams()
+    const router = useRouter() // ← 추가
     const query = params.get('q') ?? ''
     const type = params.get('type') ?? 'all'
     const [results, setResults] = useState<SearchResult[]>([])
@@ -33,7 +34,6 @@ export default function SearchPage() {
                 if (type === 'all') {
                     url = `http://localhost:8090/api/v1/posts/search/all?q=${encodeURIComponent(query)}&page=1&size=20`
                 } else {
-                    // 'content' 대신 'book' 처리
                     url = `http://localhost:8090/api/v1/posts/search?type=${type}&keyword=${encodeURIComponent(
                         query,
                     )}&page=1&size=20`
@@ -81,7 +81,8 @@ export default function SearchPage() {
                     {results.map((r) => (
                         <div
                             key={r.postId}
-                            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => router.push(`/post/${r.postId}/detail/get`)} // ← 클릭 시 이동
                         >
                             <h2 className="text-xl font-semibold mb-2">{r.title}</h2>
                             <p className="text-gray-600 mb-4 line-clamp-2">{r.content}</p>
