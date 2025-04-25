@@ -53,12 +53,13 @@ public class SecurityConfigBookTree {
 
                         ).permitAll()
                         //회원 /api/v1/users
-                        .requestMatchers("/api/v1/users/get/profile/**", "/api/v1/users/create","api/v1/users/create/admin"
+                        .requestMatchers("/api/v1/users/get/profile/**", "/api/v1g/users/create","api/v1/users/create/admin"
                                 ,"/api/v1/users/login","/api/v1/users/find/**"
 
                         ).permitAll()
                         .requestMatchers("/api/v1/users/patch/**","/api/v1/users/get/token"
-                        ,"/api/v1/users/logout","/api/v1/users/validation/**",
+                        ,"/api/v1/users/logout","/api/v1/users/validation/**","/api/v1/users/create/image",
+                                "/api/v1/users/patch/image","/api/v1/users/delete/image","/api/v1/users/get/image",
                                 "/api/v1/users/delete/**")
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 

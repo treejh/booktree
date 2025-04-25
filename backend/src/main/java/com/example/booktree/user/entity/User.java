@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.websocket.Encoder.Text;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +58,9 @@ public class User extends Auditable {
 
     @Column(length = 255)
     private String password;
+
+    @Column(columnDefinition = "TEXT")
+    private String image;
 
     @Column(name = "phone_number", length = 255)
     private String phoneNumber;

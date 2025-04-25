@@ -4,6 +4,7 @@ package com.example.booktree.user.controller;
 import com.example.booktree.jwt.util.JwtTokenizer;
 import com.example.booktree.security.CustomUserDetails;
 import com.example.booktree.user.dto.request.UserLoginRequestDto;
+import com.example.booktree.user.dto.response.UserImageResponseDto;
 import com.example.booktree.user.dto.response.UserMyPageResponseDto;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
 import com.example.booktree.user.dto.request.UserPatchRequestDto;
@@ -21,6 +22,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -240,6 +243,34 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
+    @PostMapping(value="/create/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity saveImagesToUser(@RequestParam MultipartFile images) {
+
+        UserImageResponseDto response = new UserImageResponseDto(userService.saveImageToUser(images));
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping(value="/patch/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity updateImagesToUser(@RequestParam MultipartFile images) {
+
+        UserImageResponseDto response = new UserImageResponseDto(userService.updateImageToUser(images));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value="/get/image")
+    public ResponseEntity getImagesToUser() {
+        UserImageResponseDto response = new UserImageResponseDto(userService.getImageToUser());
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping(value="/delete/image")
+    public ResponseEntity deleteImagesToUser() {
+        userService.deleteImageToUser();
+        return ResponseEntity.ok("이미지 삭제 완료 ");
+    }
+
 
 
 
