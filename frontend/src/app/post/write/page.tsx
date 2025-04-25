@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef, MouseEvent } from 'react'
 import Link from 'next/link'
 
+// import axios from 'axios'
 
 import { useRouter } from 'next/navigation'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
 // 카테고리 인터페이스 추가
+
 interface Category {
     id: number
     name: string
@@ -15,17 +17,27 @@ interface Category {
     update_at: string
 }
 
+export interface User {
+    id: number
+    email: string
+    username: string
+    blogId: number
+    role: string
+}
+
+export interface LoginResponse {
+    user: User
+    accessToken: string
+}
+
 export default function PostWritePage() {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
 
-
-
-// interface MainCategory {
-//     id: number
-//     name: string
-// }
-
+    // interface MainCategory {
+    //     id: number
+    //     name: string
+    // }
 
     // State for the form fields
     const [title, setTitle] = useState('')
@@ -49,7 +61,6 @@ export default function PostWritePage() {
     // const [mainCategories, setMainCategories] = useState<MainCategory>([])
     // const [error, setError] = useState<string | null>(null)
 
-
     // State for UI rendering
     const [isClient, setIsClient] = useState(false)
     const editorRef = useRef<HTMLDivElement>(null)
@@ -61,6 +72,11 @@ export default function PostWritePage() {
     const [isBulletList, setIsBulletList] = useState(false)
     const [isNumberedList, setIsNumberedList] = useState(false)
 
+    // First add state for image files
+    const [selectedImages, setSelectedImages] = useState<FileList | null>(null)
+
+    // 블로그 정보를 가져오는 상태 추가
+    const [blogInfo, setBlogInfo] = useState<{ blogId: number | null }>({ blogId: null })
 
     // 로그인 체크
     useEffect(() => {
@@ -75,27 +91,59 @@ export default function PostWritePage() {
                 })
 
                 if (!response.ok) {
-                    alert('로그인이 필요한 서비스입니다.')
-                    router.push('/login')
+                    console.error('인증 실패:', response.status)
+                    // alert('로그인이 필요한 서비스입니다.')
+                    router.push('/account/login')
                     return
                 }
+
+                const userData = await response.json()
+                console.log('인증 성공:', userData)
             } catch (error) {
                 console.error('인증 확인 실패:', error)
-                alert('로그인이 필요한 서비스입니다.')
-                router.push('/login')
+                // alert('로그인이 필요한 서비스입니다.')
+                router.push('/account/login')
+            }
+        }
+    }, [router])
+
+    // 블로그 정보를 가져오는 useEffect 추가
+    useEffect(() => {
+        const fetchBlogInfo = async () => {
+            if (!loginUser?.id) return
+
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/blogs/get/token`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('블로그 정보:', data)
+                setBlogInfo({ blogId: data.blogId })
+            } catch (error) {
+                console.error('블로그 정보 조회 실패:', error)
             }
         }
 
-        checkAuth()
-    }, [router])
+        // 로그인 상태일 때만 블로그 정보 가져오기
+        if (isLogin) {
+            fetchBlogInfo()
+        }
+    }, [isLogin])
 
     // 카테고리 데이터 불러오기
-
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-
                 // 메인 카테고리 가져오기
                 const mainResponse = await fetch('http://localhost:8090/api/v1/maincategories/get', {
                     method: 'GET',
@@ -118,14 +166,12 @@ export default function PostWritePage() {
 
                 // 유저의 카테고리 가져오기
                 const categoryResponse = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
-
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
                 })
-
 
                 const categoryData = await categoryResponse.json()
                 console.log('카테고리 데이터:', categoryData)
@@ -169,79 +215,122 @@ export default function PostWritePage() {
         }
     }, [isClient])
 
-    // Handle form submission
+    // Add image input handler
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setSelectedImages(e.target.files)
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!isLogin || !loginUser) {
-            alert('로그인이 필요합니다.')
-            router.push('/login')
+        // blogId 체크
+        if (!blogInfo.blogId) {
+            console.error('블로그 정보가 없습니다:', blogInfo)
+            alert('블로그 정보를 불러오는데 실패했습니다.')
+
             return
         }
-                          
+
+        // 필수값 체크
+        if (!title.trim()) {
+            alert('제목을 입력해주세요.')
+            return
+        }
+
         // 필수 값 체크
-        if (!selectedMainCategoryId) {
+        /* if (!selectedMainCategoryId) {
             alert('메인 카테고리를 선택해주세요.')
             return
-        }               
-                          
-                          
+        }   */
 
-        // Get the content from the contentEditable div
+        if (!selectedMainCategoryId || selectedMainCategoryId === 0) {
+            alert('메인 카테고리를 선택해주세요.')
+            return
+        }
+
         const editorContent = editorRef.current?.innerHTML || ''
 
-        // FormData 객체 생성
-        const formData = new FormData()
-        // formData.append('mainCategoryId', selectedMainCategoryId.toString())
-        // formData.append('blogId', loginUser?.blogId.toString() || '')
-        // formData.append('title', title)
-        // formData.append('content', editorContent)
-        // formData.append('author', author)
-        // formData.append('book', bookTitle)
-        // if (selectedCategoryId !== 0) {
-        //     // 수정
-        //     formData.append('categoryId', selectedCategoryId.toString())
-        // }
-        
-        // null 체크를 하면서 formData에 추가
-        if (selectedMainCategoryId) {
-            formData.append('mainCategoryId', selectedMainCategoryId.toString())
-        }
-
-        if (loginUser.blogId) {
-            formData.append('blogId', loginUser.blogId.toString())
-        }
-
-        formData.append('title', title)
-        formData.append('content', editorContent)
-
-        // 선택적 필드들
-        if (author) formData.append('author', author)
-        if (bookTitle) formData.append('book', bookTitle)
-        if (selectedCategoryId && selectedCategoryId !== 0) {
-            formData.append('categoryId', selectedCategoryId.toString())
-        }
+        // blogId 체크 추가
+        /* if (!loginUser?.id) {
+            console.error('사용자 정보가 없습니다:', loginUser)
+            alert('로그인이 필요합니다.')
+            router.push('/account/login')
+            return
+        } */
 
         try {
+            // FormData 객체 생성
+            const formData = new FormData()
+
+            // 필수 필드
+
+            formData.append('blogId', blogInfo.blogId.toString())
+            formData.append('mainCategoryId', selectedMainCategoryId.toString())
+
+            formData.append('title', title.trim())
+            formData.append('content', editorContent)
+
+            // Add optional fields
+            if (selectedCategoryId && selectedCategoryId !== 0) {
+                formData.append('categoryId', selectedCategoryId.toString())
+            }
+            if (author.trim()) {
+                formData.append('author', author.trim())
+            }
+            if (bookTitle.trim()) {
+                formData.append('book', bookTitle.trim())
+            }
+
+            // Add images if selected
+            if (selectedImages) {
+                Array.from(selectedImages).forEach((image) => {
+                    formData.append('images', image)
+                })
+            }
+
+            // 디버깅용 로그
+            for (let [key, value] of formData.entries()) {
+                console.log(`전송 데이터 - ${key}:`, value)
+            }
+
             const response = await fetch('http://localhost:8090/api/v1/posts/create', {
                 method: 'POST',
                 credentials: 'include', // 쿠키 포함
                 body: formData,
             })
 
+            // 응답 상태 로깅
+            console.log('응답 상태:', response.status)
+
             if (!response.ok) {
                 throw new Error('게시글 등록에 실패했습니다.')
             }
 
-            alert('게시글이 성공적으로 등록되었습니다.')
-            router.push(`/blog/list/${loginUser.blogId}`)
+            // 응답 처리를 한 번만 시도
+            const responseText = await response.text()
+            console.log('서버 응답:', responseText)
+
+            // 응답이 JSON인지 확인
+            try {
+                const responseData = JSON.parse(responseText)
+                console.log('생성된 게시글:', responseData)
+                alert('게시글이 성공적으로 등록되었습니다.')
+                if (responseData.id) {
+                    router.push(`/post/${responseData.id}/detail/get`)
+                } else {
+                    router.push(`/blog/post/${blogInfo.blogId}/list`)
+                }
+            } catch (jsonError) {
+                // JSON 파싱 실패시 (일반 텍스트 응답)
+                alert('게시글이 성공적으로 등록되었습니다.')
+                router.push(`/blog/post/${blogInfo.blogId}/list`)
+            }
         } catch (error) {
             console.error('Error:', error)
             alert('게시글 등록에 실패했습니다.')
         }
-
-        console.log({ title, author, bookTitle, content: editorContent, tags, category, mainCategory })
-        // Here you would typically make an API call to save the post
     }
 
     const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -382,7 +471,6 @@ export default function PostWritePage() {
         }, 10)
     }
 
-
     // Check if selection exists in editor (helper function)
     const hasSelection = (): boolean => {
         const selection = window.getSelection()
@@ -394,7 +482,6 @@ export default function PostWritePage() {
         return <div className="flex max-w-7xl mx-auto p-6">Loading...</div>
     }
 
-
     if (!isClient || !isLogin) {
         return (
             <div className="flex max-w-7xl mx-auto p-6">
@@ -404,7 +491,6 @@ export default function PostWritePage() {
                         로그인하러 가기
                     </Link>
                 </div>
-
             </div>
         )
     }
@@ -425,7 +511,6 @@ export default function PostWritePage() {
                             required
                         />
                     </div>
-
                     {/* Author Input */}
                     <div>
                         <input
@@ -436,7 +521,6 @@ export default function PostWritePage() {
                             className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
-
                     {/* Book Title Input */}
                     <div>
                         <input
@@ -447,7 +531,6 @@ export default function PostWritePage() {
                             className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
-
                     {/* Formatting Toolbar */}
                     <div className="flex space-x-6 border-t border-b border-gray-200 py-2 mb-4 items-center">
                         <button
@@ -488,6 +571,21 @@ export default function PostWritePage() {
                         </button>
                     </div>
 
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageChange}
+                            className="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-md file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-green-50 file:text-green-700
+                                hover:file:bg-green-100"
+                        />
+                    </div>
                     {/* Content Area - ContentEditable div instead of textarea */}
                     <div className="min-h-[300px] border border-gray-200 rounded-md overflow-hidden mb-6">
                         <div
@@ -502,7 +600,6 @@ export default function PostWritePage() {
                             }}
                         ></div>
                     </div>
-
                     {/* Submit Buttons */}
                     <div className="flex justify-end space-x-4 mt-6">
                         <Link
@@ -550,13 +647,11 @@ export default function PostWritePage() {
                             </div>
                         </div>
 
-
                         {/* Main Category */}
                         <div>
                             <h3 className="text-lg font-medium mb-4">메인 카테고리 선택</h3>
                             <div className="relative mb-4">
                                 <select
-
                                     value={selectedMainCategoryId}
                                     onChange={handleMainCategoryChange}
                                     className="w-full p-2 border border-gray-300 rounded appearance-none"
@@ -565,7 +660,6 @@ export default function PostWritePage() {
                                     {mainCategories.map((category) => (
                                         <option key={category.id} value={category.id}>
                                             {category.name}
-
                                         </option>
                                     ))}
                                 </select>
