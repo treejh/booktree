@@ -240,13 +240,16 @@ export default function MyPage() {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
-                                                method: 'GET',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
+                                            const res = await fetch(
+                                                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`,
+                                                {
+                                                    method: 'GET',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                    },
+                                                    credentials: 'include', // 쿠키 인증 정보 포함
                                                 },
-                                                credentials: 'include', // 쿠키 인증 정보 포함
-                                            })
+                                            )
 
                                             const data = await res.json()
 
