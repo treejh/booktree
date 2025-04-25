@@ -44,6 +44,14 @@ public class ImageService {
         return imagePathList;
     }
 
+    public String saveUserImage(MultipartFile multipartFile){
+        try {
+            return s3Uploader.uploadFile(multipartFile); // 업로드 후 URL 반환
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     //포스트에 이미지 저장
     public List<Image> saveImagesToPost(ImageRequestDto imageRequestDto){
@@ -68,9 +76,8 @@ public class ImageService {
         return resultImages;
     }
 
-    public String deleteFile(String fileName){
+    public void deleteFile(String fileName){
         s3Uploader.deleteFile(fileName);
-        return fileName;
     }
 
     public Image getImage(Long imageId){

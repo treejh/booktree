@@ -78,12 +78,45 @@ export default function BlogPage() {
     const router = useRouter()
     const [userId, setUserId] = useState<number | null>(null)
     const [categories, setCategories] = useState<Category>([])
+    const [followCount, setFollowCount] = useState([])
 
     //블로그 정보 가져오기
 
     const { id: blogId } = useParams<{ id: string }>() // URL에서 blogId 가져오기
     const [blog, setBlog] = useState<BlogInfo | null>(null)
     const [userBlogId, setUserBlogId] = useState<string | null>(null) // 로그인 유저의 블로그 ID
+
+    useEffect(() => {
+        const fetchFollowCount = async () => {
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/follow/get/followcount/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 추가적인 헤더가 필요하면 여기에 추가
+                    },
+                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
+                })
+                if (!response.ok) {
+                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                }
+                const data = await response.json()
+                setFollowCount(data) // 가져온 데이터를 상태에 저장
+            } catch (err: unknown) {
+                if (err instanceof Error) {
+                    // err가 Error 인스턴스인지 확인
+                    setError(err.message) // 에러 메시지 접근
+                } else {
+                    setError('알 수 없는 오류가 발생했습니다.')
+                }
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        if (userId) {
+            fetchFollowCount()
+        }
+    }, [userId])
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -326,12 +359,12 @@ export default function BlogPage() {
                     </div>
                     <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
-                            <Link href="/follow?tab=following" className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">125</div>
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
+                                <div className="text-xl font-bold">{followCount.followerCount}</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
-                            <Link href="/follow?tab=followers" className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">238</div>
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
+                                <div className="text-xl font-bold">{followCount.followingCount}</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
                             <div className="text-center">

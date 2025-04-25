@@ -17,5 +17,7 @@ public class AllFollowListResponseDto {
     private String username;
     private LocalDateTime create_at;
     private LocalDateTime update_at;
+    private boolean isFollowing;
+    private boolean isMe;
 
 }
