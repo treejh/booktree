@@ -82,7 +82,7 @@ export default function PostWritePage() {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await fetch('http://localhost:8090/api/v1/users/get/token', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/get/token`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export default function PostWritePage() {
             if (!loginUser?.id) return
 
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/blogs/get/token`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export default function PostWritePage() {
         const fetchCategories = async () => {
             try {
                 // 메인 카테고리 가져오기
-                const mainResponse = await fetch('http://localhost:8090/api/v1/maincategories/get', {
+                const mainResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/maincategories/get`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -165,13 +165,16 @@ export default function PostWritePage() {
                 }
 
                 // 유저의 카테고리 가져오기
-                const categoryResponse = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const categoryResponse = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/allcategory`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 const categoryData = await categoryResponse.json()
                 console.log('카테고리 데이터:', categoryData)
@@ -295,7 +298,7 @@ export default function PostWritePage() {
                 console.log(`전송 데이터 - ${key}:`, value)
             }
 
-            const response = await fetch('http://localhost:8090/api/v1/posts/create', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/create`, {
                 method: 'POST',
                 credentials: 'include', // 쿠키 포함
                 body: formData,
