@@ -190,7 +190,7 @@ export default function MyPage() {
 
     // 팔로잉 클릭 핸들러 추가
     const handleFollowingClick = () => {
-        router.push('/follow')
+        router.push(`/follow/${userId}`)
     }
 
     // 팔로워 클릭 핸들러 추가
