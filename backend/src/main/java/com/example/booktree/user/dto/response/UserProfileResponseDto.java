@@ -26,6 +26,8 @@ public class UserProfileResponseDto {
 
     private String provider;
 
+    private String image;
+
 
     private Long id;
 
@@ -40,7 +42,7 @@ public class UserProfileResponseDto {
         this.id=user.getId();
         this.createDate=user.getCreatedAt();
         this.modifyDate=user.getModifiedAt();
-
+        this.image=user.getImage();
         this.provider = user.getSsoProvider();
 
 
