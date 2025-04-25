@@ -359,11 +359,11 @@ export default function BlogPage() {
                     </div>
                     <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
-                            <Link href="/follow?tab=following" className="text-center hover:opacity-80">
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">{followCount.followerCount}</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
-                            <Link href="/follow?tab=followers" className="text-center hover:opacity-80">
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">{followCount.followingCount}</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
