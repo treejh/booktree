@@ -15,7 +15,6 @@ interface PostDetail {
     likeCount: number
     createdAt: string
     modifiedAt: string
-    // 추가되는 필드들
     author: string
     mainCategoryId: number
     blogId: number
@@ -41,11 +40,35 @@ interface Reply {
     likes: number
 }
 
+interface Category {
+    name: string
+    count: number
+    path: string
+    isParent?: boolean
+    isOpen?: boolean
+    subCategories?: Category[]
+}
+
+interface RelatedPost {
+    id: number
+    title: string
+    date: string
+    replies?: number
+}
+
+interface PostList {
+    id: number
+    title: string
+    date: string
+    replies?: number
+}
+
 export default function DetailPage() {
     // 라우터 초기화
     const router = useRouter()
     const { postId } = useParams()
-    const { loginUser } = useGlobalLoginUser()
+    // 로그인 상태와 토큰 정보 함께 꺼내기
+    const { isLoginUserPending, isLogin, loginUser } = useGlobalLoginUser()
 
     // 1. 게시물 관련 상태
     const [post, setPost] = useState<PostDetail | null>(null)
@@ -56,15 +79,20 @@ export default function DetailPage() {
     const [editedPost, setEditedPost] = useState({ title: '', content: '' })
     const [postLiked, setPostLiked] = useState(false)
 
+    // API 엔드포인트
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8090'
+
     // 2. 댓글 관련 상태
     const [comments, setComments] = useState<Comment[]>([])
     const [commentInput, setCommentInput] = useState('')
-    const [likedComments, setLikedComments] = useState<{ [key: number]: boolean }>({})
+    const [likedComments, setLikedComments] = useState<{ [k: number]: boolean }>({})
     const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
     const [editedCommentContent, setEditedCommentContent] = useState('')
+    const [commentError, setCommentError] = useState<string | null>(null) // → 댓글 로드 에러
 
     // 3. 답글 관련 상태
-    const [replyInputs, setReplyInputs] = useState<{ [key: number]: string }>({})
+    const [replyInputs, setReplyInputs] = useState<{ [parentKey: string]: string }>({})
+
     const [activeReplyId, setActiveReplyId] = useState<number | null>(null)
     const [editingReplyId, setEditingReplyId] = useState<number | null>(null)
     const [editedReplyContent, setEditedReplyContent] = useState('')
@@ -99,6 +127,46 @@ export default function DetailPage() {
         return allPosts[currentPage] || []
     }
 
+    // --- 댓글 불러오기 ---
+    const fetchComments = async () => {
+        if (!postId) return
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/get?postId=${postId}&page=1&size=10`,
+                {
+                    credentials: 'include',
+                },
+            )
+            if (!res.ok) throw new Error('댓글을 불러오는데 실패했습니다.')
+            const json = await res.json()
+
+            // 백엔드 DTO → 프론트 인터페이스로 변환
+            const mapped: Comment[] = json.content.map((c: any) => ({
+                id: c.commentId,
+                author: c.userEmail,
+                date: new Date(c.createdAt).toLocaleDateString(),
+                content: c.content,
+                likes: (c as any).likeCount ?? 0,
+                replies: c.replies.content.map((r: any) => ({
+                    id: r.replyId,
+                    author: r.userEmail,
+                    date: new Date(r.createdAt).toLocaleDateString(),
+                    content: r.content,
+                    likes: (r as any).likeCount ?? 0,
+                })),
+            }))
+
+            setComments(mapped)
+            setCommentError(null)
+        } catch (e: any) {
+            setCommentError(e.message)
+        }
+    }
+
+    useEffect(() => {
+        fetchComments()
+    }, [postId])
+
     // 게시물 좋아요 토글 함수
     const togglePostLike = () => {
         setPostLiked(!postLiked)
@@ -108,42 +176,76 @@ export default function DetailPage() {
         }))
     }
 
-    // 7. 댓글 불러오기 on mount / postId 변경 시
-    useEffect(() => {
-        if (postId) fetchComments()
-    }, [postId])
+    // --- 댓글 작성 (로그인 필요) ---
+    // --- 댓글 작성 핸들러 (절대경로로 수정) ---
+    const handleCommentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!isLogin) {
+            alert('로그인 후 댓글을 작성할 수 있습니다.')
+            router.push('/login')
+            return
+        }
+        if (!commentInput.trim()) return
 
-    // 댓글 로드
-    const fetchComments = async () => {
-        const API = process.env.NEXT_PUBLIC_API_URL
         try {
-            const res = await fetch(`${API}/api/v1/comments/get?postId=${postId}&page=1&size=10`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
+                body: JSON.stringify({
+                    postId: Number(postId),
+                    content: commentInput.trim(),
+                }),
             })
-            if (!res.ok) throw new Error('댓글을 불러오는데 실패했습니다.')
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({} as any))
+                throw new Error(err.message || '댓글 생성에 실패했습니다.')
+            }
 
-            // 스프링이 반환하는 Page<CommentDto.Response>에서 content 배열만 꺼내 세팅
-            const json = await res.json()
-            setComments(json.content)
-            setError(null)
-        } catch (err: any) {
-            setError(err.message)
+            // 백엔드 원본 DTO
+            const raw = await res.json()
+
+            // 프론트 Comment 형태로 매핑
+            const newComment: Comment = {
+                id: raw.commentId,
+                author: raw.userEmail,
+                date: new Date(raw.createdAt).toLocaleDateString(),
+                content: raw.content,
+                likes: raw.likeCount || 0,
+                replies: raw.replies.content.map((r: any) => ({
+                    id: r.replyId,
+                    author: r.userEmail,
+                    date: new Date(r.createdAt).toLocaleDateString(),
+                    content: r.content,
+                    likes: r.likeCount || 0,
+                })),
+            }
+
+            setComments([newComment, ...comments])
+            setCommentInput('')
+            setCommentError(null)
+        } catch (e: any) {
+            setCommentError(e.message)
         }
     }
 
-    // 댓글 좋아요 토글 함수
-    const toggleLike = (commentId: number) => {
-        setLikedComments((prev) => {
-            const newLiked = { ...prev, [commentId]: !prev[commentId] }
-            setComments(
-                comments.map((c) =>
-                    c.id === commentId
-                        ? { ...c, likes: newLiked[commentId] ? c.likes + 1 : Math.max(0, c.likes - 1) }
-                        : c,
-                ),
-            )
-            return newLiked
-        })
+    // --- 좋아요 토글 예시 ---
+    const toggleLike = async (commentId: number) => {
+        try {
+            // 1-1) 서버에 좋아요 요청 (토글)
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/${commentId}/like`, {
+                method: 'POST', // 또는 PUT/PATCH, 백엔드 명세에 맞춰
+                credentials: 'include',
+            })
+            if (!res.ok) throw new Error('좋아요 요청 실패')
+            // 1-2) 응답으로 현재 좋아요 카운트를 받아온다고 가정
+            const { likeCount } = await res.json()
+
+            // 1-3) 로컬 state 업데이트
+            setComments((cs) => cs.map((c) => (c.id === commentId ? { ...c, likes: likeCount } : c)))
+        } catch (e: any) {
+            setCommentError(e.message)
+        }
     }
 
     // 답글 좋아요 토글 함수
@@ -166,42 +268,6 @@ export default function DetailPage() {
             )
             return newLiked
         })
-    }
-
-    // 댓글 제출 핸들러 (백엔드 API 호출)
-    const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (!loginUser.id) return
-        if (commentInput.trim() === '') return
-
-        try {
-            const res = await fetch('/api/v1/comments/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', // 쿠키 인증 사용 시
-                // 만약 Authorization 헤더 방식을 쓴다면 아래처럼 추가
-                // headers: {
-                //   'Content-Type': 'application/json',
-                //   'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                // },
-                body: JSON.stringify({
-                    postId: Number(postId),
-                    content: commentInput.trim(),
-                }),
-            })
-
-            if (!res.ok) {
-                const err = await res.json()
-                throw new Error(err.message || '댓글 생성에 실패했습니다.')
-            }
-
-            const created = await res.json()
-            // 백엔드가 반환하는 DTO 필드에 맞춰서 바로 추가
-            setComments((prev) => [created, ...prev])
-            setCommentInput('')
-        } catch (err: any) {
-            setError(err.message)
-        }
     }
 
     // 답글 작성 창 토글
@@ -255,14 +321,54 @@ export default function DetailPage() {
     }
 
     // 댓글 수정 저장
-    const handleCommentEditSave = (commentId: number) => {
-        setComments(comments.map((c) => (c.id === commentId ? { ...c, content: editedCommentContent } : c)))
-        setEditingCommentId(null)
+    const handleCommentEditSave = async (commentId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/update/${commentId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    commentId, // ★ 이 라인을 추가
+                    content: editedCommentContent, // 수정된 내용
+                }),
+            })
+
+            if (!res.ok) {
+                // 서버가 보낸 메시지도 살펴보려면 아래처럼:
+                const err = await res.json().catch(() => ({} as any))
+                throw new Error(err.message ?? '댓글 수정에 실패했습니다.')
+            }
+
+            // 서버가 반환하는 CommentDto.Response
+            const updated = await res.json()
+
+            // 프론트 state 업데이트
+            setComments((cs) => cs.map((c) => (c.id === updated.commentId ? { ...c, content: updated.content } : c)))
+
+            // 편집 모드 종료
+            setEditingCommentId(null)
+            setCommentError(null)
+        } catch (e: any) {
+            setCommentError(e.message)
+        }
     }
 
-    // 댓글 삭제
-    const handleCommentDelete = (commentId: number) => {
-        setComments(comments.filter((c) => c.id !== commentId))
+    // 댓글 삭제 (API 호출 추가)
+    const handleCommentDelete = async (commentId: number) => {
+        if (!confirm('정말 이 댓글을 삭제하시겠습니까?')) return
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/delete/${commentId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            })
+            if (!res.ok) throw new Error('댓글 삭제에 실패했습니다.')
+            // 정상 삭제시 state 에서 제거
+            setComments((cs) => cs.filter((c) => c.id !== commentId))
+            // 혹시 떠 있는 에러 메시지도 지워주면 좋습니다.
+            setCommentError(null)
+        } catch (e: any) {
+            setCommentError(e.message)
+        }
     }
 
     // 답글 제출
@@ -323,7 +429,7 @@ export default function DetailPage() {
         const fetchPost = async () => {
             try {
                 setLoading(true)
-                const res = await fetch(`http://localhost:8090/api/v1/posts/get/${postId}`)
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`)
                 if (!res.ok) throw new Error('게시글 불러오기 실패')
                 const data = await res.json()
                 const formatted: PostDetail = {
@@ -358,7 +464,7 @@ export default function DetailPage() {
     }, [postId])
 
     if (loading) return <div>Loading...</div>
-    if (error) return <div>Error: {error}</div>
+    if (error) return <div className="text-red-500">게시글 로드 에러: {error}</div>
     if (!post) return <div>게시글을 찾을 수 없습니다.</div>
 
     const toggleList = () => setIsListVisible(!isListVisible)
@@ -612,43 +718,34 @@ export default function DetailPage() {
                             {/* 댓글 섹션 */}
                             <div>
                                 <h2 className="text-xl font-bold mb-4">댓글 {comments.length}</h2>
+                                {commentError && <p className="text-red-500 mb-4">댓글 로드 에러: {commentError}</p>}
 
-                                {/* 댓글 로딩/에러 처리 */}
-                                {error && <p className="text-red-500">{error}</p>}
-
-                                {loginUser.id ? (
-                                    <form onSubmit={handleCommentSubmit} className="mb-6 border-b border-gray-200 pb-6">
+                                {/* 댓글 입력 폼: 로그인한 사용자만 */}
+                                {isLogin ? (
+                                    <form onSubmit={handleCommentSubmit} className="mb-6">
                                         <textarea
-                                            className="w-full p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            className="w-full p-2 border rounded mb-2"
                                             rows={3}
-                                            placeholder="댓글을 작성해주세요."
+                                            placeholder="댓글을 작성하세요."
                                             value={commentInput}
                                             onChange={(e) => setCommentInput(e.target.value)}
-                                        ></textarea>
-                                        <div className="flex justify-end mt-2">
-                                            <button
-                                                type="submit"
-                                                className="px-4 py-2 bg-[#2E804E] text-white rounded-md hover:bg-[#246A40]"
-                                            >
-                                                댓글 작성
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <div className="mb-6 border-b border-gray-200 pb-6 text-center text-gray-600">
-                                        <p className="mb-2">로그인 후 댓글을 작성할 수 있습니다.</p>
+                                        />
                                         <button
-                                            onClick={() => router.push('/login')}
+                                            type="submit"
                                             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                                         >
-                                            로그인 하러 가기
+                                            등록
                                         </button>
+                                    </form>
+                                ) : (
+                                    <div className="mb-6 text-center text-gray-600">
+                                        <p>댓글 작성은 로그인 후 가능합니다.</p>
                                     </div>
                                 )}
 
                                 <div className="space-y-6">
                                     {comments.map((comment) => (
-                                        <div key={comment.id} className="border-b border-gray-200 pb-6">
+                                        <div key={comment.id} className="border-b pb-6">
                                             <div className="flex items-start mb-2">
                                                 <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 overflow-hidden">
                                                     <img
@@ -749,20 +846,21 @@ export default function DetailPage() {
                                                                 <p className="text-xs text-gray-500">{comment.date}</p>
                                                             </div>
 
+                                                            {/* 편집 모드 */}
                                                             {editingCommentId === comment.id ? (
-                                                                <div className="mt-2 w-full">
+                                                                <div className="mt-2">
                                                                     <textarea
                                                                         value={editedCommentContent}
                                                                         onChange={(e) =>
                                                                             setEditedCommentContent(e.target.value)
                                                                         }
-                                                                        className="w-full p-3 border rounded-md min-h-[80px] focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                                        className="w-full p-2 border rounded mb-2"
                                                                         rows={3}
                                                                     />
-                                                                    <div className="flex justify-end mt-2 space-x-2 min-w-[200px]">
+                                                                    <div className="flex justify-end space-x-2">
                                                                         <button
                                                                             onClick={() => setEditingCommentId(null)}
-                                                                            className="px-4 py-1.5 text-sm text-gray-600 border rounded-md hover:bg-gray-100 w-[80px]"
+                                                                            className="px-3 py-1 text-gray-600 border rounded"
                                                                         >
                                                                             취소
                                                                         </button>
@@ -770,7 +868,7 @@ export default function DetailPage() {
                                                                             onClick={() =>
                                                                                 handleCommentEditSave(comment.id)
                                                                             }
-                                                                            className="px-4 py-1.5 text-sm text-white bg-[#2E804E] rounded-md hover:bg-[#246A40] w-[80px]"
+                                                                            className="px-3 py-1 bg-green-600 text-white rounded"
                                                                         >
                                                                             저장
                                                                         </button>
@@ -779,10 +877,14 @@ export default function DetailPage() {
                                                             ) : (
                                                                 <>
                                                                     <p className="mt-1">{comment.content}</p>
-                                                                    <div className="flex items-center mt-2 text-sm text-gray-500">
+                                                                    <div className="flex space-x-2">
+                                                                        {/* 연필 아이콘: 수정 모드로 전환 */}
                                                                         <button
-                                                                            className="flex items-center mr-4"
-                                                                            onClick={() => toggleLike(comment.id)}
+                                                                            onClick={() => {
+                                                                                setEditingCommentId(comment.id)
+                                                                                setEditedCommentContent(comment.content)
+                                                                            }}
+                                                                            className="text-gray-400 hover:text-gray-600"
                                                                         >
                                                                             {likedComments[comment.id] ? (
                                                                                 <svg
@@ -845,11 +947,12 @@ export default function DetailPage() {
                                                         </div>
                                                         {!editingCommentId && (
                                                             <div className="flex space-x-2">
+                                                                {/* 연필 아이콘: 수정 모드로 전환 */}
                                                                 <button
                                                                     onClick={() =>
                                                                         handleCommentEdit(comment.id, comment.content)
                                                                     }
-                                                                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                                                    className="text-gray-400 hover:text-gray-600"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -862,13 +965,15 @@ export default function DetailPage() {
                                                                             strokeLinecap="round"
                                                                             strokeLinejoin="round"
                                                                             strokeWidth={2}
-                                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5
+                     2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                                                                         />
                                                                     </svg>
                                                                 </button>
+                                                                {/* 휴지통 아이콘: 삭제 */}
                                                                 <button
                                                                     onClick={() => handleCommentDelete(comment.id)}
-                                                                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                                                    className="text-gray-400 hover:text-gray-600"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -881,7 +986,10 @@ export default function DetailPage() {
                                                                             strokeLinecap="round"
                                                                             strokeLinejoin="round"
                                                                             strokeWidth={2}
-                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                                            d="M19 7l-.867
+                     12.142A2 2 0 0116.138 21H7.862a2 2 
+                     0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 
+                     1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                                                         />
                                                                     </svg>
                                                                 </button>
@@ -923,6 +1031,8 @@ export default function DetailPage() {
                                                         <div className="mt-4 pl-5 border-l-2 border-gray-200 space-y-4">
                                                             {comment.replies.map((reply) => (
                                                                 <div key={reply.id} className="pt-2">
+                                                                    {' '}
+                                                                    {/* ← key 에 reply.id */}
                                                                     <div className="flex items-start">
                                                                         <div className="w-6 h-6 rounded-full bg-gray-300 mr-2 overflow-hidden">
                                                                             <img
