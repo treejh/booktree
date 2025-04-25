@@ -5,6 +5,17 @@ import { useRouter, useParams } from 'next/navigation'
 import React from 'react'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
+// 1. 카테고리 관련 인터페이스 추가
+interface Category {
+    id: number
+    name: string
+}
+
+interface MainCategory {
+    id: number
+    name: string
+}
+
 interface PostDetail {
     postId: number
     title: string
@@ -18,6 +29,8 @@ interface PostDetail {
     // 추가되는 필드들
     author: string
     mainCategory: string
+    mainCategoryId: number // 추가
+    categoryId: number // 추가
     blogId?: number
     category: string
     book: string
@@ -38,7 +51,16 @@ export default function DetailPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isPostEditing, setIsPostEditing] = useState(false)
-    const [editedPost, setEditedPost] = useState({ title: '', content: '' })
+    const [editedPost, setEditedPost] = useState({
+        title: '',
+        content: '',
+        author: '',
+        book: '',
+        mainCategoryId: 0,
+        categoryId: 0,
+        imageUrls: [] as string[],
+        images: [] as File[],
+    })
     const [postLiked, setPostLiked] = useState(false)
 
     // 2. 댓글 관련 상태
@@ -65,9 +87,8 @@ export default function DetailPage() {
     const [currentPage, setCurrentPage] = useState(1)
 
     // 5. 카테고리 상태
-    const [categories, setCategories] = useState<Category[]>([
-        /* 기존 카테고리 데이터 유지 */
-    ])
+    const [categories, setCategories] = useState<Category[]>([])
+    const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
 
     // 6. 관련 게시물 상태
     const [relatedPosts] = useState<RelatedPost[]>([
@@ -399,6 +420,8 @@ export default function DetailPage() {
                     modifiedAt: new Date(data.modifiedAt).toLocaleDateString(),
                     author: data.author || '', // author는 기본값으로 빈 문자열 설정
                     mainCategory: data.mainCategory || '', // mainCategory 값 처리
+                    mainCategoryId: data.mainCategoryId || 0, // 수정
+                    categoryId: data.categoryId || 0, // 수정
                     category: data.category || '', // category 값 처리
                     book: data.book || '', // book 값 처리
                 }
@@ -407,6 +430,14 @@ export default function DetailPage() {
                 setEditedPost({
                     title: formattedPost.title,
                     content: formattedPost.content,
+                    author: formattedPost.author,
+                    book: formattedPost.book,
+                    mainCategoryId: formattedPost.mainCategoryId, // 수정
+                    categoryId: formattedPost.categoryId, // 수정
+                    //mainCategoryId: parseInt(formattedPost.mainCategory) || 0,
+                    //categoryId: parseInt(formattedPost.category) || 0,
+                    imageUrls: [...formattedPost.imageUrls],
+                    images: [],
                 })
             } catch (err) {
                 console.error('Error fetching post:', err)
@@ -433,6 +464,47 @@ export default function DetailPage() {
             })
         }
     }, [post, loginUser])
+
+    // 카테고리 데이터 불러오기
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                // 메인 카테고리 가져오기
+                const mainResponse = await fetch('http://localhost:8090/api/v1/maincategories/get', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    //credentials: 'include',
+                })
+
+                const mainData = await mainResponse.json()
+                if (Array.isArray(mainData)) {
+                    setMainCategories(mainData)
+                }
+
+                // 유저의 카테고리 가져오기
+                const categoryResponse = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                const categoryData = await categoryResponse.json()
+                if (Array.isArray(categoryData)) {
+                    setCategories(categoryData)
+                }
+            } catch (error) {
+                console.error('카테고리 로드 에러:', error)
+                setMainCategories([])
+                setCategories([])
+            }
+        }
+
+        fetchCategories()
+    }, [])
 
     // postId가 변경될 때마다 useEffect 실행
     // postId가 변경될 때마다 useEffect 실행
@@ -466,6 +538,112 @@ export default function DetailPage() {
         // 현재는 더미 데이터이므로 페이지만 변경합니다
     }
 
+    // 수정 관련 함수 추가
+    const handlePostEdit = async () => {
+        if (!post || !loginUser) return
+
+        try {
+            // 블로그 정보 가져오기
+            const blogResponse = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            })
+
+            if (!blogResponse.ok) {
+                throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            }
+
+            const blogData = await blogResponse.json()
+
+            // FormData 생성 및 데이터 추가
+            const formData = new FormData()
+            formData.append('blogId', blogData.blogId.toString())
+            formData.append('title', editedPost.title)
+            formData.append('content', editedPost.content)
+            formData.append('mainCategoryId', editedPost.mainCategoryId.toString())
+
+            if (editedPost.categoryId) {
+                formData.append('categoryId', editedPost.categoryId.toString())
+            }
+            if (editedPost.author) {
+                formData.append('author', editedPost.author)
+            }
+            if (editedPost.book) {
+                formData.append('book', editedPost.book)
+            }
+
+            // 이미지 파일 추가
+            editedPost.images.forEach((file) => {
+                formData.append('images', file)
+            })
+
+            // 수정 요청 보내기
+            const response = await fetch(`http://localhost:8090/api/v1/posts/patch/${post.postId}`, {
+                method: 'PATCH',
+                credentials: 'include',
+                body: formData,
+            })
+
+            // 수정 결과 처리
+            if (!response.ok) {
+                const errorData = await response.text()
+                console.error('서버 응답:', errorData)
+                throw new Error('게시글 수정에 실패했습니다.')
+            }
+
+            alert('게시글이 성공적으로 수정되었습니다.')
+            setIsPostEditing(false)
+            window.location.reload()
+        } catch (error) {
+            console.error('게시글 수정 실패:', error)
+            alert('게시글 수정에 실패했습니다.')
+        }
+    }
+
+    // 이미지 파일 선택 핸들러 추가
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files
+        if (files) {
+            setEditedPost((prev) => ({
+                ...prev,
+                images: [...Array.from(files)],
+            }))
+        }
+    }
+
+    // 수정 모드 진입 시 초기값 설정
+    const startEditing = () => {
+        setEditedPost({
+            title: post!.title,
+            content: post!.content,
+            author: post!.author,
+            book: post!.book,
+            mainCategoryId: post!.mainCategoryId, // parseInt 제거하고 직접 ID 사용
+            categoryId: post!.categoryId, // parseInt 제거하고 직접 ID 사용
+            imageUrls: [...post!.imageUrls],
+            images: [],
+        })
+        setIsPostEditing(true)
+    }
+
+    // 수정 취소 핸들러
+    const cancelEditing = () => {
+        setIsPostEditing(false)
+        setEditedPost({
+            title: post!.title,
+            content: post!.content,
+            author: post!.author,
+            book: post!.book,
+            mainCategoryId: post!.mainCategoryId, // parseInt 제거하고 직접 ID 사용
+            categoryId: post!.categoryId, // parseInt 제거하고 직접 ID 사용
+            imageUrls: [...post!.imageUrls],
+            images: [],
+        })
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl bg-gray-50">
             <div className="flex gap-8">
@@ -476,52 +654,119 @@ export default function DetailPage() {
                         {/* 헤더 */}
                         <div className="mb-10">
                             <div className="flex justify-between items-center mb-4">
-                                {/* 제목 부분 */}
                                 {isPostEditing ? (
-                                    <input
-                                        type="text"
-                                        value={editedPost.title}
-                                        onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
-                                        className="text-2xl font-bold w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    />
+                                    <div className="flex max-w-7xl mx-auto gap-6">
+                                        {/* Main content - post editor */}
+                                        <div className="flex-1 bg-white rounded shadow p-6">
+                                            <div className="space-y-4">
+                                                {/* Title Input */}
+                                                <div className="mb-8">
+                                                    <input
+                                                        type="text"
+                                                        value={editedPost.title}
+                                                        onChange={(e) =>
+                                                            setEditedPost({
+                                                                ...editedPost,
+                                                                title: e.target.value,
+                                                            })
+                                                        }
+                                                        placeholder="제목"
+                                                        className="w-full py-3 px-0 text-4xl font-light border-0 border-b border-gray-200 focus:outline-none focus:border-gray-300 focus:ring-0"
+                                                    />
+                                                </div>
+
+                                                {/* Author Input */}
+                                                <div>
+                                                    <input
+                                                        type="text"
+                                                        value={editedPost.author}
+                                                        onChange={(e) =>
+                                                            setEditedPost({
+                                                                ...editedPost,
+                                                                author: e.target.value,
+                                                            })
+                                                        }
+                                                        placeholder="작가"
+                                                        className="w-full p-2 border border-gray-300 rounded"
+                                                    />
+                                                </div>
+
+                                                {/* Book Title Input */}
+                                                <div>
+                                                    <input
+                                                        type="text"
+                                                        value={editedPost.book}
+                                                        onChange={(e) =>
+                                                            setEditedPost({
+                                                                ...editedPost,
+                                                                book: e.target.value,
+                                                            })
+                                                        }
+                                                        placeholder="책 제목"
+                                                        className="w-full p-2 border border-gray-300 rounded"
+                                                    />
+                                                </div>
+
+                                                {/* Image Upload */}
+                                                <div className="mb-4">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        이미지 첨부
+                                                    </label>
+                                                    <input
+                                                        type="file"
+                                                        multiple
+                                                        accept="image/*"
+                                                        onChange={handleImageSelect}
+                                                        className="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-green-50 file:text-green-700
+                            hover:file:bg-green-100"
+                                                    />
+                                                </div>
+
+                                                {/* Content Area */}
+                                                <div className="min-h-[300px] border border-gray-200 rounded-md overflow-hidden mb-6">
+                                                    <textarea
+                                                        value={editedPost.content}
+                                                        onChange={(e) =>
+                                                            setEditedPost({
+                                                                ...editedPost,
+                                                                content: e.target.value,
+                                                            })
+                                                        }
+                                                        className="w-full h-full min-h-[300px] p-4 outline-none resize-none"
+                                                        placeholder="내용을 입력하세요"
+                                                    />
+                                                </div>
+
+                                                {/* Submit Buttons */}
+                                                <div className="flex justify-end space-x-4 mt-6">
+                                                    <button
+                                                        onClick={cancelEditing}
+                                                        className="px-5 py-2 min-w-[100px] bg-white text-black rounded border border-gray-200 text-base"
+                                                    >
+                                                        취소
+                                                    </button>
+                                                    <button
+                                                        onClick={handlePostEdit}
+                                                        className="px-5 py-2 min-w-[100px] bg-[#2E804E] text-white rounded border border-gray-300 text-base"
+                                                    >
+                                                        저장
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <h1 className="text-2xl font-bold">{post.title}</h1>
-                                )}
-                                {isAuthor && ( // 작성자인 경우에만 버튼 표시
-                                    <div className="flex space-x-2">
-                                        {isPostEditing ? (
-                                            <>
-                                                <button
-                                                    onClick={() => {
-                                                        setPost((prev) => ({
-                                                            ...prev!,
-                                                            title: editedPost.title,
-                                                            content: editedPost.content,
-                                                        }))
-                                                        setIsPostEditing(false)
-                                                    }}
-                                                    className="px-4 py-1 text-sm text-white bg-[#2E804E] rounded-md hover:bg-[#246A40] min-w-[60px]"
-                                                >
-                                                    저장
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setIsPostEditing(false)
-                                                        setEditedPost({
-                                                            title: post!.title,
-                                                            content: post!.content,
-                                                        })
-                                                    }}
-                                                    className="px-4 py-1 text-sm text-gray-600 border rounded-md hover:bg-gray-100 min-w-[60px]"
-                                                >
-                                                    취소
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
+                                    <>
+                                        <h1 className="text-2xl font-bold">{post.title}</h1>
+                                        {isAuthor && (
+                                            <div className="flex space-x-2">
                                                 <button
                                                     className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                                                    onClick={() => setIsPostEditing(true)}
+                                                    onClick={startEditing}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -542,7 +787,7 @@ export default function DetailPage() {
                                                     className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
                                                     onClick={() => {
                                                         if (confirm('정말 삭제하시겠습니까?')) {
-                                                            // 삭제 로직 구현
+                                                            // 삭제 로직
                                                         }
                                                     }}
                                                 >
@@ -550,7 +795,7 @@ export default function DetailPage() {
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         className="h-5 w-5"
                                                         fill="none"
-                                                        viewBox="0 0 24 24"
+                                                        viewBox="0 24 24"
                                                         stroke="currentColor"
                                                     >
                                                         <path
@@ -561,9 +806,9 @@ export default function DetailPage() {
                                                         />
                                                     </svg>
                                                 </button>
-                                            </>
+                                            </div>
                                         )}
-                                    </div>
+                                    </>
                                 )}
                             </div>
 
@@ -938,7 +1183,7 @@ export default function DetailPage() {
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         className="h-4 w-4"
                                                                         fill="none"
-                                                                        viewBox="0 0 24 24"
+                                                                        viewBox="0 24 24"
                                                                         stroke="currentColor"
                                                                     >
                                                                         <path
@@ -1220,7 +1465,7 @@ export default function DetailPage() {
                                                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                                                 className="h-4 w-4"
                                                                                                 fill="none"
-                                                                                                viewBox="0 0 24 24"
+                                                                                                viewBox="0 24 24"
                                                                                                 stroke="currentColor"
                                                                                             >
                                                                                                 <path
@@ -1349,20 +1594,84 @@ export default function DetailPage() {
                 {/* 카테고리 사이드바 */}
                 <div className="w-64 flex-shrink-0">
                     <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div>
-                            <ul className="space-y-2">
-                                {/* 메인 카테고리 */}
-                                <li className="text-gray-700">
-                                    <span className="font-semibold block">메인 카테고리</span>
-                                    <span>{post.mainCategory}</span> {/* 메인 카테고리 이름 */}
-                                </li>
-                                {/* 서브 카테고리 */}
-                                <li className="text-gray-700">
-                                    <span className="font-semibold block">서브 카테고리</span>
-                                    <span>{post.category}</span> {/* 서브 카테고리 이름 */}
-                                </li>
-                            </ul>
-                        </div>
+                        {isPostEditing ? (
+                            // 수정 모드일 때 보여줄 카테고리 선택 폼
+                            <div className="space-y-6">
+                                {/* Regular Category */}
+                                <div>
+                                    <h3 className="text-lg font-medium mb-4">카테고리 선택3</h3>
+                                    <div className="relative mb-4">
+                                        <select
+                                            value={editedPost.categoryId}
+                                            onChange={(e) =>
+                                                setEditedPost({
+                                                    ...editedPost,
+                                                    categoryId: parseInt(e.target.value),
+                                                })
+                                            }
+                                            className="w-full p-2 border border-gray-300 rounded appearance-none"
+                                        >
+                                            <option value={0}>전체</option>
+                                            {categories.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Main Category */}
+                                <div>
+                                    <h3 className="text-lg font-medium mb-4">메인 카테고리 선택2</h3>
+                                    <div className="relative mb-4">
+                                        <select
+                                            value={editedPost.mainCategoryId}
+                                            onChange={(e) =>
+                                                setEditedPost({
+                                                    ...editedPost,
+                                                    mainCategoryId: parseInt(e.target.value),
+                                                })
+                                            }
+                                            className="w-full p-2 border border-gray-300 rounded appearance-none"
+                                        >
+                                            <option value={0}>전체</option>
+                                            {mainCategories.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            // 일반 모드일 때 보여줄 카테고리 정보
+                            <div>
+                                <ul className="space-y-2">
+                                    {/* 카테고리 */}
+                                    <li className="text-gray-700">
+                                        <span className="font-semibold block">카테고리</span>
+                                        <span>{post.category}</span>
+                                    </li>
+                                    {/* 메인 카테고리 */}
+                                    <li className="text-gray-700">
+                                        <span className="font-semibold block">메인 카테고리</span>
+                                        <span>{post.mainCategory}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
