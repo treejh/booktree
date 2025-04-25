@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import React from 'react'
+import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
 interface PostDetail {
     postId: number
@@ -24,15 +25,18 @@ interface PostDetail {
 }
 
 export default function DetailPage() {
-    // 라우터 초기화
+    // 2. 모든 hooks를 최상단에 배치
+    const { loginUser } = useGlobalLoginUser()
     const router = useRouter()
     const { postId } = useParams()
 
-    // 1. 게시물 관련 상태
+    // 3. 작성자 확인 상태 추가
+    const [isAuthor, setIsAuthor] = useState(false)
+
+    // 4. 기존 상태들
     const [post, setPost] = useState<PostDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-
     const [isPostEditing, setIsPostEditing] = useState(false)
     const [editedPost, setEditedPost] = useState({ title: '', content: '' })
     const [postLiked, setPostLiked] = useState(false)
@@ -417,6 +421,19 @@ export default function DetailPage() {
         }
     }, [postId])
 
+    // 작성자 확인 useEffect 추가 (다른 useEffect보다 앞에 배치)
+    useEffect(() => {
+        if (post && loginUser) {
+            const isMatch = post.username === loginUser.username
+            setIsAuthor(isMatch)
+            console.log('작성자 확인:', {
+                postAuthor: post.username,
+                loginUser: loginUser.username,
+                isMatch,
+            })
+        }
+    }, [post, loginUser])
+
     // postId가 변경될 때마다 useEffect 실행
     // postId가 변경될 때마다 useEffect 실행
 
@@ -470,14 +487,14 @@ export default function DetailPage() {
                                 ) : (
                                     <h1 className="text-2xl font-bold">{post.title}</h1>
                                 )}
-                                <div className="flex space-x-2">
+                                {isAuthor && ( // 작성자인 경우에만 버튼 표시
                                     <div className="flex space-x-2">
                                         {isPostEditing ? (
                                             <>
                                                 <button
                                                     onClick={() => {
                                                         setPost((prev) => ({
-                                                            ...prev,
+                                                            ...prev!,
                                                             title: editedPost.title,
                                                             content: editedPost.content,
                                                         }))
@@ -491,8 +508,8 @@ export default function DetailPage() {
                                                     onClick={() => {
                                                         setIsPostEditing(false)
                                                         setEditedPost({
-                                                            title: post.title,
-                                                            content: post.content,
+                                                            title: post!.title,
+                                                            content: post!.content,
                                                         })
                                                     }}
                                                     className="px-4 py-1 text-sm text-gray-600 border rounded-md hover:bg-gray-100 min-w-[60px]"
@@ -521,7 +538,14 @@ export default function DetailPage() {
                                                         />
                                                     </svg>
                                                 </button>
-                                                <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer">
+                                                <button
+                                                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                                                    onClick={() => {
+                                                        if (confirm('정말 삭제하시겠습니까?')) {
+                                                            // 삭제 로직 구현
+                                                        }
+                                                    }}
+                                                >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         className="h-5 w-5"
@@ -540,7 +564,7 @@ export default function DetailPage() {
                                             </>
                                         )}
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             {/* 프로필 정보 */}
