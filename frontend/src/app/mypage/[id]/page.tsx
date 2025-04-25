@@ -6,7 +6,6 @@ import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
-
 interface Category {
     id: number
     name: string
@@ -48,7 +47,6 @@ export default function MyPage() {
         checkAuthorization()
     }, [isLogin, loginUser, userId, router])
     const [followCount, setFollowCount] = useState<Follow[]>([])
-    const { id: userId } = useParams<{ id: string }>()
     const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
     const [editedCategoryName, setEditedCategoryName] = useState<string>('')
 
