@@ -2,7 +2,7 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-import com.example.booktree.popularpost.service.PopularPostService;
+//import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public class PostController {
 
     private final PostService postService;
 
-    private final PopularPostService popularPostService;
+//    private final PopularPostService popularPostService;
     private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
 
 
@@ -105,13 +106,13 @@ public class PostController {
                                         @ModelAttribute @Valid PostRequestDto postRequestDto) {
         postService.updatePost(postId, postRequestDto);
         return ResponseEntity.ok().build();
-    }
+    } // http://localhost:8090/api/v1/posts/delete/50
 
     @DeleteMapping("/delete/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId) {
         postService.deletePost(postId);
         return ResponseEntity.noContent().build();
-    }
+    } // http://localhost:8090/api/v1/posts/patch/50
 
 //    @GetMapping("/get/likePost/{postId}")
 //    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
@@ -130,7 +131,14 @@ public class PostController {
         Post post = postService.findPostById(postId);
 
         // 조회수 업데이트
-        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+        //popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+
+        String mainCategory = post.getMainCategory() != null ? post.getMainCategory().getName() : "기본 카테고리";
+        String category = post.getCategory() != null ? post.getCategory().getName() : "기본 서브 카테고리";
+//        String username = post.getUser() != null ? post.getUser().getUsername() : "알 수 없음";
+//        List<String> imageUrls = post.getImageList() != null ? post.getImageList().stream()
+//                .map(image -> image.getImageUrl())
+//                .toList() : Collections.emptyList();
 
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
@@ -145,6 +153,10 @@ public class PostController {
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
+                .author(post.getAuthor() != null ? post.getAuthor() : "알 수 없음")
+                .book(post.getBook() != null ? post.getBook() : "알 수 없음")
+                .category(category)
+                .mainCategory(mainCategory)
                 .build();
 
 

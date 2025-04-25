@@ -41,7 +41,7 @@ public class Post extends Auditable {
     private Long id;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER) //수정
     @JoinColumn(name = "main_category_id", nullable = false)
     private MainCategory mainCategory;
 

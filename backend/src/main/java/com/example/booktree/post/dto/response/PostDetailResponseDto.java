@@ -23,5 +23,12 @@ public class PostDetailResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 
+    //  새 필드들
+    private String mainCategory;
+    private String category;
+    private Long blogId;
+    private String author;
+    private String book;
+
 
 }
