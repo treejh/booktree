@@ -111,8 +111,7 @@ public class FollowService {
     }
 
     // 팔로워, 팔로잉 수 dto 반환
-    public FollowCountDto getCount() {
-        Long userId = tokenService.getIdFromToken();
+    public FollowCountDto getCount(Long userId) {
 
         FollowCountDto followCountDto = new FollowCountDto();
 
