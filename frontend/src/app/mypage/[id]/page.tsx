@@ -402,7 +402,7 @@ export default function MyPage() {
             <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <h2 className="text-lg font-bold">카테고리</h2>
-                    <Link href="/mypage/editCategory/${userId}">
+                    <Link href={`/mypage/editCategory/${userId}`}>
                         <button
                             // onClick={handleCreateCategory} // 버튼 클릭 시 호출할 함수
                             className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 transition"

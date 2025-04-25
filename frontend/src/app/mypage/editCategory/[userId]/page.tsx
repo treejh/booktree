@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 
 const editCategory = () => {
     const [categoryName, setCategoryName] = useState('')
     const router = useRouter()
     const searchParams = useSearchParams()
-    const userId = searchParams.get('userId')
+    const { userId: userId } = useParams<{ id: string }>()
+    console.log('userId : ', userId)
 
     const handleCreateCategory = async () => {
         if (!categoryName) {
