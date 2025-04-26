@@ -37,7 +37,7 @@ public class BlogController {
     }
 
     // Read
-    //내 블로그는 하나밖에 없다는 가정하에 유저 아이디로 가져옴
+    //내 블로그는 하나밖에 없다는 가정하에 토큰으로 가져옴
     @GetMapping("/get/token")
     public ResponseEntity getBlogByToken() {
         BlogResponseDto response = new BlogResponseDto(blogService.findBlogByToken());
