@@ -394,7 +394,7 @@ export default function DetailPage() {
         const fetchPost = async () => {
             try {
                 setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/posts/get/${postId}`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -470,7 +470,7 @@ export default function DetailPage() {
         const fetchCategories = async () => {
             try {
                 // 메인 카테고리 가져오기
-                const mainResponse = await fetch('http://localhost:8090/api/v1/maincategories/get', {
+                const mainResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/maincategories/get`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -487,13 +487,16 @@ export default function DetailPage() {
                 setMainCategories(mainData)
 
                 // 유저의 카테고리 가져오기
-                const categoryResponse = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const categoryResponse = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/allcategory`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 if (!categoryResponse.ok) {
                     throw new Error('카테고리를 불러오는데 실패했습니다.')
@@ -549,7 +552,7 @@ export default function DetailPage() {
         if (!post || !loginUser) return
 
         try {
-            const blogResponse = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+            const blogResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -593,7 +596,7 @@ export default function DetailPage() {
                 formData.append('images', file)
             })
 
-            const response = await fetch(`http://localhost:8090/api/v1/posts/patch/${post.postId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/patch/${post.postId}`, {
                 method: 'PATCH',
                 credentials: 'include',
                 body: formData,
@@ -660,7 +663,7 @@ export default function DetailPage() {
         if (!post || !loginUser) return
 
         try {
-            const response = await fetch(`http://localhost:8090/api/v1/posts/delete/${post.postId}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/delete/${post.postId}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
