@@ -111,6 +111,8 @@ export default function DetailPage() {
     // 5. 카테고리 상태
     const [categories, setCategories] = useState<Category[]>([])
 
+    const [userId, setUserId] = useState()
+
     // 6. 관련 게시물 상태
     const [relatedPosts] = useState<RelatedPost[]>([
         /* 기존 관련 게시물 데이터 유지 */
