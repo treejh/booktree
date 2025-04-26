@@ -249,7 +249,7 @@ export default function EditProfilePage() {
                     {/* 비밀번호 인증 섹션 */}
                     {!provider && (
                         <div className={styles.section}>
-                            <h2 className={styles.subtitle}>비밀번호 인증</h2>
+                            <h2 className={styles.subtitle}></h2>
                             <input
                                 type="password"
                                 id="password"
@@ -257,6 +257,12 @@ export default function EditProfilePage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="비밀번호를 입력하세요"
                                 className={`${styles.input} w-full`}
+                                style={{
+                                    border: '1px solid #d1d5db', // 얇은 회색 테두리
+                                    borderRadius: '4px', // 모서리 둥글게
+                                    padding: '8px', // 내부 여백
+                                    marginBottom: '16px', // 버튼과 간격 추가
+                                }}
                             />
                             <button
                                 type="button"
