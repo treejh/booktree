@@ -11,9 +11,9 @@ export default function EditProfilePage() {
 
     const [password, setPassword] = useState('')
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const socialLoginForKakaoUrl = `http://localhost:8090/oauth2/authorization/kakao`
-    const socialLoginForGithubUrl = `http://localhost:8090/oauth2/authorization/github`
-    const redirectUrlAfterSocialLogin = 'http://localhost:3000/account/edit'
+    const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao`
+    const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
+    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_FRONT_BASE_URL}`
     const [provider, setProvider] = useState<string | null>(null)
 
     const [phoneNumber, setPhoneNumber] = useState('')
@@ -56,7 +56,7 @@ export default function EditProfilePage() {
 
     const handlePasswordAuth = async () => {
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/validation/password', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/validation/password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,13 +113,16 @@ export default function EditProfilePage() {
             setFormData((prev) => ({ ...prev, email }))
 
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/users/patch/email?email=${email}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/email?email=${email}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('이메일 변경에 실패했습니다.')
@@ -141,7 +144,7 @@ export default function EditProfilePage() {
             }
 
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/users/patch/phoneNumber`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/phoneNumber`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -166,7 +169,7 @@ export default function EditProfilePage() {
         if (field === 'username') {
             try {
                 const response = await fetch(
-                    `http://localhost:8090/api/v1/users/patch/username?username=${formData.username}`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/username?username=${formData.username}`,
                     {
                         method: 'PATCH',
                         headers: {
@@ -218,7 +221,7 @@ export default function EditProfilePage() {
         formData.append('images', selectedImage)
 
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/patch/image', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/image`, {
                 method: 'PATCH',
                 credentials: 'include',
                 body: formData,

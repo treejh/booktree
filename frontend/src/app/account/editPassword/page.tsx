@@ -16,7 +16,6 @@ export default function EditPassword() {
         confirmPassword: '',
     })
 
-
     useEffect(() => {
         if (!isLogin) {
             alert('로그인이 필요합니다.')
@@ -26,7 +25,6 @@ export default function EditPassword() {
             router.push('/account/edit')
         }
     }, [isLogin, loginUser, router])
-
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPasswords({
@@ -38,7 +36,6 @@ export default function EditPassword() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-
         // 새 비밀번호와 확인 비밀번호가 다를 경우 에러 메시지 표시
         if (passwords.newPassword !== passwords.confirmPassword) {
             setErrorMessage('비밀번호 확인이 다릅니다')
@@ -47,7 +44,7 @@ export default function EditPassword() {
 
         // 비밀번호 변경 API 호출
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/patch/pw', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/pw`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,7 +67,6 @@ export default function EditPassword() {
             console.error('비밀번호 변경 요청 중 오류 발생:', error)
             setErrorMessage('서버와의 통신 중 문제가 발생했습니다.')
         }
-
     }
 
     return (
@@ -132,9 +128,7 @@ export default function EditPassword() {
                 <div className={styles.footerLine}></div>
                 <div className={styles.footerContent}>
                     <div className={styles.footerText}>
-
                         <span className={styles.copyright}>© 2025 BookTree. All rights reserved.</span>
-
                     </div>
                 </div>
             </footer>
