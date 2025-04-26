@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import React from 'react'
+import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
 interface PostDetail {
     postId: number
@@ -23,16 +24,16 @@ interface PostDetail {
     images?: string[]
 }
 
-
 interface Category {
     id: number
     name: string
     postCount: number
 }
 
-
-
 export default function DetailPage() {
+    // 로그인 여부
+    const { isLogin, loginUser } = useGlobalLoginUser()
+
     // 라우터 초기화
     const router = useRouter()
     const { postId } = useParams()
@@ -73,7 +74,6 @@ export default function DetailPage() {
 
     // 5. 카테고리 상태
     const [categories, setCategories] = useState<Category[]>([])
-
 
     // 6. 관련 게시물 상태
     const [relatedPosts] = useState<RelatedPost[]>([
@@ -192,6 +192,64 @@ export default function DetailPage() {
                     [commentId]: '',
                 })
             }
+        }
+    }
+
+    const followUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('팔로우 요청 실패')
+            console.log(`팔로우 완료: ${followeeId}`)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const unfollowUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('언팔로우 요청 실패')
+            console.log(`언팔로우 완료: ${followeeId}`)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const handleFollowClick = async () => {
+        if (!isLogin) {
+            alert('로그인이 필요합니다.')
+            router.push('/account/login')
+            return
+        }
+
+        try {
+            if (isFollowing) {
+                // ✅ 팔로우 상태면 → 언팔로우 요청
+                await unfollowUser(userId)
+                setIsFollowing(false)
+            } else {
+                // ✅ 아직 팔로우 안 했으면 → 팔로우 요청
+                await followUser(userId)
+                setIsFollowing(true)
+            }
+        } catch (error) {
+            console.error('팔로우/언팔로우 실패:', error)
         }
     }
 
@@ -374,7 +432,6 @@ export default function DetailPage() {
         }
     }, [showPopover, activePopoverAuthor])
 
-
     useEffect(() => {
         const fetchUserId = async () => {
             try {
@@ -400,6 +457,38 @@ export default function DetailPage() {
         }
         fetchUserId()
     }, [postId])
+
+    useEffect(() => {
+        const fetchIsFollowing = async () => {
+            if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
+
+            try {
+                setLoading(true)
+                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('팔로우 여부:', data)
+                setIsFollowing(data)
+            } catch (err) {
+                console.error('Error fetching isFollowing:', err)
+                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchIsFollowing()
+    }, [userId])
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -431,8 +520,6 @@ export default function DetailPage() {
             fetchCategories()
         }
     }, [userId])
-
-
 
     // 게시글을 불러오는 함수
     useEffect(() => {
@@ -669,9 +756,7 @@ export default function DetailPage() {
                                                     </button>
                                                 </div>
                                                 <button
-                                                    onClick={() => {
-                                                        setIsFollowing(!isFollowing)
-                                                    }}
+                                                    onClick={handleFollowClick}
                                                     className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
                                                         isFollowing
                                                             ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
@@ -1392,9 +1477,7 @@ export default function DetailPage() {
                                                         className="flex items-center justify-between w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                                     >
                                                         <span>
-
                                                             {category.name}({category.postCount})
-
                                                         </span>
                                                         <svg
                                                             className={`w-4 h-4 transform transition-transform ${
@@ -1433,10 +1516,7 @@ export default function DetailPage() {
                                                 onClick={() => router.push(category.path)}
                                                 className="w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                             >
-
                                                 {category.name} ({category.postCount})
-
-
                                             </button>
                                         )}
                                     </li>
