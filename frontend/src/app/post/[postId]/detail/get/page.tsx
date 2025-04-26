@@ -560,14 +560,15 @@ export default function DetailPage() {
 
             // FormData 생성 및 데이터 추가
             const formData = new FormData()
-            formData.append('blogId', blogData.blogId.toString())
+            formData.append('blogId', blogData.blogId)
             formData.append('title', editedPost.title)
             formData.append('content', editedPost.content)
-            formData.append('mainCategoryId', editedPost.mainCategoryId.toString())
+            //formData.append('mainCategoryId', editedPost.mainCategoryId.toString())
 
-            if (editedPost.categoryId) {
-                formData.append('categoryId', editedPost.categoryId.toString())
-            }
+            //
+            formData.append('mainCategoryId', String(editedPost.mainCategoryId))
+            formData.append('categoryId', String(editedPost.categoryId))
+
             if (editedPost.author) {
                 formData.append('author', editedPost.author)
             }
@@ -649,333 +650,426 @@ export default function DetailPage() {
             <div className="flex gap-8">
                 {/* 메인 컨텐츠 영역 */}
                 <div className="flex-1">
-                    {/* 게시글과 댓글 컨테이너 */}
-                    <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-                        {/* 헤더 */}
-                        <div className="mb-10">
-                            <div className="flex justify-between items-center mb-4">
-                                {isPostEditing ? (
-                                    <div className="flex max-w-7xl mx-auto gap-6">
-                                        {/* Main content - post editor */}
-                                        <div className="flex-1 bg-white rounded shadow p-6">
-                                            <div className="space-y-4">
-                                                {/* Title Input */}
-                                                <div className="mb-8">
-                                                    <input
-                                                        type="text"
-                                                        value={editedPost.title}
-                                                        onChange={(e) =>
-                                                            setEditedPost({
-                                                                ...editedPost,
-                                                                title: e.target.value,
-                                                            })
-                                                        }
-                                                        placeholder="제목"
-                                                        className="w-full py-3 px-0 text-4xl font-light border-0 border-b border-gray-200 focus:outline-none focus:border-gray-300 focus:ring-0"
-                                                    />
-                                                </div>
-
-                                                {/* Author Input */}
-                                                <div>
-                                                    <input
-                                                        type="text"
-                                                        value={editedPost.author}
-                                                        onChange={(e) =>
-                                                            setEditedPost({
-                                                                ...editedPost,
-                                                                author: e.target.value,
-                                                            })
-                                                        }
-                                                        placeholder="작가"
-                                                        className="w-full p-2 border border-gray-300 rounded"
-                                                    />
-                                                </div>
-
-                                                {/* Book Title Input */}
-                                                <div>
-                                                    <input
-                                                        type="text"
-                                                        value={editedPost.book}
-                                                        onChange={(e) =>
-                                                            setEditedPost({
-                                                                ...editedPost,
-                                                                book: e.target.value,
-                                                            })
-                                                        }
-                                                        placeholder="책 제목"
-                                                        className="w-full p-2 border border-gray-300 rounded"
-                                                    />
-                                                </div>
-
-                                                {/* Image Upload */}
-                                                <div className="mb-4">
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                        이미지 첨부
-                                                    </label>
-                                                    <input
-                                                        type="file"
-                                                        multiple
-                                                        accept="image/*"
-                                                        onChange={handleImageSelect}
-                                                        className="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-md file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-green-50 file:text-green-700
-                            hover:file:bg-green-100"
-                                                    />
-                                                </div>
-
-                                                {/* Content Area */}
-                                                <div className="min-h-[300px] border border-gray-200 rounded-md overflow-hidden mb-6">
-                                                    <textarea
-                                                        value={editedPost.content}
-                                                        onChange={(e) =>
-                                                            setEditedPost({
-                                                                ...editedPost,
-                                                                content: e.target.value,
-                                                            })
-                                                        }
-                                                        className="w-full h-full min-h-[300px] p-4 outline-none resize-none"
-                                                        placeholder="내용을 입력하세요"
-                                                    />
-                                                </div>
-
-                                                {/* Submit Buttons */}
-                                                <div className="flex justify-end space-x-4 mt-6">
-                                                    <button
-                                                        onClick={cancelEditing}
-                                                        className="px-5 py-2 min-w-[100px] bg-white text-black rounded border border-gray-200 text-base"
-                                                    >
-                                                        취소
-                                                    </button>
-                                                    <button
-                                                        onClick={handlePostEdit}
-                                                        className="px-5 py-2 min-w-[100px] bg-[#2E804E] text-white rounded border border-gray-300 text-base"
-                                                    >
-                                                        저장
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <h1 className="text-2xl font-bold">{post.title}</h1>
-                                        {isAuthor && (
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                                                    onClick={startEditing}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-5 w-5"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                                                    onClick={() => {
-                                                        if (confirm('정말 삭제하시겠습니까?')) {
-                                                            // 삭제 로직
-                                                        }
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-5 w-5"
-                                                        fill="none"
-                                                        viewBox="0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-
-                            {/* 프로필 정보 */}
-                            <div className="flex items-center mb-6">
-                                <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 overflow-hidden">
-                                    <img
-                                        src="https://randomuser.me/api/portraits/women/44.jpg"
-                                        alt="프로필"
-                                        className="w-full h-full object-cover"
+                    {isPostEditing ? (
+                        // 수정 모드
+                        <div className="bg-white rounded-lg shadow-sm p-8">
+                            <div className="max-w-4xl mx-auto">
+                                {/* Title Input */}
+                                <div className="mb-8">
+                                    <input
+                                        type="text"
+                                        value={editedPost.title}
+                                        onChange={(e) =>
+                                            setEditedPost({
+                                                ...editedPost,
+                                                title: e.target.value,
+                                            })
+                                        }
+                                        placeholder="제목"
+                                        className="w-full py-3 text-4xl font-light border-0 border-b border-gray-200 focus:outline-none focus:border-gray-300 focus:ring-0 placeholder-gray-400"
                                     />
                                 </div>
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setShowPopover(!showPopover)}
-                                        className="focus:outline-none group"
-                                    >
-                                        <p className="text-sm font-medium hover:text-[#2E804E] transition-colors duration-200">
-                                            {post.username}
-                                        </p>
-                                    </button>
 
-                                    {/* 팝오버 미니창 수정 */}
-                                    {showPopover && (
-                                        <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
-                                            <div className="p-4">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="flex items-center">
-                                                        <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
-                                                            <img
-                                                                src="https://randomuser.me/api/portraits/women/44.jpg"
-                                                                alt="프로필"
-                                                                className="w-full h-full object-cover"
-                                                            />
+                                {/* Author & Book Info */}
+                                <div className="space-y-6 mb-8">
+                                    <div>
+                                        {/* <label className="block text-sm font-medium text-gray-700 mb-2">작가</label> */}
+                                        <input
+                                            type="text"
+                                            value={editedPost.author}
+                                            onChange={(e) =>
+                                                setEditedPost({
+                                                    ...editedPost,
+                                                    author: e.target.value,
+                                                })
+                                            }
+                                            placeholder="작가를 입력하세요"
+                                            className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        {/* <label className="block text-sm font-medium text-gray-700 mb-2">책 제목</label> */}
+                                        <input
+                                            type="text"
+                                            value={editedPost.book}
+                                            onChange={(e) =>
+                                                setEditedPost({
+                                                    ...editedPost,
+                                                    book: e.target.value,
+                                                })
+                                            }
+                                            placeholder="책 제목을 입력하세요"
+                                            className="w-full p-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Image Upload */}
+                                <div className="mb-8">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={handleImageSelect}
+                                        className="block w-full text-sm text-gray-500
+                                            file:mr-4 file:py-2.5 file:px-4
+                                            file:rounded-md file:border-0
+                                            file:text-sm file:font-semibold
+                                            file:bg-green-50 file:text-green-700
+                                            hover:file:bg-green-100
+                                            cursor-pointer"
+                                    />
+                                </div>
+
+                                {/* Text Formatting Toolbar */}
+                                <div className="border border-gray-200 rounded-t-lg p-2 bg-gray-50 flex space-x-2">
+                                    <button className="p-2 hover:bg-gray-200 rounded" title="굵게">
+                                        <svg
+                                            className="w-4 h-4"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6V4z"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                            <path
+                                                d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6V12z"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+                                    <button className="p-2 hover:bg-gray-200 rounded" title="기울임">
+                                        <svg
+                                            className="w-4 h-4"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M19 4h-9M14 20H5M15 4L9 20"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+                                    <button className="p-2 hover:bg-gray-200 rounded" title="밑줄">
+                                        <svg
+                                            className="w-4 h-4"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M6 3v7a6 6 0 006 6 6 6 0 006-6V3M4 21h16"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+                                    <div className="w-px h-6 bg-gray-300 mx-2"></div>
+                                    <button className="p-2 hover:bg-gray-200 rounded" title="왼쪽 정렬">
+                                        <svg
+                                            className="w-4 h-4"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M4 6h16M4 12h10M4 18h14"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+                                    <button className="p-2 hover:bg-gray-200 rounded" title="가운데 정렬">
+                                        <svg
+                                            className="w-4 h-4"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M4 6h16M7 12h10M5 18h14"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* Content Area */}
+                                <div className="mb-8">
+                                    <textarea
+                                        value={editedPost.content}
+                                        onChange={(e) =>
+                                            setEditedPost({
+                                                ...editedPost,
+                                                content: e.target.value,
+                                            })
+                                        }
+                                        placeholder="내용을 입력하세요"
+                                        className="w-full min-h-[500px] p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
+                                    />
+                                </div>
+
+                                {/* Submit Buttons */}
+                                <div className="flex justify-end space-x-3">
+                                    <button
+                                        onClick={cancelEditing}
+                                        className="px-6 py-2.5 bg-white text-gray-700 rounded-md border border-gray-300 hover:bg-gray-50 text-sm font-medium"
+                                    >
+                                        취소
+                                    </button>
+                                    <button
+                                        onClick={handlePostEdit}
+                                        className="px-6 py-2.5 bg-[#2E804E] text-white rounded-md hover:bg-[#246A40] text-sm font-medium"
+                                    >
+                                        수정완료
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
+                            {/* 헤더 */}
+                            <div className="mb-10">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h1 className="text-2xl font-bold">{post.title}</h1>
+                                    {isAuthor && (
+                                        <div className="flex space-x-2">
+                                            <button
+                                                className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                                                onClick={startEditing}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-5 w-5"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                                    />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                                                onClick={() => {
+                                                    if (confirm('정말 삭제하시겠습니까?')) {
+                                                        // 삭제 로직
+                                                    }
+                                                }}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-5 w-5"
+                                                    fill="none"
+                                                    viewBox="0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 프로필 정보 */}
+                                <div className="flex items-center mb-6">
+                                    <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 overflow-hidden">
+                                        <img
+                                            src="https://randomuser.me/api/portraits/women/44.jpg"
+                                            alt="프로필"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setShowPopover(!showPopover)}
+                                            className="focus:outline-none group"
+                                        >
+                                            <p className="text-sm font-medium hover:text-[#2E804E] transition-colors duration-200">
+                                                {post.username}
+                                            </p>
+                                        </button>
+
+                                        {/* 팝오버 미니창 수정 */}
+                                        {showPopover && (
+                                            <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
+                                                <div className="p-4">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center">
+                                                            <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
+                                                                <img
+                                                                    src="https://randomuser.me/api/portraits/women/44.jpg"
+                                                                    alt="프로필"
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleProfileClick(post.author)}
+                                                                className="font-medium hover:text-[#2E804E] transition-colors duration-200"
+                                                            >
+                                                                {post.author}
+                                                            </button>
                                                         </div>
                                                         <button
-                                                            onClick={() => handleProfileClick(post.author)}
-                                                            className="font-medium hover:text-[#2E804E] transition-colors duration-200"
+                                                            onClick={() => router.push('/mypage')}
+                                                            className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
                                                         >
-                                                            {post.author}
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                className="h-5 w-5"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                                                                />
+                                                            </svg>
                                                         </button>
                                                     </div>
                                                     <button
-                                                        onClick={() => router.push('/mypage')}
-                                                        className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
+                                                        onClick={() => {
+                                                            setIsFollowing(!isFollowing)
+                                                        }}
+                                                        className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
+                                                            isFollowing
+                                                                ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
+                                                                : 'text-white bg-[#2E804E] hover:bg-[#246A40]'
+                                                        }`}
                                                     >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            className="h-5 w-5"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                            />
-                                                        </svg>
+                                                        {isFollowing ? '팔로우 취소' : '팔로우 하기'}
                                                     </button>
                                                 </div>
-                                                <button
-                                                    onClick={() => {
-                                                        setIsFollowing(!isFollowing)
-                                                    }}
-                                                    className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
-                                                        isFollowing
-                                                            ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
-                                                            : 'text-white bg-[#2E804E] hover:bg-[#246A40]'
-                                                    }`}
-                                                >
-                                                    {isFollowing ? '팔로우 취소' : '팔로우 하기'}
-                                                </button>
                                             </div>
+                                        )}
+
+                                        <div className="flex text-xs text-gray-500">
+                                            <span className="mx-2">•</span>
+                                            <span>조회수 {post.createdAt}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>조회수 {post.viewCount}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>좋아요 {post.likeCount}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 책 */}
+                                <div className="flex text-sm text-gray-700 mb-4">
+                                    <span className="font-medium">책 이름 : </span>
+                                    <span className="ml-2 text-gray-600">{post.book}</span>
+                                </div>
+
+                                {/* 책 작가 */}
+                                <div className="flex text-sm text-gray-700 mb-4">
+                                    <span className="font-medium">책 작가 : </span>
+                                    <span className="ml-2 text-gray-600">{post.author}</span>
+                                </div>
+
+                                {/* 게시글 내용 */}
+                                <div className="mb-8">
+                                    {/* 이미지를 컨텐츠 위로 이동 */}
+
+                                    {/* 이미지 목록 */}
+                                    {post.imageUrls.length > 0 && (
+                                        <div className="flex flex-col gap-4 mb-8">
+                                            {post.imageUrls.map((url, index) => (
+                                                <div key={index} className="w-full rounded-lg overflow-hidden">
+                                                    <img
+                                                        src={url}
+                                                        alt={`게시글 이미지 ${index + 1}`}
+                                                        className="w-full h-auto object-contain max-h-[600px]"
+                                                        onError={(e) => {
+                                                            // console.error(`이미지 로드 실패: ${url}`)
+                                                            e.currentTarget.src =
+                                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png' // 로드 실패시 기본 이미지
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
 
-                                    <div className="flex text-xs text-gray-500">
-                                        <span className="mx-2">•</span>
-                                        <span>조회수 {post.createdAt}</span>
-                                        <span className="mx-2">•</span>
-                                        <span>조회수 {post.viewCount}</span>
-                                        <span className="mx-2">•</span>
-                                        <span>좋아요 {post.likeCount}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 책 */}
-                            <div className="flex text-sm text-gray-700 mb-4">
-                                <span className="font-medium">책 이름 : </span>
-                                <span className="ml-2 text-gray-600">{post.book}</span>
-                            </div>
-
-                            {/* 책 작가 */}
-                            <div className="flex text-sm text-gray-700 mb-4">
-                                <span className="font-medium">책 작가 : </span>
-                                <span className="ml-2 text-gray-600">{post.author}</span>
-                            </div>
-
-                            {/* 게시글 내용 */}
-                            <div className="mb-8">
-                                {/* 이미지를 컨텐츠 위로 이동 */}
-
-                                {/* 이미지 목록 */}
-                                {post.imageUrls.length > 0 && (
-                                    <div className="flex flex-col gap-4 mb-8">
-                                        {post.imageUrls.map((url, index) => (
-                                            <div key={index} className="w-full rounded-lg overflow-hidden">
-                                                <img
-                                                    src={url}
-                                                    alt={`게시글 이미지 ${index + 1}`}
-                                                    className="w-full h-auto object-contain max-h-[600px]"
-                                                    onError={(e) => {
-                                                        // console.error(`이미지 로드 실패: ${url}`)
-                                                        e.currentTarget.src =
-                                                            'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png' // 로드 실패시 기본 이미지
-                                                    }}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* 컨텐츠 표시 */}
-                                {isPostEditing ? (
-                                    <textarea
-                                        value={editedPost.content}
-                                        onChange={(e) => setEditedPost({ ...editedPost, content: e.target.value })}
-                                        className="w-full p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 mb-6"
-                                        rows={15}
-                                    />
-                                ) : (
-                                    <div className="mb-6 whitespace-pre-line">{post.content}</div>
-                                )}
-                            </div>
-
-                            {/* 좋아요 버튼 */}
-                            <div className="flex justify-center mb-8">
-                                <button
-                                    onClick={togglePostLike}
-                                    className={`flex items-center justify-center px-4 py-2 bg-green-50 hover:bg-green-100 transition rounded-md ${
-                                        postLiked ? 'text-red-500' : 'text-green-600'
-                                    }`}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-5 w-5 mr-1"
-                                        fill={postLiked ? 'currentColor' : 'none'}
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4.318 6.318a4 4 0 015.656 0L10 6.343l-1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                    {/* 컨텐츠 표시 */}
+                                    {isPostEditing ? (
+                                        <textarea
+                                            value={editedPost.content}
+                                            onChange={(e) => setEditedPost({ ...editedPost, content: e.target.value })}
+                                            className="w-full p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500 mb-6"
+                                            rows={15}
                                         />
-                                    </svg>
-                                    좋아요 {post.likes}
-                                </button>
+                                    ) : (
+                                        <div className="mb-6 whitespace-pre-line">{post.content}</div>
+                                    )}
+                                </div>
+
+                                {/* 좋아요 버튼 */}
+                                <div className="flex justify-center mb-8">
+                                    <button
+                                        onClick={togglePostLike}
+                                        className={`flex items-center justify-center px-4 py-2 bg-green-50 hover:bg-green-100 transition rounded-md ${
+                                            postLiked ? 'text-red-500' : 'text-green-600'
+                                        }`}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5 mr-1"
+                                            fill={postLiked ? 'currentColor' : 'none'}
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M4.318 6.318a4 4 0 015.656 0L10 6.343l-1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                            />
+                                        </svg>
+                                        좋아요 {post.likes}
+                                    </button>
+                                </div>
+
+                                {/* 구분선 추가 */}
+                                <div className="border-b border-gray-200 mb-8"></div>
                             </div>
+                        </div>
+                    )}
 
-                            {/* 구분선 추가 */}
-                            <div className="border-b border-gray-200 mb-8"></div>
-
+                    {/* 댓글 섹션은 수정 모드가 아닐 때만 표시 */}
+                    {!isPostEditing && (
+                        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
                             {/* 댓글 섹션 */}
                             <div>
                                 <h2 className="text-xl font-bold mb-4">댓글 {comments.length}</h2>
@@ -1535,60 +1629,7 @@ export default function DetailPage() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* 목록 컨테이너 - 별도로 분리 */}
-                    <div className="bg-white rounded-lg shadow-sm p-8">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-bold">
-                                후기글 ({categories.find((cat) => cat.name === '후기글')?.count || 0})
-                            </h2>
-                            <button onClick={toggleList} className="text-gray-600 hover:text-gray-800">
-                                {isListVisible ? '목록접기' : '목록보기'}
-                            </button>
-                        </div>
-
-                        {isListVisible && (
-                            <>
-                                <div className="space-y-4">
-                                    {getCurrentPagePosts().map((post) => (
-                                        <div
-                                            key={post.id}
-                                            className="flex justify-between items-center py-2 hover:bg-gray-50 cursor-pointer"
-                                            onClick={() => router.push(`/detail/${post.id}`)}
-                                        >
-                                            <div className="flex-1">
-                                                <h3 className="text-base mb-1">
-                                                    {post.title}
-                                                    {post.replies && (
-                                                        <span className="text-[#2E804E] ml-2">({post.replies})</span>
-                                                    )}
-                                                </h3>
-                                                <p className="text-sm text-gray-500">{post.date}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* 페이지네이션 */}
-                                <div className="flex justify-center mt-8 space-x-2">
-                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                                        <button
-                                            key={num}
-                                            onClick={() => handlePageChange(num)}
-                                            className={`w-8 h-8 flex items-center justify-center rounded transition-colors duration-200 ${
-                                                num === currentPage
-                                                    ? 'text-white bg-[#2E804E]'
-                                                    : 'text-gray-600 hover:bg-gray-100'
-                                            }`}
-                                        >
-                                            {num}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    )}
                 </div>
 
                 {/* 카테고리 사이드바 */}
