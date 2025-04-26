@@ -13,7 +13,7 @@ export default function EditProfilePage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao`
     const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
-    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_FRONT_BASE_URL}`
+    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_API_BASE_URL}`
     const [provider, setProvider] = useState<string | null>(null)
 
     const [phoneNumber, setPhoneNumber] = useState('')
@@ -501,6 +501,15 @@ export default function EditProfilePage() {
                             className={styles.cancelButton}
                         >
                             취소
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => router.push('/account/withdraw')}
+                            className="px-3 py-2 text-sm text-white bg-red-500 rounded-md hover:bg-red-600 transition ml-4"
+                            style={{ marginLeft: 'auto' }}
+                        >
+                            회원 탈퇴
                         </button>
                     </div>
                 </div>
