@@ -645,6 +645,31 @@ export default function DetailPage() {
         })
     }
 
+    // handlePostDelete 함수 추가
+    const handlePostDelete = async () => {
+        if (!post || !loginUser) return
+
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/posts/delete/${post.postId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+
+            if (!response.ok) {
+                throw new Error('게시글 삭제에 실패했습니다.')
+            }
+
+            alert('게시글이 성공적으로 삭제되었습니다.')
+            router.push('/') // 홈페이지로 리다이렉트
+        } catch (error) {
+            console.error('게시글 삭제 실패:', error)
+            alert('게시글 삭제에 실패했습니다.')
+        }
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl bg-gray-50">
             <div className="flex gap-8">
@@ -877,7 +902,7 @@ export default function DetailPage() {
                                                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
                                                 onClick={() => {
                                                     if (confirm('정말 삭제하시겠습니까?')) {
-                                                        // 삭제 로직
+                                                        handlePostDelete()
                                                     }
                                                 }}
                                             >
