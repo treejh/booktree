@@ -106,13 +106,13 @@ public class PostController {
                                         @ModelAttribute @Valid PostRequestDto postRequestDto) {
         postService.updatePost(postId, postRequestDto);
         return ResponseEntity.ok().build();
-    } // http://localhost:8090/api/v1/posts/delete/50
+    }
 
     @DeleteMapping("/delete/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId) {
         postService.deletePost(postId);
         return ResponseEntity.noContent().build();
-    } // http://localhost:8090/api/v1/posts/patch/50
+    }
 
 //    @GetMapping("/get/likePost/{postId}")
 //    public ResponseEntity<?> getLikePost(@PathVariable("postId") Long postId) {
@@ -157,6 +157,8 @@ public class PostController {
                 .book(post.getBook() != null ? post.getBook() : "알 수 없음")
                 .category(category)
                 .mainCategory(mainCategory)
+                .mainCategoryId(post.getMainCategory().getId()) // 메인 카테고리 ID
+                .categoryId(post.getCategory().getId()) // 카테고리 ID
                 .build();
 
 

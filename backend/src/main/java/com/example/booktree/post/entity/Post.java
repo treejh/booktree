@@ -71,7 +71,7 @@ public class Post extends Auditable {
     @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long view = 0L; //조회수
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category; //개인 카테고리
 

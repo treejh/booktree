@@ -30,5 +30,12 @@ public class PostDetailResponseDto {
     private String author;
     private String book;
 
+    // 새 필드들: ID를 추가a
+    private Long mainCategoryId; // mainCategory의 ID
+    private Long categoryId; // category의 ID
+
+
+
+
 
 }

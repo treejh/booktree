@@ -168,6 +168,23 @@ public class PostService {
         post.setBook(dto.getBook());
         post.setModifiedAt(LocalDateTime.now());
 
+        // mainCategoryId 수정
+        if (dto.getMainCategoryId() != null) {
+            MainCategory mainCategory = mainCategoryRepository.findById(dto.getMainCategoryId())
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MAIN_CATEGORY_NOT_FOUND));
+            post.setMainCategory(mainCategory);
+        }
+
+// categoryId 수정
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+            post.setCategory(category);
+        }
+
+
+
+
         if (dto.getImages() != null && !dto.getImages().isEmpty()) {
             List<String> currentImageUrls = new ArrayList<>();
             for (Image image : post.getImageList()) {
