@@ -465,7 +465,7 @@ export default function DetailPage() {
         }
     }, [post, loginUser])
 
-    // 카테고리 데이터 불러오기
+    // 카테고리 데이터 불러오기 useEffect 수정
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -475,13 +475,16 @@ export default function DetailPage() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    //credentials: 'include',
+                    credentials: 'include', // 이 부분 추가
                 })
 
-                const mainData = await mainResponse.json()
-                if (Array.isArray(mainData)) {
-                    setMainCategories(mainData)
+                if (!mainResponse.ok) {
+                    throw new Error('메인 카테고리를 불러오는데 실패했습니다.')
                 }
+
+                const mainData = await mainResponse.json()
+                console.log('메인 카테고리 데이터:', mainData)
+                setMainCategories(mainData)
 
                 // 유저의 카테고리 가져오기
                 const categoryResponse = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
@@ -492,10 +495,13 @@ export default function DetailPage() {
                     credentials: 'include',
                 })
 
-                const categoryData = await categoryResponse.json()
-                if (Array.isArray(categoryData)) {
-                    setCategories(categoryData)
+                if (!categoryResponse.ok) {
+                    throw new Error('카테고리를 불러오는데 실패했습니다.')
                 }
+
+                const categoryData = await categoryResponse.json()
+                console.log('카테고리 데이터:', categoryData)
+                setCategories(categoryData)
             } catch (error) {
                 console.error('카테고리 로드 에러:', error)
                 setMainCategories([])
@@ -538,12 +544,11 @@ export default function DetailPage() {
         // 현재는 더미 데이터이므로 페이지만 변경합니다
     }
 
-    // 수정 관련 함수 추가
+    // handlePostEdit 함수 수정
     const handlePostEdit = async () => {
         if (!post || !loginUser) return
 
         try {
-            // 블로그 정보 가져오기
             const blogResponse = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
                 method: 'GET',
                 headers: {
@@ -558,37 +563,42 @@ export default function DetailPage() {
 
             const blogData = await blogResponse.json()
 
-            // FormData 생성 및 데이터 추가
+            // FormData 생성
             const formData = new FormData()
-            formData.append('blogId', blogData.blogId)
+
+            // 필수 필드들
+            formData.append('blogId', blogData.blogId.toString())
             formData.append('title', editedPost.title)
             formData.append('content', editedPost.content)
-            //formData.append('mainCategoryId', editedPost.mainCategoryId.toString())
 
-            //
-            formData.append('mainCategoryId', String(editedPost.mainCategoryId))
-            formData.append('categoryId', String(editedPost.categoryId))
+            // 카테고리 ID 처리 수정
+            const mainCategoryId = parseInt(editedPost.mainCategoryId.toString())
+            const categoryId = parseInt(editedPost.categoryId.toString())
 
-            if (editedPost.author) {
-                formData.append('author', editedPost.author)
-            }
-            if (editedPost.book) {
-                formData.append('book', editedPost.book)
-            }
+            // 카테고리 ID들 추가 - 명시적으로 숫자로 변환 후 문자열로 변환
+            formData.append('mainCategoryId', Number(editedPost.mainCategoryId).toString())
+            formData.append('categoryId', Number(editedPost.categoryId).toString())
+
+            console.log('전송되는 카테고리 정보:', {
+                mainCategoryId: editedPost.mainCategoryId,
+                categoryId: editedPost.categoryId,
+            })
+
+            // 기타 필드들
+            if (editedPost.author) formData.append('author', editedPost.author)
+            if (editedPost.book) formData.append('book', editedPost.book)
 
             // 이미지 파일 추가
             editedPost.images.forEach((file) => {
                 formData.append('images', file)
             })
 
-            // 수정 요청 보내기
             const response = await fetch(`http://localhost:8090/api/v1/posts/patch/${post.postId}`, {
                 method: 'PATCH',
                 credentials: 'include',
                 body: formData,
             })
 
-            // 수정 결과 처리
             if (!response.ok) {
                 const errorData = await response.text()
                 console.error('서버 응답:', errorData)
