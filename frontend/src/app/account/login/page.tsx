@@ -14,6 +14,7 @@ export default function LoginPage() {
     const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
     const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_FRONT_BASE_URL}`
     const router = useRouter()
+    const [showAlert, setShowAlert] = useState(false) // 알림 모달 상태
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -38,10 +39,11 @@ export default function LoginPage() {
                 window.location.href = '/'
             } else {
                 console.error('로그인 실패:', response.status)
-                // 에러 처리
+                setShowAlert(true) // 로그인 실패 시 알림 모달 표시
             }
         } catch (error) {
             console.error('로그인 요청 중 오류 발생:', error)
+            setShowAlert(true) // 로그인 실패 시 알림 모달 표시
         }
     }
 
@@ -153,6 +155,23 @@ export default function LoginPage() {
                     </form>
                 </div>
             </div>
+
+            {/* 알림 모달 */}
+            {showAlert && (
+                <div className={styles.alertOverlay}>
+                    <div className={styles.alertModal}>
+                        <p>아이디, 비밀번호를 확인해주세요.</p>
+                        <button
+                            type="button"
+                            onClick={() => setShowAlert(false)} // 알림 닫기
+                            className={styles.alertButton}
+                        >
+                            확인
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <footer className={styles.footer}>
                 <div className={styles.footerDivider}></div>
                 <div className={styles.footerLine}></div>
