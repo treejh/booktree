@@ -60,7 +60,6 @@ export default function WithdrawalPage() {
                     ? `${socialLoginForKakaoUrl}?redirectUrl=${redirectUrlAfterSocialLogin}`
                     : `${socialLoginForGithubUrl}?redirectUrl=${redirectUrlAfterSocialLogin}`
 
-            alert(`${provider === 'kakao' ? '카카오' : 'GitHub'} 인증이 필요합니다. 인증 페이지로 이동합니다.`)
             setIsAuthenticated(true) // 인증 성공 시 상태 업데이트
         } catch (error) {
             console.error(error)

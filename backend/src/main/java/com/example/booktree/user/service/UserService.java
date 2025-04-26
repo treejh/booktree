@@ -231,7 +231,6 @@ public class UserService {
 
     public void deleteUserById(Long userId){
         User user = ownerValidation(userId);
-
         userRepository.delete(user);
     }
 
