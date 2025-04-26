@@ -241,6 +241,12 @@ public class PostService {
         return postRepository.searchAll(keyword, pageable);
     }
 
+    //해당되는 블로그 아이디에서, search에 해당되는 post 가져오기
+    public Page<Post> searchBlogPost(Long blogId, String search, Pageable pageable) {
+        return postRepository.findByBlogIdAndTitleContaining(blogId, search, pageable);
+    }
+
+
     //팔로잉 한 유저들의 게시글을 최신순으로 가져오기
     @Transactional
     public Page<Post> getPostsFromFollowing(Pageable pageable){
@@ -318,6 +324,8 @@ public class PostService {
         }
         return response;
     }
+
+
 
     // 회원별로 게시글 목록을 조회
     public List<PostResponseDto> getPostsByUser(Long userId) {
