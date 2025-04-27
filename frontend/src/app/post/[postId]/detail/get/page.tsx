@@ -68,7 +68,8 @@ export default function DetailPage() {
     const router = useRouter()
     const { postId } = useParams()
     // 로그인 상태와 토큰 정보 함께 꺼내기
-    const { isLoginUserPending, isLogin, loginUser } = useGlobalLoginUser()
+    const { isLogin, loginUser } = useGlobalLoginUser()
+    const API = process.env.NEXT_PUBLIC_API_BASE_URL
 
     // 1. 게시물 관련 상태
     const [post, setPost] = useState<PostDetail | null>(null)
@@ -79,25 +80,97 @@ export default function DetailPage() {
     const [editedPost, setEditedPost] = useState({ title: '', content: '' })
     const [postLiked, setPostLiked] = useState(false)
 
-    // API 엔드포인트
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8090'
-
-    // 2. 댓글 관련 상태
+    //  댓글 / 대댓글 상태
     const [comments, setComments] = useState<Comment[]>([])
-    const [commentInput, setCommentInput] = useState('')
-    const [likedComments, setLikedComments] = useState<{ [k: number]: boolean }>({})
+    const [replyInputs, setReplyInputs] = useState<{ [key: string]: string }>({})
+    const [likedComments, setLikedComments] = useState<{ [cid: number]: boolean }>({})
+    const [likedReplies, setLikedReplies] = useState<{ [rid: number]: boolean }>({})
+    // 댓글 입력값
+    const [commentInput, setCommentInput] = useState<string>('')
+
+    // 댓글 불러오기·등록·수정 중 발생한 에러 메시지
+    const [commentError, setCommentError] = useState<string | null>(null)
+
+    // “어떤 댓글을 편집 중인지” ID
     const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
-    const [editedCommentContent, setEditedCommentContent] = useState('')
-    const [commentError, setCommentError] = useState<string | null>(null) // → 댓글 로드 에러
+
+    // 편집 중인 댓글의 임시 내용
+    const [editedCommentContent, setEditedCommentContent] = useState<string>('')
+
+    // 열린 대댓글 폼 키
+    const [activeNestedReply, setActiveNestedReply] = useState<string | null>(null)
 
     // 3. 답글 관련 상태
-    const [replyInputs, setReplyInputs] = useState<{ [parentKey: string]: string }>({})
 
     const [activeReplyId, setActiveReplyId] = useState<number | null>(null)
     const [editingReplyId, setEditingReplyId] = useState<number | null>(null)
     const [editedReplyContent, setEditedReplyContent] = useState('')
     const [hasReplied, setHasReplied] = useState<{ [key: number]: boolean }>({})
-    const [likedReplies, setLikedReplies] = useState<{ [key: number]: boolean }>({})
+
+    // 1) 댓글 좋아요
+    const handleCommentLike = async (commentId: number) => {
+        if (!isLogin) return router.push('/login')
+        const res = await fetch(`${API}/api/v1/comments/${commentId}/like`, {
+            method: 'POST',
+            credentials: 'include',
+        })
+        if (!res.ok) return alert('댓글 좋아요 실패')
+        const { likeCount } = await res.json()
+        setComments((cs) => cs.map((c) => (c.id === commentId ? { ...c, likes: likeCount } : c)))
+        setLikedComments((l) => ({ ...l, [commentId]: !l[commentId] }))
+    }
+
+    // 2) 대댓글 생성
+    const handleReplySubmit = async (commentId: number) => {
+        const content = replyInputs[commentId]?.trim()
+        if (!content) return
+        if (!isLogin) return router.push('/login')
+
+        const res = await fetch(`${API}/api/v1/replies/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ commentId, content }),
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ message: 'no body' }))
+            console.error('reply create failed:', err)
+            return alert('답글 등록 실패: ' + err.message)
+        }
+        const raw = await res.json()
+        const newReply: Reply = {
+            id: raw.replyId,
+            author: raw.userEmail,
+            date: new Date(raw.createdAt).toLocaleDateString(),
+            content: raw.content,
+            likes: 0,
+        }
+        setComments((cs) => cs.map((c) => (c.id === commentId ? { ...c, replies: [...c.replies, newReply] } : c)))
+        setReplyInputs({ ...replyInputs, [commentId]: '' })
+    }
+
+    // 3) 대댓글 좋아요
+    const handleReplyLike = async (commentId: number, replyId: number) => {
+        if (!isLogin) return router.push('/login')
+        const res = await fetch(`${API}/api/v1/replies/${replyId}/like`, {
+            method: 'POST',
+            credentials: 'include',
+        })
+        if (!res.ok) return alert('대댓글 좋아요 실패')
+        const { likeCount } = await res.json()
+        setComments((cs) =>
+            cs.map((c) =>
+                c.id === commentId
+                    ? {
+                          ...c,
+                          replies: c.replies.map((r) => (r.id === replyId ? { ...r, likes: likeCount } : r)),
+                      }
+                    : c,
+            ),
+        )
+        setLikedReplies((l) => ({ ...l, [replyId]: !l[replyId] }))
+    }
 
     // 4. UI 관련 상태
     const [showPopover, setShowPopover] = useState(false)
@@ -371,30 +444,49 @@ export default function DetailPage() {
         }
     }
 
-    // 답글 제출
-    const handleReplySubmit = (commentId: number) => {
-        if (!replyInputs[commentId]?.trim()) return
-        if (hasReplied[commentId]) return
+    function toggleNestedReplyForm(commentId: number, replyId: number) {
+        const key = `c${commentId}-r${replyId}`
+        setActiveNestedReply((prev) => (prev === key ? null : key))
+        if (!replyInputs[key]) setReplyInputs({ ...replyInputs, [key]: '' })
+    }
 
+    async function handleNestedReplySubmit(commentId: number, replyId: number) {
+        const key = `c${commentId}-r${replyId}`
+        const content = replyInputs[key]?.trim()
+        if (!content) return
+        if (!isLogin) return router.push('/login')
+
+        const res = await fetch(`${API}/api/v1/replies/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ commentId, content }),
+        })
+        if (!res.ok) return alert('대댓글 등록 실패')
+
+        const raw = await res.json()
         const newReply: Reply = {
-            id: Date.now(),
-            author: loginUser.username,
-            date: new Date()
-                .toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                })
-                .replace(/\. /g, '.')
-                .replace(/\.$/, ''),
-            content: replyInputs[commentId],
+            id: raw.replyId,
+            author: raw.userEmail,
+            date: new Date(raw.createdAt).toLocaleDateString(),
+            content: raw.content,
             likes: 0,
         }
 
-        setComments(comments.map((c) => (c.id === commentId ? { ...c, replies: [...c.replies, newReply] } : c)))
-        setReplyInputs({ ...replyInputs, [commentId]: '' })
-        setActiveReplyId(null)
-        setHasReplied({ ...hasReplied, [commentId]: true })
+        setComments((cs) =>
+            cs.map((c) =>
+                c.id === commentId
+                    ? {
+                          ...c,
+                          replies: c.replies.map((r) =>
+                              r.id === replyId ? { ...r, replies: [...((r as any).replies ?? []), newReply] } : r,
+                          ),
+                      }
+                    : c,
+            ),
+        )
+        setReplyInputs({ ...replyInputs, [key]: '' })
+        setActiveNestedReply(null)
     }
 
     const handleReplyCancel = () => setActiveReplyId(null)
@@ -730,16 +822,11 @@ export default function DetailPage() {
                                             value={commentInput}
                                             onChange={(e) => setCommentInput(e.target.value)}
                                         />
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                        >
-                                            등록
-                                        </button>
+                                        <button type="submit">댓글 등록</button>
                                     </form>
                                 ) : (
                                     <div className="mb-6 text-center text-gray-600">
-                                        <p>댓글 작성은 로그인 후 가능합니다.</p>
+                                        댓글 작성은 로그인 후 가능합니다.
                                     </div>
                                 )}
 
@@ -880,10 +967,9 @@ export default function DetailPage() {
                                                                     <div className="flex space-x-2">
                                                                         {/* 연필 아이콘: 수정 모드로 전환 */}
                                                                         <button
-                                                                            onClick={() => {
-                                                                                setEditingCommentId(comment.id)
-                                                                                setEditedCommentContent(comment.content)
-                                                                            }}
+                                                                            onClick={() =>
+                                                                                handleCommentLike(comment.id)
+                                                                            }
                                                                             className="text-gray-400 hover:text-gray-600"
                                                                         >
                                                                             {likedComments[comment.id] ? (
@@ -919,29 +1005,56 @@ export default function DetailPage() {
                                                                         </button>
                                                                         {!hasReplied[comment.id] && (
                                                                             <button
-                                                                                className="flex items-center"
+                                                                                type="button"
+                                                                                className="flex items-center text-gray-600 hover:text-gray-800"
                                                                                 onClick={() =>
                                                                                     toggleReplyForm(comment.id)
                                                                                 }
                                                                             >
-                                                                                <svg
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                    className="h-4 w-4 mr-1"
-                                                                                    fill="none"
-                                                                                    viewBox="0 0 24 24"
-                                                                                    stroke="currentColor"
-                                                                                >
-                                                                                    <path
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                        strokeWidth={2}
-                                                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                                                                                    />
-                                                                                </svg>
+                                                                                {/* 대댓글 아이콘 */}
                                                                                 답글
                                                                             </button>
                                                                         )}
                                                                     </div>
+                                                                    {activeReplyId === comment.id && (
+                                                                        <div className="mt-2 ml-8">
+                                                                            <textarea
+                                                                                rows={2}
+                                                                                className="w-full p-2 border rounded mb-2"
+                                                                                placeholder="답글을 입력하세요."
+                                                                                value={replyInputs[comment.id] || ''}
+                                                                                onChange={(e) =>
+                                                                                    setReplyInputs({
+                                                                                        ...replyInputs,
+                                                                                        [comment.id]: e.target.value,
+                                                                                    })
+                                                                                }
+                                                                            />
+                                                                            <div className="flex space-x-2">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="px-3 py-1 bg-green-600 text-white rounded"
+                                                                                    onClick={async () => {
+                                                                                        await handleReplySubmit(
+                                                                                            comment.id,
+                                                                                        )
+                                                                                        setActiveReplyId(null)
+                                                                                    }}
+                                                                                >
+                                                                                    등록
+                                                                                </button>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded"
+                                                                                    onClick={() =>
+                                                                                        setActiveReplyId(null)
+                                                                                    }
+                                                                                >
+                                                                                    취소
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                 </>
                                                             )}
                                                         </div>
@@ -997,40 +1110,11 @@ export default function DetailPage() {
                                                         )}
                                                     </div>
 
-                                                    {/* 답글 입력 폼 */}
-                                                    {activeReplyId === comment.id && (
-                                                        <div className="mt-4 pl-5 border-l-2 border-gray-200">
-                                                            <textarea
-                                                                className="w-full p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-500"
-                                                                rows={2}
-                                                                placeholder="답글을 작성해주세요."
-                                                                value={replyInputs[comment.id] || ''}
-                                                                onChange={(e) =>
-                                                                    handleReplyInputChange(comment.id, e.target.value)
-                                                                }
-                                                            ></textarea>
-                                                            <div className="flex justify-end mt-2 space-x-2">
-                                                                <button
-                                                                    onClick={handleReplyCancel}
-                                                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                                                                >
-                                                                    취소
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleReplySubmit(comment.id)}
-                                                                    className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700"
-                                                                >
-                                                                    등록
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
                                                     {/* 답글 목록 */}
                                                     {comment.replies.length > 0 && (
                                                         <div className="mt-4 pl-5 border-l-2 border-gray-200 space-y-4">
                                                             {comment.replies.map((reply) => (
-                                                                <div key={reply.id} className="pt-2">
+                                                                <div key={reply.id} className="ml-8 mb-4">
                                                                     {' '}
                                                                     {/* ← key 에 reply.id */}
                                                                     <div className="flex items-start">
@@ -1050,14 +1134,57 @@ export default function DetailPage() {
                                                                                         <div className="relative">
                                                                                             <button
                                                                                                 onClick={() =>
-                                                                                                    toggleCommentPopover(
-                                                                                                        reply.author,
+                                                                                                    toggleNestedReplyForm(
+                                                                                                        comment.id,
+                                                                                                        reply.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="font-medium text-sm hover:text-[#2E804E] transition-colors duration-200"
+                                                                                                className="text-gray-400 hover:text-gray-600"
                                                                                             >
-                                                                                                {reply.author}
+                                                                                                대댓글
                                                                                             </button>
+
+                                                                                            {activeNestedReply ===
+                                                                                                `c${comment.id}-r${reply.id}` && (
+                                                                                                <div className="mt-2 ml-4">
+                                                                                                    <textarea
+                                                                                                        rows={2}
+                                                                                                        placeholder="대댓글을 입력하세요"
+                                                                                                        className="w-full p-2 border rounded mb-2"
+                                                                                                        value={
+                                                                                                            replyInputs[
+                                                                                                                `c${comment.id}-r${reply.id}`
+                                                                                                            ] || ''
+                                                                                                        }
+                                                                                                        onChange={(e) =>
+                                                                                                            setReplyInputs(
+                                                                                                                {
+                                                                                                                    ...replyInputs,
+                                                                                                                    [comment.id]:
+                                                                                                                        e
+                                                                                                                            .target
+                                                                                                                            .value,
+                                                                                                                },
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                    <div className="flex space-x-2">
+                                                                                                        <button type="submit">
+                                                                                                            등록
+                                                                                                        </button>
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            onClick={() =>
+                                                                                                                setActiveReplyId(
+                                                                                                                    null,
+                                                                                                                )
+                                                                                                            }
+                                                                                                        >
+                                                                                                            취소
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            )}
                                                                                             {activePopoverAuthor ===
                                                                                                 reply.author && (
                                                                                                 <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
