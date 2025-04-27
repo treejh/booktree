@@ -96,6 +96,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ postId, content: commentInput.trim() }),
             })
+
             if (!res.ok) throw new Error('댓글 생성 실패')
             const raw = await res.json()
 
