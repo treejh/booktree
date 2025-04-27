@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import React from 'react'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 import { CommentsSection } from '@/app/components/CommentsSection'
+import Link from 'next/link'
 
 // 1. 카테고리 관련 인터페이스 추가
 interface Category {
@@ -46,6 +47,9 @@ interface PostDetail {
     category: string
     book: string
     images?: string[]
+
+    //카테고리 확인 유저 아이디
+    causerId: number
 }
 
 interface RelatedPost {
@@ -74,6 +78,7 @@ export default function DetailPage() {
     const [error, setError] = useState<string | null>(null)
     const [post, setPost] = useState<PostDetail | null>(null)
     const [isPostEditing, setIsPostEditing] = useState(false)
+    const [categories, setCategories] = useState<Category>([])
     const [editedPost, setEditedPost] = useState({
         title: '',
         content: '',
@@ -117,6 +122,7 @@ export default function DetailPage() {
                 const formattedPost: PostDetail = {
                     postId: data.postId,
                     title: data.title,
+                    causerId: data.userId,
                     content: data.content,
                     username: data.username,
                     imageUrls: data.imageUrls || [],
@@ -158,6 +164,39 @@ export default function DetailPage() {
             setIsAuthor(post.username === loginUser.username)
         }
     }, [post, loginUser])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/${post?.causerId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('카테고리 : ', data)
+                setCategories(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (post?.causerId) {
+            fetchCategories()
+        }
+    }, [post?.causerId])
 
     useEffect(() => {
         const fetchTwoCategories = async () => {
@@ -1004,19 +1043,32 @@ export default function DetailPage() {
                         ) : (
                             // 일반 모드일 때 보여줄 카테고리 정보
                             <div>
-                                <ul className="space-y-2">
-                                    {/* 카테고리 */}
-                                    <li className="text-gray-700 mb-4">
-                                        <span className="font-semibold block">카테고리</span>
-                                        <span>{post.category}</span>
-                                    </li>
-                                </ul>
                                 <ul className="space-y-2 ">
                                     {/* 메인카테고리 */}
+                                    <h2 className="text-l font-bold mb-4">메인 카테고리</h2>
                                     <li className="text-gray-700 mb-10">
-                                        <span className="font-semibold block">메인 카테고리</span>
-                                        <span>{post.mainCategory}</span>
+                                        <span className="inline-block py-1 px-4 rounded-full text-white text-sm font-semibold bg-[#2E804E] hover:bg-[#236b3e]">
+                                            {post.mainCategory}
+                                        </span>
                                     </li>
+                                </ul>
+                                <h2 className="text-l font-bold mb-4">
+                                    {post.username} <br />
+                                    카테고리 목록
+                                </h2>
+                                <div className="border-b border-gray-200 mb-4"></div>
+                                <ul className="space-y-2">
+                                    {categories.map((category) => (
+                                        <li key={category.id}>
+                                            <Link
+                                                href={`/category/${category.id}`}
+                                                className="flex justify-between items-center text-gray-700 hover:text-gray-900"
+                                            >
+                                                <span>{category.name}</span>
+                                                <span className="text-gray-500">({category.postCount})</span>
+                                            </Link>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         )}
