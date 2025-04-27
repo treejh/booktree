@@ -142,7 +142,9 @@ public class SecurityConfigBookTree {
 
                         //카테고리 (개인)
                         .requestMatchers(
-                            "/api/v1/categories/get/**"
+                            "/api/v1/categories/get/**",
+                                    "/api/v1/categories/get/category/**"
+
                         ).permitAll()
                         .requestMatchers(
                                 "/api/v1/categories/create",

@@ -439,6 +439,7 @@ export default function MyPage() {
                         <div
                             key={category.id}
                             className="p-6 hover:bg-gray-50 transition cursor-pointer flex justify-between items-center"
+                            onClick={() => router.push(`/category/${category.id}`)} // 카테고리 클릭 시 이동
                         >
                             <div className="flex-1">
                                 {editingCategoryId === category.id ? (
@@ -449,28 +450,38 @@ export default function MyPage() {
                                         className="border p-2 rounded w-full"
                                     />
                                 ) : (
-                                    <h3
-                                        className="font-medium"
-                                        onClick={() => handleCategoryClick(category.id, category.name)}
-                                    >
-                                        {category.name}
-                                    </h3>
+                                    <h3 className="font-medium">{category.name}</h3>
                                 )}
                             </div>
                             <div className="flex space-x-2 text-gray-500">
                                 {editingCategoryId === category.id ? (
                                     <button
-                                        onClick={() => saveEditedCategory(category.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
+                                            saveEditedCategory(category.id)
+                                        }}
                                         className="text-green-600 font-semibold"
                                     >
                                         완료
                                     </button>
                                 ) : (
-                                    <button onClick={() => startEditingCategory(category.id, category.name)}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
+                                            startEditingCategory(category.id, category.name)
+                                        }}
+                                    >
                                         수정
                                     </button>
                                 )}
-                                <button onClick={() => handleDeleteCategory(category.id)}>삭제</button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
+                                        handleDeleteCategory(category.id)
+                                    }}
+                                >
+                                    삭제
+                                </button>
                             </div>
                         </div>
                     ))}

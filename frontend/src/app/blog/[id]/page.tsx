@@ -710,7 +710,7 @@ export default function BlogPage() {
                         {categories.map((category) => (
                             <li key={category.id}>
                                 <Link
-                                    href={`/blog/category/${category.name}`}
+                                    href={`/category/${category.id}`} // 카테고리 ID를 기반으로 이동
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"
                                 >
                                     <span>{category.name}</span>

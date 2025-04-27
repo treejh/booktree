@@ -84,4 +84,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     Page<Post> findPopularPostsByBlogId(@Param("blogId") Long blogId, Pageable pageable);
 
 
+    Page<Post> findByCategoryId(Long categoryId, Pageable pageable);
+
+
+
 }
