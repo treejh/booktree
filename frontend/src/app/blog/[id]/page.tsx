@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import AnnouncementModal from '../../components/AnnouncementModal'
 import { LoginUserContext, useGlobalLoginUser, useLoginUser } from '@/stores/auth/loginMember'
+import ScrapPosts from '../../components/ScrapPosts'
 
 interface Post {
     id: number
@@ -497,35 +498,33 @@ export default function BlogPage() {
                         </div>
 
                         <div className="mt-6 flex gap-4 justify-center items-center">
-                            {userId !== loginUser?.id && (
-                                <button
-                                    className={`px-4 py-2 rounded-md transition-colors ${
-                                        isFollowing
-                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            : 'bg-[#2E804E] text-white hover:bg-[#247040]'
-                                    }`}
-                                    onClick={async () => {
-                                        if (!isLogin) {
-                                            alert('로그인이 필요합니다.')
-                                            router.push('/account/login')
-                                            return
-                                        }
+                            <button
+                                className={`px-4 py-2 rounded-md transition-colors ${
+                                    isFollowing
+                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        : 'bg-[#2E804E] text-white hover:bg-[#247040]'
+                                }`}
+                                onClick={async () => {
+                                    if (!isLogin) {
+                                        alert('로그인이 필요합니다.')
+                                        router.push('/account/login')
+                                        return
+                                    }
 
-                                        try {
-                                            if (isFollowing) {
-                                                await unfollowUser(Number(userId)) // 언팔로우 요청
-                                            } else {
-                                                await followUser(Number(userId)) // 팔로우 요청
-                                            }
-                                            setIsFollowing(!isFollowing) // 상태 반전
-                                        } catch (error) {
-                                            console.error('팔로우/언팔로우 실패:', error)
+                                    try {
+                                        if (isFollowing) {
+                                            await unfollowUser(Number(userId)) // 언팔로우 요청
+                                        } else {
+                                            await followUser(Number(userId)) // 팔로우 요청
                                         }
-                                    }}
-                                >
-                                    {isFollowing ? '팔로잉' : '팔로우'}
-                                </button>
-                            )}
+                                        setIsFollowing(!isFollowing) // 상태 반전
+                                    } catch (error) {
+                                        console.error('팔로우/언팔로우 실패:', error)
+                                    }
+                                }}
+                            >
+                                {isFollowing ? '팔로잉' : '팔로우'}
+                            </button>
                             <button
                                 onClick={() => setIsAnnouncementOpen(true)}
                                 className="bg-[#2E804E] text-white p-2 rounded-md hover:bg-[#247040] transition-colors flex items-center justify-center"
@@ -588,16 +587,19 @@ export default function BlogPage() {
                                     팔로잉
                                 </span>
                             </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('scraps')}
-                            >
-                                <span className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}>
-                                    스크랩
-                                </span>
-                            </li>
+                            {/* 스크랩 탭: 블로그 주인만 표시 */}
+                            {isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                                <li
+                                    className={`pb-2 border-b-2 ${
+                                        activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
+                                    } cursor-pointer`}
+                                    onClick={() => handleTabChange('scraps')}
+                                >
+                                    <span className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}>
+                                        스크랩
+                                    </span>
+                                </li>
+                            )}
                         </ul>
                     </nav>
                     {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
@@ -616,42 +618,12 @@ export default function BlogPage() {
                             {activeTab === 'popular' && '인기 게시물'}
                             {activeTab === 'bookmarks' && '팔로잉 게시글'}
                         </h2>
-                        {currentPosts.map((post) => (
-                            <article
-                                key={post.id}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow "
-                            >
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="bg-gray-100 px-2 py-1 rounded text-sm">{post.category}</span>
-                                        <span className="text-gray-500 text-sm">{post.date}</span>
-                                    </div>
-                                    <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-                                    <p className="text-gray-600 mb-4">{post.description}</p>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            <span>조회 {post.views}</span>
-                                            <span>댓글 {post.comments}</span>
-                                        </div>
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            <Link href={`/post/edit/${post.id}`}>
-                                                <span className="hover:text-gray-900 cursor-pointer">수정</span>
-                                            </Link>
-
-                                            <span
-                                                onClick={() => handleDelete(post.id)}
-                                                className="hover:text-gray-900 cursor-pointer"
-                                            >
-                                                삭제
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
+                        {activeTab === 'scraps' && isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                            <ScrapPosts userId={Number(blogId)} />
+                        )}
                     </div>
                     {/* 페이지네이션 */}
-                    <div className="flex justify-center gap-2 mt-8">
+                    {/* <div className="flex justify-center gap-2 mt-8">
                         <button
                             className="px-4 py-2 border rounded hover:bg-gray-50"
                             onClick={() => handlePageChange(currentPage - 1)}
@@ -677,11 +649,11 @@ export default function BlogPage() {
                         >
                             Next
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </main>
 
-            <aside className="w-64 flex-shrink-0 sticky top-8 self-start mr-8">
+            <aside className="w-55 flex-shrink-0 sticky top-8 self-start mr-8">
                 <div className="bg-white rounded-xl shadow-lg p-6">
                     {/* 게시글 검색 섹션 */}
                     <div className="mb-6">
@@ -710,7 +682,7 @@ export default function BlogPage() {
                         {categories.map((category) => (
                             <li key={category.id}>
                                 <Link
-                                    href={`/category/${category.id}`} // 카테고리 ID를 기반으로 이동
+                                    href={`/blog/category/${category.name}`}
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"
                                 >
                                     <span>{category.name}</span>
