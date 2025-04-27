@@ -182,7 +182,7 @@ const CategoryDetailPage = () => {
 
                 <div className="lg:w-1/3">
                     <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h2 className="text-lg font-medium mb-4">인기 {getCategoryTitle()} 게시글 TOP 5</h2>
+                        <h2 className="text-lg font-medium mb-4">인기 {getCategoryTitle()} 게시글 조회수 TOP 5</h2>
 
                         <div className="space-y-0">
                             {popularPosts.slice(0, 5).map((post, index) => (
