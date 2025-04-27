@@ -11,11 +11,10 @@ export default function EditProfilePage() {
 
     const [password, setPassword] = useState('')
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const socialLoginForKakaoUrl = `http://localhost:8090/oauth2/authorization/kakao`
-    const socialLoginForGithubUrl = `http://localhost:8090/oauth2/authorization/github`
-    const redirectUrlAfterSocialLogin = 'http://localhost:3000/account/edit'
+    const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao`
+    const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
+    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_FRONT_BASE_URL}`
     const [provider, setProvider] = useState<string | null>(null)
-
 
     const [phoneNumber, setPhoneNumber] = useState('')
     const [emailLocalPart, setEmailLocalPart] = useState('')
@@ -33,6 +32,9 @@ export default function EditProfilePage() {
         phone: false,
         username: false,
     })
+
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
+    const [selectedImage, setSelectedImage] = useState<File | null>(null)
 
     useEffect(() => {
         if (!isLogin) {
@@ -54,7 +56,7 @@ export default function EditProfilePage() {
 
     const handlePasswordAuth = async () => {
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/validation/password', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/validation/password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,13 +113,16 @@ export default function EditProfilePage() {
             setFormData((prev) => ({ ...prev, email }))
 
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/users/patch/email?email=${email}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/email?email=${email}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('이메일 변경에 실패했습니다.')
@@ -131,7 +136,6 @@ export default function EditProfilePage() {
         }
 
         if (field === 'phone') {
-
             const phoneRegex = /^\d{3}-\d{4}-\d{4}$/
 
             if (!phoneRegex.test(formData.phone)) {
@@ -140,16 +144,14 @@ export default function EditProfilePage() {
             }
 
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/users/patch/phoneNumber`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/phoneNumber`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
                     body: JSON.stringify({
-
                         phoneNumber: formData.phone,
-
                     }),
                 })
 
@@ -167,7 +169,7 @@ export default function EditProfilePage() {
         if (field === 'username') {
             try {
                 const response = await fetch(
-                    `http://localhost:8090/api/v1/users/patch/username?username=${formData.username}`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/username?username=${formData.username}`,
                     {
                         method: 'PATCH',
                         headers: {
@@ -201,6 +203,42 @@ export default function EditProfilePage() {
         }))
     }
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setSelectedImage(file)
+            setImagePreview(URL.createObjectURL(file)) // 이미지 미리보기 설정
+        }
+    }
+
+    const handleImageUpload = async () => {
+        if (!selectedImage) {
+            alert('이미지를 선택해주세요.')
+            return
+        }
+
+        const formData = new FormData()
+        formData.append('images', selectedImage)
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/image`, {
+                method: 'PATCH',
+                credentials: 'include',
+                body: formData,
+            })
+
+            if (!response.ok) {
+                throw new Error('이미지 업로드에 실패했습니다.')
+            }
+
+            alert('이미지가 성공적으로 업로드되었습니다!')
+            setSelectedImage(null)
+            setImagePreview(null)
+        } catch (error) {
+            console.error(error)
+            alert('이미지 업로드 중 오류가 발생했습니다. 다시 시도해주세요.')
+        }
+    }
 
     if (!isAuthenticated) {
         return (
@@ -267,12 +305,65 @@ export default function EditProfilePage() {
         )
     }
 
-
     return (
         <div className={styles.container}>
             <div className={styles.mainWrapper}>
                 <div className={styles.formContainer}>
                     <h1 className={styles.title}>회원정보 수정</h1>
+
+                    {/* 이미지 업로드 섹션 */}
+                    <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
+                        <div className="flex flex-col items-center">
+                            <label htmlFor="profileImage" className={styles.label} style={{ marginBottom: '0.5rem' }}>
+                                프로필 이미지
+                            </label>
+                            {imagePreview ? (
+                                <img
+                                    src={imagePreview}
+                                    alt="미리보기"
+                                    className="w-32 h-32 rounded-full object-cover mb-4"
+                                />
+                            ) : (
+                                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center mb-4">
+                                    {loginUser.image ? (
+                                        <img
+                                            src={loginUser.image}
+                                            alt="프로필 이미지"
+                                            className="w-full h-full object-cover rounded-full"
+                                        />
+                                    ) : (
+                                        <span className="text-gray-500 text-sm">이미지 없음</span>
+                                    )}
+                                </div>
+                            )}
+                            <div className="flex items-center">
+                                <label
+                                    htmlFor="profileImage"
+                                    className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm cursor-pointer hover:bg-gray-100 transition"
+                                >
+                                    파일 선택
+                                </label>
+                                <input
+                                    type="file"
+                                    id="profileImage"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="hidden" /* 기본 파일 입력 숨기기 */
+                                />
+                                <span className="ml-2 text-gray-500 text-sm">
+                                    {selectedImage ? selectedImage.name : '선택된 파일 없음'}
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleImageUpload}
+                                className="mt-4 px-4 py-2 bg-[#2E804E] text-white rounded-md hover:bg-[#256d41] transition"
+                            >
+                                이미지 업로드
+                            </button>
+                        </div>
+                    </div>
+
                     <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
                         <label htmlFor="email" className={styles.label}>
                             이메일

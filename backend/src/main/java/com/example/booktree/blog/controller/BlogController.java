@@ -60,7 +60,7 @@ public class BlogController {
     }
 
     @GetMapping("/get/findUserId/{blogId}")
-    public ResponseEntity<?> findBlogByUserId(@PathVariable Long blogId) {
+    public ResponseEntity<?> findUserIdByBlogId(@PathVariable Long blogId) {
         Long response = blogService.findUserIdByBlogId(blogId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
