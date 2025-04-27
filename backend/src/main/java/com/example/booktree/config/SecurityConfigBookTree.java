@@ -74,7 +74,7 @@ public class SecurityConfigBookTree {
 
                         //게시글 api/v1/posts
                         .requestMatchers("/api/v1/users/get/profile/**","/api/v1/posts/search"
-                                ,"api/v1/posts/get/**"
+                                ,"api/v1/posts/get/**","/api/v1/posts/search/**"
 
 
                         ).permitAll()

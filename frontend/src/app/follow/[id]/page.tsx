@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 
 interface User {
     id: number
@@ -112,6 +113,7 @@ export default function FollowPage() {
                 avatar: '/avatars/default.jpg', // 나중에 API에서 내려주면 교체
                 isFollowing: user.following,
                 isMe: user.me,
+                blogId: user.blogId,
             }))
             setUsers(transformed)
             console.log('user : ', transformed)
@@ -123,6 +125,7 @@ export default function FollowPage() {
                 avatar: '/avatars/default.jpg',
                 isFollowing: user.following,
                 isMe: user.me,
+                blogId: user.blogId,
             }))
             setUsers(transformed)
             console.log('user : ', transformed)
@@ -241,14 +244,17 @@ export default function FollowPage() {
                             className="flex items-center justify-between p-4 border rounded-lg border-gray-300"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                                    {/* Avatar placeholder */}
-                                </div>
-                                <div>
-                                    <h3 className="font-bold">{user.name}</h3>
-                                    <p className="text-gray-600">{user.username}</p>
-                                </div>
+                                <Link href={`/blog/${user.blogId}`} className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
+                                        {/* Avatar Placeholder */}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold">{user.name}</h3>
+                                        <p className="text-gray-600">{user.username}</p>
+                                    </div>
+                                </Link>
                             </div>
+
                             {!user.isMe && (
                                 <button
                                     onClick={() => handleFollow(user.id, user.isFollowing)}

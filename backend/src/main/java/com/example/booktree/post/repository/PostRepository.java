@@ -65,6 +65,11 @@ public interface PostRepository extends JpaRepository<Post,Long> {
             Pageable pageable
     );
 
+    List<Post> findTop3ByOrderByViewDesc();
+
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId")
+    Long countPostsByUserId(@Param("userId") Long userId);
+
     @Query("""
       SELECT p
       FROM Post p

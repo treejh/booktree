@@ -122,7 +122,6 @@ export default function DetailPage() {
     const [userId, setUserId] = useState<number>()
     const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
     const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
-    const [categories, setCategories] = useState<Category[]>([])
 
     // 3. 모든 useEffect Hooks를 여기에 모아서 선언
     useEffect(() => {
@@ -635,96 +634,6 @@ export default function DetailPage() {
         document.addEventListener('mousedown', handleOutside)
         return () => document.removeEventListener('mousedown', handleOutside)
     }, [showPopover, activePopoverAuthor])
-
-    // 게시글 불러오기
-    useEffect(() => {
-        const fetchUserId = async () => {
-            try {
-                setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${postId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-
-                if (!response.ok) {
-                    throw new Error('유저 ID를 불러오는데 실패했습니다다.')
-                }
-
-                const data = await response.json()
-                console.log('UserId : ', data)
-                setUserId(data)
-            } catch (err) {
-                console.error('Error fetching post:', err)
-                setError(err instanceof Error ? err.message : '유저 ID를 불러오지 못했습니다')
-            }
-        }
-        fetchUserId()
-    }, [postId])
-
-    useEffect(() => {
-        const fetchIsFollowing = async () => {
-            if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
-
-            try {
-                setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                })
-
-                if (!response.ok) {
-                    throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
-                }
-
-                const data = await response.json()
-                console.log('팔로우 여부:', data)
-                setIsFollowing(data)
-            } catch (err) {
-                console.error('Error fetching isFollowing:', err)
-                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchIsFollowing()
-    }, [userId])
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/categories/get/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-
-                if (!response.ok) {
-                    throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
-                }
-
-                const data = await response.json()
-                console.log('카테고리 : ', data)
-                setCategories(data)
-                console.log(categories)
-            } catch (err) {
-                console.error('Error fetching post:', err)
-                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
-            }
-        }
-
-        // ✅ userId가 존재할 때만 호출되도록 조건 추가
-        if (userId) {
-            fetchCategories()
-        }
-    }, [userId])
 
     // 게시글을 불러오는 함수
 

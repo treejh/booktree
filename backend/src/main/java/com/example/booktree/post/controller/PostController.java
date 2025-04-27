@@ -5,14 +5,12 @@ import com.example.booktree.exception.ExceptionCode;
 //import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
-import com.example.booktree.post.dto.response.PostDetailResponseDto;
-import com.example.booktree.post.dto.response.PostFollowingPageDto;
+import com.example.booktree.post.dto.response.*;
 
 
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
 import com.example.booktree.post.dto.response.PostFollowingPageDto;
 
-import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
 import jakarta.transaction.Transactional;
@@ -261,6 +259,11 @@ public class PostController {
                         .title(post.getTitle())
                         .viewCount(post.getView())
                         .createdAt(post.getCreatedAt())
+                        .imageUrl(
+                                post.getImageList().isEmpty()
+                                        ? null
+                                        : post.getImageList().get(0).getImageUrl()
+                        )
                         .modifiedAt(post.getModifiedAt())
                         .build()
                 );
@@ -309,6 +312,20 @@ public class PostController {
 
         return new ResponseEntity<>(response,HttpStatus.OK);
 
+    }
+
+    @GetMapping("/get/postcount/{userId}")
+    public ResponseEntity<?> getPostCountByUserId(@PathVariable("userId") Long userId) {
+
+        Long response = postService.findPostCount(userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get/top3/post")
+    public ResponseEntity<?> getTop3Posts() {
+
+        List<PostTop3ResponseDto> reponse = postService.getTop3PostsByView();
+        return new ResponseEntity<>(reponse, HttpStatus.OK);
     }
 
 
