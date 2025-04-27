@@ -101,10 +101,11 @@ export default function BlogPage() {
                     },
                 )
                 if (!response.ok) {
-                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                    throw new Error('팔로우 수를 가져오는 데 실패했습니다.')
                 }
                 const data = await response.json()
                 setFollowCount(data) // 가져온 데이터를 상태에 저장
+                console.log('FollowCount : ', data)
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     // err가 Error 인스턴스인지 확인
@@ -131,7 +132,7 @@ export default function BlogPage() {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        credentials: 'include', // 쿠키를 포함시키기 위한 설정
+                        // credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
                 )
 

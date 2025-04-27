@@ -15,6 +15,7 @@ interface PostDetail {
     likeCount: number
     createdAt: string
     modifiedAt: string
+    // 추가되는 필드들
     author: string
     mainCategoryId: number
     blogId: number
@@ -108,9 +109,9 @@ export default function DetailPage() {
     const [currentPage, setCurrentPage] = useState(1)
 
     // 5. 카테고리 상태
-    const [categories, setCategories] = useState<Category[]>([
-        /* 기존 카테고리 데이터 유지 */
-    ])
+    const [categories, setCategories] = useState<Category[]>([])
+
+    const [userId, setUserId] = useState()
 
     // 6. 관련 게시물 상태
     const [relatedPosts] = useState<RelatedPost[]>([
@@ -278,6 +279,64 @@ export default function DetailPage() {
         }
     }
 
+    const followUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('팔로우 요청 실패')
+            console.log(`팔로우 완료: ${followeeId}`)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const unfollowUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('언팔로우 요청 실패')
+            console.log(`언팔로우 완료: ${followeeId}`)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const handleFollowClick = async () => {
+        if (!isLogin) {
+            alert('로그인이 필요합니다.')
+            router.push('/account/login')
+            return
+        }
+
+        try {
+            if (isFollowing) {
+                // ✅ 팔로우 상태면 → 언팔로우 요청
+                await unfollowUser(userId)
+                setIsFollowing(false)
+            } else {
+                // ✅ 아직 팔로우 안 했으면 → 팔로우 요청
+                await followUser(userId)
+                setIsFollowing(true)
+            }
+        } catch (error) {
+            console.error('팔로우/언팔로우 실패:', error)
+        }
+    }
+
     // 답글 입력 핸들러
     const handleReplyInputChange = (commentId: number, value: string) => {
         setReplyInputs({ ...replyInputs, [commentId]: value })
@@ -425,6 +484,96 @@ export default function DetailPage() {
     }, [showPopover, activePopoverAuthor])
 
     // 게시글 불러오기
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                setLoading(true)
+                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${postId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 ID를 불러오는데 실패했습니다다.')
+                }
+
+                const data = await response.json()
+                console.log('UserId : ', data)
+                setUserId(data)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 ID를 불러오지 못했습니다')
+            }
+        }
+        fetchUserId()
+    }, [postId])
+
+    useEffect(() => {
+        const fetchIsFollowing = async () => {
+            if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
+
+            try {
+                setLoading(true)
+                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('팔로우 여부:', data)
+                setIsFollowing(data)
+            } catch (err) {
+                console.error('Error fetching isFollowing:', err)
+                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchIsFollowing()
+    }, [userId])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                setLoading(true)
+                const response = await fetch(`http://localhost:8090/api/v1/categories/get/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+
+                if (!response.ok) {
+                    throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('카테고리 : ', data)
+                setCategories(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchCategories()
+        }
+    }, [userId])
+
+    // 게시글을 불러오는 함수
     useEffect(() => {
         const fetchPost = async () => {
             try {
@@ -625,7 +774,7 @@ export default function DetailPage() {
                                                     </button>
                                                 </div>
                                                 <button
-                                                    onClick={() => setIsFollowing(!isFollowing)}
+                                                    onClick={handleFollowClick}
                                                     className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
                                                         isFollowing
                                                             ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
@@ -987,8 +1136,8 @@ export default function DetailPage() {
                                                                             strokeLinejoin="round"
                                                                             strokeWidth={2}
                                                                             d="M19 7l-.867
-                     12.142A2 2 0 0116.138 21H7.862a2 2 
-                     0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 
+                     12.142A2 2 0 0116.138 21H7.862a2 2
+                     0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1
                      1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                                                         />
                                                                     </svg>
@@ -1307,6 +1456,7 @@ export default function DetailPage() {
                                     ))}
                                 </div>
 
+                                {/* 페이지네이션 */}
                                 <div className="flex justify-center mt-8 space-x-2">
                                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                                         <button
@@ -1343,7 +1493,7 @@ export default function DetailPage() {
                                                         className="flex items-center justify-between w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                                     >
                                                         <span>
-                                                            {category.name} ({category.count})
+                                                            {category.name}({category.postCount})
                                                         </span>
                                                         <svg
                                                             className={`w-4 h-4 transform transition-transform ${
@@ -1382,7 +1532,7 @@ export default function DetailPage() {
                                                 onClick={() => router.push(category.path)}
                                                 className="w-full text-left text-gray-700 hover:text-[#2E804E] transition-colors duration-200"
                                             >
-                                                {category.name} ({category.count})
+                                                {category.name} ({category.postCount})
                                             </button>
                                         )}
                                     </li>
