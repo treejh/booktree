@@ -36,13 +36,18 @@ export default function BlogPostListPage() {
 
     const [sortType, setSortType] = useState<SortType>('latest')
 
+    // 상태 추가
+    const [currentPage, setCurrentPage] = useState(0) // 백엔드는 0부터 시작
+    const [totalPages, setTotalPages] = useState(0)
+    const [totalElements, setTotalElements] = useState(0)
+
     useEffect(() => {
         if (blogId) {
             setLoading(true)
             const endpoint =
                 sortType === 'latest'
-                    ? `http://localhost:8090/api/v1/posts/get/blog/${blogId}?page=0&size=8`
-                    : `http://localhost:8090/api/v1/posts/get/blog/popular/${blogId}?page=0&size=8`
+                    ? `http://localhost:8090/api/v1/posts/get/blog/${blogId}?page=${currentPage}&size=8`
+                    : `http://localhost:8090/api/v1/posts/get/blog/popular/${blogId}?page=${currentPage}&size=8`
 
             console.log('요청 URL:', endpoint) // 요청 URL 확인
 
@@ -50,6 +55,8 @@ export default function BlogPostListPage() {
                 .get<PageResponse>(endpoint)
                 .then((res) => {
                     setPosts(res.data.content)
+                    setTotalPages(res.data.totalPages)
+                    setTotalElements(res.data.totalElements)
                     setLoading(false)
                 })
                 .catch((err) => {
@@ -58,7 +65,13 @@ export default function BlogPostListPage() {
                     setLoading(false)
                 })
         }
-    }, [blogId, sortType])
+    }, [blogId, sortType, currentPage]) // currentPage 의존성 추가
+
+    // 페이지 변경 핸들러 추가
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page)
+        window.scrollTo(0, 0) // 페이지 상단으로 스크롤
+    }
 
     if (loading) return <div>불러오는 중...</div>
     if (error) return <div>{error}</div>
@@ -157,33 +170,43 @@ export default function BlogPostListPage() {
                         ))}
                     </div>
                     {/* 페이지네이션 */}
-                    {/* <div className="flex justify-center gap-2 mt-8">
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            Previous
-                        </button>
-                        {pageNumbers.map((number) => (
+                    <div className="flex justify-center items-center gap-2 mt-8">
+                        {/* 이전 페이지 버튼 */}
+                        {currentPage > 0 && (
                             <button
-                                key={number}
-                                className={`px-4 py-2 border rounded ${
-                                    currentPage === number ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'
-                                }`}
-                                onClick={() => handlePageChange(number)}
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                className="px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50"
                             >
-                                {number}
+                                이전
+                            </button>
+                        )}
+
+                        {/* 페이지 번호 버튼들 */}
+                        {[...Array(totalPages)].map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handlePageChange(i)}
+                                className={`w-10 h-10 flex items-center justify-center rounded-md
+                                    ${
+                                        currentPage === i
+                                            ? 'bg-gray-900 text-white'
+                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {i + 1}
                             </button>
                         ))}
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                        </button>
-                    </div> */}
+
+                        {/* 다음 페이지 버튼 */}
+                        {currentPage < totalPages - 1 && (
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                className="px-3 py-2 rounded-md border border-gray-300 hover:bg-gray-50"
+                            >
+                                다음
+                            </button>
+                        )}
+                    </div>
                 </div>
             </main>
 
