@@ -122,6 +122,7 @@ export default function DetailPage() {
     const [userId, setUserId] = useState<number>()
     const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
     const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
+    const [categories, setCategories] = useState<Category[]>([])
 
     // 3. 모든 useEffect Hooks를 여기에 모아서 선언
     useEffect(() => {
