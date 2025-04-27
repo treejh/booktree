@@ -452,5 +452,10 @@ public class PostService {
         return userId;
     }
 
+    public Long findPostCount(Long userId){
+
+        return postRepository.countPostsByUserId(userId);
+    }
+
 
 }
