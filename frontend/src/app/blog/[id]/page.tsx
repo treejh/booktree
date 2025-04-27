@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import AnnouncementModal from '../../components/AnnouncementModal'
 import { LoginUserContext, useGlobalLoginUser, useLoginUser } from '@/stores/auth/loginMember'
 import ScrapPosts from '../../components/ScrapPosts'
+import PopularPosts from '@/app/components/PopularPosts'
+import LatestPosts from '@/app/components/LastestPosts'
 import FollowingPosts from '../../components/FollowingPosts'
 
 interface Post {
@@ -626,8 +628,8 @@ export default function BlogPage() {
                     {/* 블로그 포스트 목록 */}
                     <div className="space-y-8">
                         <h2 className="text-2xl font-bold mb-6">
-                            {activeTab === 'latest' && '최신 게시물'}
-                            {activeTab === 'popular' && '인기 게시물'}
+                            {activeTab === 'latest' && <LatestPosts blogId={blogId} />}
+                            {activeTab === 'popular' && <PopularPosts blogId={blogId} />}
                             {activeTab === 'bookmarks' && '팔로잉 게시글'}
                         </h2>
                         {activeTab === 'scraps' && isLogin && userBlogId && String(userBlogId) === String(blogId) && (
