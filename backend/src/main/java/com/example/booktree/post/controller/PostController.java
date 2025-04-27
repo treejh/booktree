@@ -229,6 +229,28 @@ public class PostController {
     }
 
 
+    @GetMapping("/search/{blogId}/post")
+    public ResponseEntity<Page<PostResponseDto>> searchPostByBlog(
+            @RequestParam("search") String search,
+            @PathVariable("blogId") Long blogId,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<PostResponseDto> response = postService.searchBlogPost(blogId,search, pageable)
+                .map(post -> PostResponseDto.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .createdAt(post.getCreatedAt())
+                        .modifiedAt(post.getModifiedAt())
+                        .build()
+                );
+        return ResponseEntity.ok(response);
+    }
+
+
+
 
     @GetMapping("/get/followingPost")
     public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
