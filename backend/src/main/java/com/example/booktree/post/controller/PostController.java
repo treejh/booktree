@@ -261,6 +261,11 @@ public class PostController {
                         .title(post.getTitle())
                         .viewCount(post.getView())
                         .createdAt(post.getCreatedAt())
+                        .imageUrl(
+                                post.getImageList().isEmpty()
+                                        ? null
+                                        : post.getImageList().get(0).getImageUrl()
+                        )
                         .modifiedAt(post.getModifiedAt())
                         .build()
                 );
