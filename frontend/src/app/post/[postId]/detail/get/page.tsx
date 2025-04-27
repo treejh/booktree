@@ -79,20 +79,16 @@ interface PostList {
 }
 
 export default function DetailPage() {
-    // 2. 모든 hooks를 최상단에 배치
-    // const { loginUser } = useGlobalLoginUser()
+    // 1. Router와 전역 상태 관련 Hooks
     const router = useRouter()
     const { postId } = useParams()
-    // 로그인 상태와 토큰 정보 함께 꺼내기
     const { isLoginUserPending, isLogin, loginUser } = useGlobalLoginUser()
 
-    // 3. 작성자 확인 상태 추가
+    // 2. 모든 useState Hooks를 여기에 모아서 선언
     const [isAuthor, setIsAuthor] = useState(false)
-
-    // 4. 기존 상태들
-    const [post, setPost] = useState<PostDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [post, setPost] = useState<PostDetail | null>(null)
     const [isPostEditing, setIsPostEditing] = useState(false)
     const [editedPost, setEditedPost] = useState({
         title: '',
@@ -105,103 +101,232 @@ export default function DetailPage() {
         images: [] as File[],
     })
     const [postLiked, setPostLiked] = useState(false)
-
-    // API 엔드포인트
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8090'
-
-    // 2. 댓글 관련 상태
     const [comments, setComments] = useState<Comment[]>([])
     const [commentInput, setCommentInput] = useState('')
     const [likedComments, setLikedComments] = useState<{ [k: number]: boolean }>({})
     const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
     const [editedCommentContent, setEditedCommentContent] = useState('')
-    const [commentError, setCommentError] = useState<string | null>(null) // → 댓글 로드 에러
-
-    // 3. 답글 관련 상태
+    const [commentError, setCommentError] = useState<string | null>(null)
     const [replyInputs, setReplyInputs] = useState<{ [parentKey: string]: string }>({})
-
     const [activeReplyId, setActiveReplyId] = useState<number | null>(null)
     const [editingReplyId, setEditingReplyId] = useState<number | null>(null)
     const [editedReplyContent, setEditedReplyContent] = useState('')
     const [hasReplied, setHasReplied] = useState<{ [key: number]: boolean }>({})
     const [likedReplies, setLikedReplies] = useState<{ [key: number]: boolean }>({})
-
-    // 4. UI 관련 상태
     const [showPopover, setShowPopover] = useState(false)
     const [isFollowing, setIsFollowing] = useState(false)
     const [activePopoverAuthor, setActivePopoverAuthor] = useState<string | null>(null)
     const [commentFollowStatus, setCommentFollowStatus] = useState<{ [key: string]: boolean }>({})
     const [isListVisible, setIsListVisible] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
+    const [userId, setUserId] = useState<number>()
+    const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
+    const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
 
-    // 5. 카테고리 상태
-    const [categories, setCategories] = useState<Category[]>([])
-    const [editCategories, setEditCategories] = useState<TwoCategory[]>([]) // 내 수정용 카테고리
-    const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([]) // 내 수정용 메인카테고리
-    const [userId, setUserId] = useState()
+    // 3. 모든 useEffect Hooks를 여기에 모아서 선언
+    useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                setLoading(true)
 
-    // 6. 관련 게시물 상태
-    const [relatedPosts] = useState<RelatedPost[]>([
-        /* 기존 관련 게시물 데이터 유지 */
-    ])
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
 
-    // PostList 데이터 수정
-    const [allPosts] = useState<{ [key: number]: PostList[] }>({
-        /* 기존 게시물 목록 데이터 유지 */
-    })
+                if (!response.ok) {
+                    throw new Error('게시글을 불러오는 데 실패했습니다.')
+                }
 
-    // 현재 페이지의 게시글을 가져오는 함수
-    const getCurrentPagePosts = () => {
-        return allPosts[currentPage] || []
-    }
+                const data = await response.json()
+                console.log('API Response:', data) // 응답 확인용
 
-    // --- 댓글 불러오기 ---
-    const fetchComments = async () => {
-        if (!postId) return
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/get?postId=${postId}&page=1&size=10`,
-                {
-                    credentials: 'include',
-                },
-            )
-            if (!res.ok) throw new Error('댓글을 불러오는데 실패했습니다.')
-            const json = await res.json()
-
-            // 백엔드 DTO → 프론트 인터페이스로 변환
-            const mapped: Comment[] = json.content.map((c: any) => ({
-                id: c.commentId,
-                author: c.userEmail,
-                date: new Date(c.createdAt).toLocaleDateString(),
-                content: c.content,
-                likes: (c as any).likeCount ?? 0,
-                replies: c.replies.content.map((r: any) => ({
-                    id: r.replyId,
-                    author: r.userEmail,
-                    date: new Date(r.createdAt).toLocaleDateString(),
-                    content: r.content,
-                    likes: (r as any).likeCount ?? 0,
-                })),
-            }))
-
-            setComments(mapped)
-            setCommentError(null)
-        } catch (e: any) {
-            setCommentError(e.message)
+                const formattedPost: PostDetail = {
+                    postId: data.postId,
+                    title: data.title,
+                    content: data.content,
+                    username: data.username,
+                    imageUrls: data.imageUrls || [],
+                    viewCount: data.viewCount,
+                    likeCount: data.likeCount,
+                    createdAt: new Date(data.createdAt).toLocaleDateString(),
+                    modifiedAt: new Date(data.modifiedAt).toLocaleDateString(),
+                    author: data.author || '', // author는 기본값으로 빈 문자열 설정
+                    mainCategory: data.mainCategory || '', // mainCategory 값 처리
+                    mainCategoryId: data.mainCategoryId || 0, // 수정
+                    categoryId: data.categoryId || 0, // 수정
+                    category: data.category || '', // category 값 처리
+                    book: data.book || '', // book 값 처리
+                }
+                setPost(formattedPost)
+                setEditedPost({
+                    title: formattedPost.title,
+                    content: formattedPost.content,
+                    author: formattedPost.author,
+                    book: formattedPost.book,
+                    mainCategoryId: formattedPost.mainCategoryId, // 수정
+                    categoryId: formattedPost.categoryId, // 수정
+                    //mainCategoryId: parseInt(formattedPost.mainCategory) || 0,
+                    //categoryId: parseInt(formattedPost.category) || 0,
+                    imageUrls: [...formattedPost.imageUrls],
+                    images: [],
+                })
+            } catch (err: any) {
+                setError(err instanceof Error ? err.message : '게시글을 불러오지 못했습니다')
+            } finally {
+                setLoading(false)
+            }
         }
-    }
+        if (postId) fetchPost()
+    }, [postId])
 
     useEffect(() => {
+        const fetchComments = async () => {
+            if (!postId) return
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/comments/get?postId=${postId}&page=1&size=10`,
+                    {
+                        credentials: 'include',
+                    },
+                )
+                if (!res.ok) throw new Error('댓글을 불러오는데 실패했습니다.')
+                const json = await res.json()
+
+                // 백엔드 DTO → 프론트 인터페이스로 변환
+                const mapped: Comment[] = json.content.map((c: any) => ({
+                    id: c.commentId,
+                    author: c.userEmail,
+                    date: new Date(c.createdAt).toLocaleDateString(),
+                    content: c.content,
+                    likes: (c as any).likeCount ?? 0,
+                    replies: c.replies.content.map((r: any) => ({
+                        id: r.replyId,
+                        author: r.userEmail,
+                        date: new Date(r.createdAt).toLocaleDateString(),
+                        content: r.content,
+                        likes: (r as any).likeCount ?? 0,
+                    })),
+                }))
+
+                setComments(mapped)
+                setCommentError(null)
+            } catch (e: any) {
+                setCommentError(e.message)
+            }
+        }
         fetchComments()
     }, [postId])
 
+    useEffect(() => {
+        if (post && loginUser) {
+            setIsAuthor(post.username === loginUser.username)
+        }
+    }, [post, loginUser])
+
+    useEffect(() => {
+        const fetchTwoCategories = async () => {
+            try {
+                // 메인 카테고리 가져오기
+                const mainResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/maincategories/get`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // 이 부분 추가
+                })
+
+                if (!mainResponse.ok) {
+                    throw new Error('메인 카테고리를 불러오는데 실패했습니다.')
+                }
+
+                const mainData = await mainResponse.json()
+                console.log('메인 카테고리 데이터:', mainData)
+                setEditMainCategories(mainData)
+
+                // 유저의 카테고리 가져오기
+                const categoryResponse = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/allcategory`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
+                    },
+                )
+
+                if (!categoryResponse.ok) {
+                    throw new Error('카테고리를 불러오는데 실패했습니다.')
+                }
+
+                const categoryData = await categoryResponse.json()
+                console.log('카테고리 데이터:', categoryData)
+                setEditCategories(categoryData)
+            } catch (error) {
+                console.error('카테고리 로드 에러:', error)
+                setEditMainCategories([])
+                setEditCategories([])
+            }
+        }
+
+        fetchTwoCategories()
+    }, [])
+
+    useEffect(() => {
+        const fetchLikeStatus = async () => {
+            if (!postId) return
+
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/likeposts/get/${postId}/count`,
+                    {
+                        credentials: 'include',
+                    },
+                )
+
+                if (!response.ok) throw new Error('좋아요 상태를 불러오는데 실패했습니다.')
+
+                const data = await response.json()
+                setPostLiked(data.liked)
+                setPost((prev) => (prev ? { ...prev, likeCount: data.likeCount } : null))
+            } catch (error) {
+                console.error('좋아요 상태 로드 실패:', error)
+            }
+        }
+
+        fetchLikeStatus()
+    }, [postId])
+
     // 게시물 좋아요 토글 함수
-    const togglePostLike = () => {
-        setPostLiked(!postLiked)
-        setPost((prev) => ({
-            ...prev!,
-            likeCount: postLiked ? Math.max(0, prev!.likeCount - 1) : prev!.likeCount + 1,
-        }))
+    const togglePostLike = async () => {
+        if (!isLogin) {
+            alert('로그인이 필요합니다.')
+            return
+        }
+
+        // 자신의 글인지 확인
+        if (post.username === loginUser.username) {
+            alert('자신의 글은 좋아요를 할 수 없습니다.')
+            return
+        }
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/likeposts/click/${postId}`, {
+                method: 'POST',
+                credentials: 'include',
+            })
+
+            if (!response.ok) throw new Error('좋아요 처리에 실패했습니다.')
+
+            const data = await response.json()
+            setPostLiked(data.liked)
+            setPost((prev) => (prev ? { ...prev, likeCount: data.likeCount } : null))
+        } catch (error) {
+            console.error('좋아요 토글 실패:', error)
+        }
     }
 
     // --- 댓글 작성 (로그인 필요) ---
@@ -537,7 +662,7 @@ export default function DetailPage() {
         fetchUserId()
     }, [postId])
 
-    useEffect(() => {
+    /* useEffect(() => {
         const fetchIsFollowing = async () => {
             if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
 
@@ -569,7 +694,7 @@ export default function DetailPage() {
         fetchIsFollowing()
     }, [userId])
 
-    /* useEffect(() => {
+    useEffect(() => {
         const fetchCategories = async () => {
             try {
                 setLoading(true)
@@ -598,129 +723,9 @@ export default function DetailPage() {
         if (userId) {
             fetchCategories()
         }
-    }, [userId])
- */
+    }, [userId]) */
+
     // 게시글을 불러오는 함수
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                setLoading(true)
-
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-
-                if (!response.ok) {
-                    throw new Error('게시글을 불러오는 데 실패했습니다.')
-                }
-
-                const data = await response.json()
-                console.log('API Response:', data) // 응답 확인용
-
-                const formattedPost: PostDetail = {
-                    postId: data.postId,
-                    title: data.title,
-                    content: data.content,
-                    username: data.username,
-                    imageUrls: data.imageUrls || [],
-                    viewCount: data.viewCount,
-                    likeCount: data.likeCount,
-                    createdAt: new Date(data.createdAt).toLocaleDateString(),
-                    modifiedAt: new Date(data.modifiedAt).toLocaleDateString(),
-                    author: data.author || '', // author는 기본값으로 빈 문자열 설정
-                    mainCategory: data.mainCategory || '', // mainCategory 값 처리
-                    mainCategoryId: data.mainCategoryId || 0, // 수정
-                    categoryId: data.categoryId || 0, // 수정
-                    category: data.category || '', // category 값 처리
-                    book: data.book || '', // book 값 처리
-                }
-                setPost(formattedPost)
-                setEditedPost({
-                    title: formattedPost.title,
-                    content: formattedPost.content,
-                    author: formattedPost.author,
-                    book: formattedPost.book,
-                    mainCategoryId: formattedPost.mainCategoryId, // 수정
-                    categoryId: formattedPost.categoryId, // 수정
-                    //mainCategoryId: parseInt(formattedPost.mainCategory) || 0,
-                    //categoryId: parseInt(formattedPost.category) || 0,
-                    imageUrls: [...formattedPost.imageUrls],
-                    images: [],
-                })
-            } catch (err: any) {
-                setError(err instanceof Error ? err.message : '게시글을 불러오지 못했습니다')
-            } finally {
-                setLoading(false)
-            }
-        }
-        if (postId) fetchPost()
-    }, [postId])
-
-    // 작성자 확인 useEffect 추가 (다른 useEffect보다 앞에 배치)
-    useEffect(() => {
-        if (post && loginUser) {
-            const isMatch = post.username === loginUser.username
-            setIsAuthor(isMatch)
-            console.log('작성자 확인:', {
-                postAuthor: post.username,
-                loginUser: loginUser.username,
-                isMatch,
-            })
-        }
-    }, [post, loginUser])
-
-    // 카테고리 데이터 불러오기 useEffect 수정
-    useEffect(() => {
-        const fetchTwoCategories = async () => {
-            try {
-                // 메인 카테고리 가져오기
-                const mainResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/maincategories/get`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include', // 이 부분 추가
-                })
-
-                if (!mainResponse.ok) {
-                    throw new Error('메인 카테고리를 불러오는데 실패했습니다.')
-                }
-
-                const mainData = await mainResponse.json()
-                console.log('메인 카테고리 데이터:', mainData)
-                setEditMainCategories(mainData)
-
-                // 유저의 카테고리 가져오기
-                const categoryResponse = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/allcategory`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'include',
-                    },
-                )
-
-                if (!categoryResponse.ok) {
-                    throw new Error('카테고리를 불러오는데 실패했습니다.')
-                }
-
-                const categoryData = await categoryResponse.json()
-                console.log('카테고리 데이터:', categoryData)
-                setEditCategories(categoryData)
-            } catch (error) {
-                console.error('카테고리 로드 에러:', error)
-                setEditMainCategories([])
-                setEditCategories([])
-            }
-        }
-
-        fetchTwoCategories()
-    }, [])
 
     // postId가 변경될 때마다 useEffect 실행
     // postId가 변경될 때마다 useEffect 실행
@@ -1285,9 +1290,13 @@ export default function DetailPage() {
                                 <div className="flex justify-center mb-8">
                                     <button
                                         onClick={togglePostLike}
-                                        className={`flex items-center justify-center px-4 py-2 bg-green-50 hover:bg-green-100 transition rounded-md ${
-                                            postLiked ? 'text-red-500' : 'text-green-600'
-                                        }`}
+                                        className={`flex items-center justify-center px-4 py-2 
+                                            ${
+                                                post.username === loginUser?.username
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-green-50 hover:bg-green-100 transition'
+                                            } 
+                                            rounded-md ${postLiked ? 'text-red-500' : 'text-green-600'}`}
                                     >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -1303,7 +1312,7 @@ export default function DetailPage() {
                                                 d="M4.318 6.318a4 4 0 015.656 0L10 6.343l-1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
                                             />
                                         </svg>
-                                        좋아요 {post.likes}
+                                        좋아요 {post.likeCount}
                                     </button>
                                 </div>
 
