@@ -38,7 +38,9 @@ export default function Home() {
 
     return (
         <>
-            <CategoryNav currentSlug="" />
+            <div className="my-2">
+                <CategoryNav currentSlug="" />
+            </div>
             <div className="w-full px-0 py-4">
                 <div className="w-full h-96 rounded-lg overflow-hidden mb-12">
                     <img

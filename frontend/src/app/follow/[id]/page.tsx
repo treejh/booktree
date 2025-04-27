@@ -60,6 +60,7 @@ export default function FollowPage() {
     const [follower, setFollower] = useState<follower[]>([])
     const [followed, setFollowed] = useState<followed[]>([])
 
+    //팔로잉
     const followUser = async (followeeId: number) => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
@@ -73,11 +74,13 @@ export default function FollowPage() {
 
             if (!res.ok) throw new Error('팔로우 요청 실패')
             console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
     }
 
+    // 언팔로우
     const unfollowUser = async (followeeId: number) => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
@@ -91,6 +94,7 @@ export default function FollowPage() {
 
             if (!res.ok) throw new Error('언팔로우 요청 실패')
             console.log(`언팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -143,6 +147,7 @@ export default function FollowPage() {
                         credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
                 )
+
                 if (!response.ok) {
                     throw new Error('팔로워 데이터를 가져오는 데 실패했습니다.')
                 }

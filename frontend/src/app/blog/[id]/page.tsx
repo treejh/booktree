@@ -87,6 +87,18 @@ export default function BlogPage() {
     const [blog, setBlog] = useState<BlogInfo | null>(null)
     const [userBlogId, setUserBlogId] = useState<string | null>(null) // 로그인 유저의 블로그 ID
 
+    //블로그 검색
+    const [searchInput, setSearchInput] = useState('') // 검색 입력 상태
+
+    const handleSearch = () => {
+        if (!searchInput.trim()) {
+            alert('검색어를 입력해주세요.')
+            return
+        }
+        // 검색 결과 페이지로 이동
+        router.push(`/blog/${blogId}/search?query=${encodeURIComponent(searchInput)}`)
+    }
+
     useEffect(() => {
         const fetchFollowCount = async () => {
             try {
@@ -427,9 +439,9 @@ export default function BlogPage() {
     }
 
     return (
-        <div className="flex gap-8 max-w-8xl mx-auto px-4 py-8">
+        <div className="flex gap-8 w-full py-8">
             {/* 메인 컨텐츠 */}
-            <main className="flex-1 pl-100">
+            <main className="flex-1 pl-10">
                 <div className="bg-white rounded-xl shadow-lg p-8">
                     {/* 프로필 섹션 */}
                     <div>
@@ -605,7 +617,7 @@ export default function BlogPage() {
                         {currentPosts.map((post) => (
                             <article
                                 key={post.id}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow "
                             >
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
@@ -667,10 +679,30 @@ export default function BlogPage() {
                 </div>
             </main>
 
-            {/* 카테고리 사이드바 */}
-            <aside className="w-64 flex-shrink-0 mt-100">
+            <aside className="w-64 flex-shrink-0 sticky top-8 self-start mr-8">
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">태그 목록</h2>
+                    {/* 게시글 검색 섹션 */}
+                    <div className="mb-6">
+                        <h2 className="text-xl font-bold mb-4">게시글 검색</h2>
+                        <div className="flex flex-col items-center">
+                            <input
+                                type="text"
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                placeholder="검색어를 입력하세요"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 mb-2"
+                            />
+                            <button
+                                onClick={handleSearch}
+                                className="w-full px-4 py-1 bg-[#247040] text-white rounded-md hover:bg-[#1f6034]"
+                            >
+                                검색
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* 카테고리 목록 섹션 */}
+                    <h2 className="text-xl font-bold mb-4">카테고리 목록</h2>
                     <div className="border-b border-gray-200 mb-4"></div>
                     <ul className="space-y-2">
                         {categories.map((category) => (
