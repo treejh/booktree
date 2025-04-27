@@ -125,28 +125,44 @@ public class CategoryService {
                 .toList();
     }
 
-
     @Transactional
-    public List<PostByCategoryResponseDto> getPostByCategoryId(Long categoryId,int page, int size){
+    public Page<PostByCategoryResponseDto> getPostByCategoryId(Long categoryId, int page, int size) {
         Category category = findById(categoryId);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
 
-        return posts.stream()
-                .map(post -> PostByCategoryResponseDto.builder()
-                        .postId(post.getId())
-                        .create_at(post.getCreatedAt())
-                        .imageUrl(
-                                post.getImageList().isEmpty()
-                                        ? null
-                                        : post.getImageList().get(0).getImageUrl()
-                        )
-                        .update_at(post.getModifiedAt())
-                        .view(post.getView())
-                        .postTitle(post.getTitle())
-                        .build())
-                .toList();
+        return posts.map(post -> PostByCategoryResponseDto.builder()
+                .postId(post.getId())
+                .create_at(post.getCreatedAt())
+                .imageUrl(
+                        post.getImageList().isEmpty()
+                                ? null
+                                : post.getImageList().get(0).getImageUrl()
+                )
+                .update_at(post.getModifiedAt())
+                .view(post.getView())
+                .postTitle(post.getTitle())
+                .build()
+        );
     }
+
+    public AllCategoryResponseDto getCategoryByCategoryID(Long categoryId){
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(()->new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+
+        return AllCategoryResponseDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .create_at(category.getCreatedAt())
+                .update_at(category.getModifiedAt())
+                .build();
+    }
+
+
+
+
+
+
 }

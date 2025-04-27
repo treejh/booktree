@@ -8,6 +8,7 @@ import com.example.booktree.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -113,7 +114,23 @@ public class CategoryController {
         @RequestParam(name = "page", defaultValue = "0") int page,
         @RequestParam(name = "size", defaultValue = "8") int size) {
 
-        List<PostByCategoryResponseDto> response = categoryService.getPostByCategoryId(categoryId,page,size);
+        Page<PostByCategoryResponseDto> response = categoryService.getPostByCategoryId(categoryId,page,size);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+
+    @GetMapping("/get/category/{categoryId}")
+    @Operation(
+            summary = "카테고리 아이디로, 카테고리 정보 조회하는 기능 ",
+            description = "카테고리 아이디를 통해서 카테고리 정보를 사용자에게 제공하는 기능 ",
+            tags = "카테고리 관리 컨트롤러"
+    )
+    public ResponseEntity<?> getCategoryByCategoryId(@PathVariable Long categoryId) {
+        AllCategoryResponseDto response = categoryService.getCategoryByCategoryID(categoryId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+
+
+
 }

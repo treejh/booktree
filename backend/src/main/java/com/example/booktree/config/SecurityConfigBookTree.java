@@ -144,6 +144,7 @@ public class SecurityConfigBookTree {
                         .requestMatchers(
                             "/api/v1/categories/get/**",
                                     "/api/v1/categories/get/category/**"
+
                         ).permitAll()
                         .requestMatchers(
                                 "/api/v1/categories/create",
