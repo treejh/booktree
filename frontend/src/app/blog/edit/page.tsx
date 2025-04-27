@@ -27,7 +27,7 @@ export default function EditBlogPage() {
     useEffect(() => {
         const fetchBlogInfo = async () => {
             try {
-                const res = await fetch(`http://localhost:8090/api/v1/blogs/get/token`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export default function EditBlogPage() {
             notice,
         }
 
-        fetch('http://localhost:8090/api/v1/blogs/patch', {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/patch`, {
             method: 'PATCH', // PATCH 메서드 사용
             headers: {
                 'Content-Type': 'application/json',
