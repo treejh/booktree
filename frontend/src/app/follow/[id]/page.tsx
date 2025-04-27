@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 
 interface User {
     id: number
@@ -60,7 +61,6 @@ export default function FollowPage() {
     const [follower, setFollower] = useState<follower[]>([])
     const [followed, setFollowed] = useState<followed[]>([])
 
-    //팔로잉
     const followUser = async (followeeId: number) => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
@@ -74,13 +74,11 @@ export default function FollowPage() {
 
             if (!res.ok) throw new Error('팔로우 요청 실패')
             console.log(`팔로우 완료: ${followeeId}`)
-            window.location.reload()
         } catch (err) {
             console.error(err)
         }
     }
 
-    // 언팔로우
     const unfollowUser = async (followeeId: number) => {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
@@ -94,7 +92,6 @@ export default function FollowPage() {
 
             if (!res.ok) throw new Error('언팔로우 요청 실패')
             console.log(`언팔로우 완료: ${followeeId}`)
-            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -116,6 +113,7 @@ export default function FollowPage() {
                 avatar: '/avatars/default.jpg', // 나중에 API에서 내려주면 교체
                 isFollowing: user.following,
                 isMe: user.me,
+                blogId: user.blogId,
             }))
             setUsers(transformed)
             console.log('user : ', transformed)
@@ -127,6 +125,7 @@ export default function FollowPage() {
                 avatar: '/avatars/default.jpg',
                 isFollowing: user.following,
                 isMe: user.me,
+                blogId: user.blogId,
             }))
             setUsers(transformed)
             console.log('user : ', transformed)
@@ -147,7 +146,6 @@ export default function FollowPage() {
                         credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
                 )
-
                 if (!response.ok) {
                     throw new Error('팔로워 데이터를 가져오는 데 실패했습니다.')
                 }
@@ -246,14 +244,17 @@ export default function FollowPage() {
                             className="flex items-center justify-between p-4 border rounded-lg border-gray-300"
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                                    {/* Avatar placeholder */}
-                                </div>
-                                <div>
-                                    <h3 className="font-bold">{user.name}</h3>
-                                    <p className="text-gray-600">{user.username}</p>
-                                </div>
+                                <Link href={`/blog/${user.blogId}`} className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
+                                        {/* Avatar Placeholder */}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold">{user.name}</h3>
+                                        <p className="text-gray-600">{user.username}</p>
+                                    </div>
+                                </Link>
                             </div>
+
                             {!user.isMe && (
                                 <button
                                     onClick={() => handleFollow(user.id, user.isFollowing)}

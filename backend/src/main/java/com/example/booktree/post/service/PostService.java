@@ -16,6 +16,7 @@ import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import com.example.booktree.maincategory.service.MainCategortService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
+import com.example.booktree.post.dto.response.PostTop3ResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
@@ -62,6 +63,8 @@ public class PostService {
     private final UserService userService;
     private final BlogService blogService;
     private final FollowService followService;
+
+    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
 
 
 
@@ -455,6 +458,19 @@ public class PostService {
     public Long findPostCount(Long userId){
 
         return postRepository.countPostsByUserId(userId);
+    }
+
+    public List<PostTop3ResponseDto> getTop3PostsByView() {
+        List<Post> posts = postRepository.findTop3ByOrderByViewDesc();
+
+        return posts.stream().map(post -> PostTop3ResponseDto.builder()
+                        .id(post.getId())
+                        .mainCategory(post.getMainCategory().getName())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .imageUrl(post.getImageList().isEmpty() ? defaultImageUrl : post.getImageList().get(0).getImageUrl())
+                        .build())
+                .collect(Collectors.toList()); // 리스트로 변환
     }
 
 

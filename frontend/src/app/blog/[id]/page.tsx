@@ -497,33 +497,35 @@ export default function BlogPage() {
                         </div>
 
                         <div className="mt-6 flex gap-4 justify-center items-center">
-                            <button
-                                className={`px-4 py-2 rounded-md transition-colors ${
-                                    isFollowing
-                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        : 'bg-[#2E804E] text-white hover:bg-[#247040]'
-                                }`}
-                                onClick={async () => {
-                                    if (!isLogin) {
-                                        alert('로그인이 필요합니다.')
-                                        router.push('/account/login')
-                                        return
-                                    }
-
-                                    try {
-                                        if (isFollowing) {
-                                            await unfollowUser(Number(userId)) // 언팔로우 요청
-                                        } else {
-                                            await followUser(Number(userId)) // 팔로우 요청
+                            {userId !== loginUser?.id && (
+                                <button
+                                    className={`px-4 py-2 rounded-md transition-colors ${
+                                        isFollowing
+                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            : 'bg-[#2E804E] text-white hover:bg-[#247040]'
+                                    }`}
+                                    onClick={async () => {
+                                        if (!isLogin) {
+                                            alert('로그인이 필요합니다.')
+                                            router.push('/account/login')
+                                            return
                                         }
-                                        setIsFollowing(!isFollowing) // 상태 반전
-                                    } catch (error) {
-                                        console.error('팔로우/언팔로우 실패:', error)
-                                    }
-                                }}
-                            >
-                                {isFollowing ? '팔로잉' : '팔로우'}
-                            </button>
+
+                                        try {
+                                            if (isFollowing) {
+                                                await unfollowUser(Number(userId)) // 언팔로우 요청
+                                            } else {
+                                                await followUser(Number(userId)) // 팔로우 요청
+                                            }
+                                            setIsFollowing(!isFollowing) // 상태 반전
+                                        } catch (error) {
+                                            console.error('팔로우/언팔로우 실패:', error)
+                                        }
+                                    }}
+                                >
+                                    {isFollowing ? '팔로잉' : '팔로우'}
+                                </button>
+                            )}
                             <button
                                 onClick={() => setIsAnnouncementOpen(true)}
                                 className="bg-[#2E804E] text-white p-2 rounded-md hover:bg-[#247040] transition-colors flex items-center justify-center"
