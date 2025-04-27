@@ -14,6 +14,7 @@ public class PostFollowingPageDto {
     private String username;
     private String title;
     private Long viewCount;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 
@@ -24,6 +25,12 @@ public class PostFollowingPageDto {
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
         this.username = post.getUser().getUsername();
+        if (post.getImageList() != null && !post.getImageList().isEmpty()) {
+            this.imageUrl = post.getImageList().get(0).getImageUrl();
+        } else {
+            this.imageUrl = null;
+        }
+
     }
 
 }

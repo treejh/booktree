@@ -11,7 +11,7 @@ interface Post {
     viewCount: number
     createdAt: string
     modifiedAt: string
-    imageUrl?: string
+    imageUrl: string
 }
 
 export default function SearchPage() {
