@@ -195,14 +195,12 @@ export default function MyPage() {
         router.push('/blog/detail')
     }
 
-    // 팔로잉 클릭 핸들러 추가
     const handleFollowingClick = () => {
-        router.push('/follow')
+        router.push(`/follow/${loginUser.id}?tab=following`)
     }
 
-    // 팔로워 클릭 핸들러 추가
     const handleFollowerClick = () => {
-        router.push('/follow?tab=followers') // followers 탭으로 이동
+        router.push(`/follow/${loginUser.id}?tab=followers`)
     }
 
     // toggleFollow 함수 제거
