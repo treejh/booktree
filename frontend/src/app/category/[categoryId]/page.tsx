@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -14,17 +14,40 @@ interface PostByCategoryResponseDto {
     update_at: string
 }
 
+interface AllCategoryResponseDto {
+    id: number
+    name: string
+    create_at: string
+    update_at: string
+    postCount: number
+}
+
 export default function CategoryPage() {
-    const { id: blogId, categoryId } = useParams<{ id: string; categoryId: string }>() // URL에서 blogId와 categoryId 가져오기
-    const router = useRouter()
+    const { categoryId } = useParams<{ categoryId: string }>() // URL에서 categoryId 가져오기
 
     const [posts, setPosts] = useState<PostByCategoryResponseDto[]>([]) // 카테고리 게시글 상태
+    const [categoryName, setCategoryName] = useState<string>('') // 카테고리 이름 상태
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [currentPage, setCurrentPage] = useState(1) // 현재 페이지
     const [totalPages, setTotalPages] = useState(1) // 총 페이지 수
 
     useEffect(() => {
+        const fetchCategoryInfo = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/category/${categoryId}`,
+                )
+                if (!response.ok) {
+                    throw new Error('카테고리 정보를 가져오는 데 실패했습니다.')
+                }
+                const data: AllCategoryResponseDto = await response.json()
+                setCategoryName(data.name) // 카테고리 이름 저장
+            } catch (err) {
+                console.error('카테고리 정보를 가져오는 중 오류 발생:', err)
+            }
+        }
+
         const fetchPostsByCategory = async () => {
             setIsLoading(true)
             try {
@@ -47,7 +70,8 @@ export default function CategoryPage() {
         }
 
         if (categoryId) {
-            fetchPostsByCategory()
+            fetchCategoryInfo() // 카테고리 정보 가져오기
+            fetchPostsByCategory() // 게시글 가져오기
         }
     }, [categoryId, currentPage])
 
@@ -58,7 +82,7 @@ export default function CategoryPage() {
 
     return (
         <div className="w-full px-8">
-            <h1 className="text-3xl font-bold mb-8 mt-6">카테고리 게시글</h1>
+            <h1 className="text-3xl font-bold mb-8 mt-6">{categoryName} 카테고리 게시글 목록</h1>
 
             <div className="flex flex-col lg:flex-row gap-8">
                 {/* 게시글 리스트 */}
@@ -70,7 +94,7 @@ export default function CategoryPage() {
                             <p className="text-center text-gray-500">로딩 중...</p>
                         ) : error ? (
                             <p className="text-center text-red-500">{error}</p>
-                        ) : !posts || posts.length === 0 ? (
+                        ) : posts.length === 0 ? (
                             <p className="text-center text-gray-500">게시글이 없습니다.</p>
                         ) : (
                             <div className="grid grid-cols-1 gap-6">
