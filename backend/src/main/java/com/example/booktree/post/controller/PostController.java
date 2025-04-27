@@ -147,6 +147,7 @@ public class PostController {
                 .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .userId(post.getUser().getId())
                 .username(post.getUser().getUsername()) // 작성자 이름
                 .imageUrls(post.getImageList().stream()
                         .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
