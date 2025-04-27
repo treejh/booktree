@@ -499,33 +499,35 @@ export default function BlogPage() {
                         </div>
 
                         <div className="mt-6 flex gap-4 justify-center items-center">
-                            <button
-                                className={`px-4 py-2 rounded-md transition-colors ${
-                                    isFollowing
-                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        : 'bg-[#2E804E] text-white hover:bg-[#247040]'
-                                }`}
-                                onClick={async () => {
-                                    if (!isLogin) {
-                                        alert('로그인이 필요합니다.')
-                                        router.push('/account/login')
-                                        return
-                                    }
-
-                                    try {
-                                        if (isFollowing) {
-                                            await unfollowUser(Number(userId)) // 언팔로우 요청
-                                        } else {
-                                            await followUser(Number(userId)) // 팔로우 요청
+                            {userId !== loginUser?.id && (
+                                <button
+                                    className={`px-4 py-2 rounded-md transition-colors ${
+                                        isFollowing
+                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            : 'bg-[#2E804E] text-white hover:bg-[#247040]'
+                                    }`}
+                                    onClick={async () => {
+                                        if (!isLogin) {
+                                            alert('로그인이 필요합니다.')
+                                            router.push('/account/login')
+                                            return
                                         }
-                                        setIsFollowing(!isFollowing) // 상태 반전
-                                    } catch (error) {
-                                        console.error('팔로우/언팔로우 실패:', error)
-                                    }
-                                }}
-                            >
-                                {isFollowing ? '팔로잉' : '팔로우'}
-                            </button>
+
+                                        try {
+                                            if (isFollowing) {
+                                                await unfollowUser(Number(userId)) // 언팔로우 요청
+                                            } else {
+                                                await followUser(Number(userId)) // 팔로우 요청
+                                            }
+                                            setIsFollowing(!isFollowing) // 상태 반전
+                                        } catch (error) {
+                                            console.error('팔로우/언팔로우 실패:', error)
+                                        }
+                                    }}
+                                >
+                                    {isFollowing ? '팔로잉' : '팔로우'}
+                                </button>
+                            )}
                             <button
                                 onClick={() => setIsAnnouncementOpen(true)}
                                 className="bg-[#2E804E] text-white p-2 rounded-md hover:bg-[#247040] transition-colors flex items-center justify-center"
@@ -556,62 +558,71 @@ export default function BlogPage() {
                         </div>
                     </section>
                     {/* 네비게이션 */}
-                    <nav className="border-b border-gray-200 mb-8">
-                        <ul className="flex gap-8">
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('latest')}
-                            >
-                                <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
-                                    최신순
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('popular')}
-                            >
-                                <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
-                                    인기순
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('bookmarks')}
-                            >
-                                <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
-                                    팔로잉
-                                </span>
-                            </li>
-                            {/* 스크랩 탭: 블로그 주인만 표시 */}
-                            {isLogin && userBlogId && String(userBlogId) === String(blogId) && (
-                                <li
-                                    className={`pb-2 border-b-2 ${
-                                        activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
-                                    } cursor-pointer`}
-                                    onClick={() => handleTabChange('scraps')}
-                                >
-                                    <span className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}>
-                                        스크랩
-                                    </span>
-                                </li>
-                            )}
-                        </ul>
-                    </nav>
-                    {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
-                        <div className="flex justify-end mb-8">
-                            <Link href="/post/write">
-                                <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
-                                    <span>새 글 작성하기</span>
-                                </button>
-                            </Link>
+                    <div className="mb-8">
+                        {/* 새 글 작성하기 버튼 */}
+                        {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
+                            <div className="flex justify-end mb-4">
+                                <Link href="/post/write">
+                                    <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
+                                        <span>새 글 작성하기</span>
+                                    </button>
+                                </Link>
+                            </div>
+                        )}
+
+                        {/* 네비게이션 */}
+                        <div className="border-b border-gray-200 w-full">
+                            <nav>
+                                <ul className="flex gap-8">
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('latest')}
+                                    >
+                                        <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
+                                            최신순
+                                        </span>
+                                    </li>
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('popular')}
+                                    >
+                                        <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
+                                            인기순
+                                        </span>
+                                    </li>
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('bookmarks')}
+                                    >
+                                        <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
+                                            팔로잉
+                                        </span>
+                                    </li>
+                                    {isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                                        <li
+                                            className={`pb-2 border-b-2 ${
+                                                activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
+                                            } cursor-pointer`}
+                                            onClick={() => handleTabChange('scraps')}
+                                        >
+                                            <span
+                                                className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}
+                                            >
+                                                스크랩
+                                            </span>
+                                        </li>
+                                    )}
+                                </ul>
+                            </nav>
                         </div>
-                    )}
+                    </div>
+
                     {/* 블로그 포스트 목록 */}
                     <div className="space-y-8">
                         <h2 className="text-2xl font-bold mb-6">
@@ -630,7 +641,7 @@ export default function BlogPage() {
                 </div>
             </main>
 
-            <aside className="w-55 flex-shrink-0 sticky top-8 self-start mr-8">
+            <aside className="w-64 flex-shrink-0 sticky top-8 self-start mr-8">
                 <div className="bg-white rounded-xl shadow-lg p-6">
                     {/* 게시글 검색 섹션 */}
                     <div className="mb-6">

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link' // Link 추가
 
 interface ScrapPost {
     postId: number
@@ -72,29 +73,36 @@ export default function ScrapPosts({ userId }: ScrapPostsProps) {
             ) : (
                 <div className="space-y-8">
                     {scrapPosts.map((post) => (
-                        <div className="flex border border-gray-100 rounded-lg p-4 gap-4 hover:shadow-md transition-shadow cursor-pointer">
-                            {/* 이미지 섹션 */}
-                            <div className="w-24 h-32 relative flex-shrink-0">
-                                <Image
-                                    src={
-                                        post.imageUrl && post.imageUrl.trim() !== ''
-                                            ? post.imageUrl
-                                            : 'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
-                                    }
-                                    alt={post.title || '기본 이미지'}
-                                    fill
-                                    className="object-cover rounded"
-                                />
+                        <Link
+                            href={`/post/${post.postId}/detail/get`} // 게시글 클릭 시 이동할 경로
+                            key={post.postId}
+                            className="block"
+                        >
+                            <div className="flex border border-gray-100 rounded-lg p-4 gap-4 hover:shadow-md transition-shadow cursor-pointer">
+                                {/* 이미지 섹션 */}
+                                <div className="w-24 h-32 relative flex-shrink-0">
+                                    <Image
+                                        src={
+                                            post.imageUrl && post.imageUrl.trim() !== ''
+                                                ? post.imageUrl
+                                                : 'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
+                                        }
+                                        alt={post.title || '기본 이미지'}
+                                        fill
+                                        className="object-cover rounded"
+                                    />
+                                </div>
+                                {/* 텍스트 섹션 */}
+                                <div>
+                                    <h3 className="text-lg font-medium mb-2">{post.title}</h3>
+                                    <p className="text-sm text-gray-500 mb-1">조회수: {post.viewCount}</p>
+                                    <p className="text-sm text-gray-500">
+                                        작성일:{' '}
+                                        {new Date(post.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
+                                    </p>
+                                </div>
                             </div>
-                            {/* 텍스트 섹션 */}
-                            <div>
-                                <h3 className="text-lg font-medium mb-2">{post.title}</h3>
-                                <p className="text-sm text-gray-500 mb-1">조회수: {post.viewCount}</p>
-                                <p className="text-sm text-gray-500">
-                                    작성일: {new Date(post.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
-                                </p>
-                            </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             )}
