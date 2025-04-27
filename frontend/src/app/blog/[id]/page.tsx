@@ -439,9 +439,9 @@ export default function BlogPage() {
     }
 
     return (
-        <div className="flex gap-8 max-w-8xl mx-auto px-4 py-8">
+        <div className="flex gap-8 w-full py-8">
             {/* 메인 컨텐츠 */}
-            <main className="flex-1 pl-100">
+            <main className="flex-1 pl-10">
                 <div className="bg-white rounded-xl shadow-lg p-8">
                     {/* 프로필 섹션 */}
                     <div>
@@ -617,7 +617,7 @@ export default function BlogPage() {
                         {currentPosts.map((post) => (
                             <article
                                 key={post.id}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow "
                             >
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
@@ -681,7 +681,11 @@ export default function BlogPage() {
 
             {/* 카테고리 사이드바 */}
             <aside className="w-64 flex-shrink-0 mt-100">
-                <div className="bg-white rounded-xl shadow-lg p-6">
+                <div
+                    className="bg-white ro
+                    unded-xl shadow
+                -lg p-6"
+                >
                     <div className="mb-6">
                         <h2 className="text-xl font-bold mb-4">게시글 검색</h2>
                         <div className="flex flex-col items-center">
