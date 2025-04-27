@@ -131,6 +131,7 @@ public class PostController {
         Post post = postService.findPostById(postId);
 
         // 조회수 업데이트
+
         //popularPostService.increasePopularity(postId, post.getMainCategory().getId());
 
         String mainCategory = post.getMainCategory() != null ? post.getMainCategory().getName() : "기본 카테고리";
@@ -139,6 +140,9 @@ public class PostController {
 //        List<String> imageUrls = post.getImageList() != null ? post.getImageList().stream()
 //                .map(image -> image.getImageUrl())
 //                .toList() : Collections.emptyList();
+
+//        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+
 
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
@@ -241,6 +245,28 @@ public class PostController {
                 );
         return ResponseEntity.ok(dtos);
     }
+
+
+    @GetMapping("/search/{blogId}/post")
+    public ResponseEntity<Page<PostResponseDto>> searchPostByBlog(
+            @RequestParam("search") String search,
+            @PathVariable("blogId") Long blogId,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<PostResponseDto> response = postService.searchBlogPost(blogId,search, pageable)
+                .map(post -> PostResponseDto.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .createdAt(post.getCreatedAt())
+                        .modifiedAt(post.getModifiedAt())
+                        .build()
+                );
+        return ResponseEntity.ok(response);
+    }
+
 
 
 

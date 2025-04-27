@@ -89,19 +89,23 @@ export default function BlogPage() {
     useEffect(() => {
         const fetchFollowCount = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/followcount/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/followcount/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 추가적인 헤더가 필요하면 여기에 추가
+                        },
+                        credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
-                })
+                )
                 if (!response.ok) {
-                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                    throw new Error('팔로우 수를 가져오는 데 실패했습니다.')
                 }
                 const data = await response.json()
                 setFollowCount(data) // 가져온 데이터를 상태에 저장
+                console.log('FollowCount : ', data)
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     // err가 Error 인스턴스인지 확인
@@ -121,12 +125,16 @@ export default function BlogPage() {
     useEffect(() => {
         const fetchUserId = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${blogId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/findUserId/${blogId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        // credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('유저 ID를 불러오는데 실패했습니다다.')
@@ -146,12 +154,15 @@ export default function BlogPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/categories/get/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     },
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
@@ -181,7 +192,7 @@ export default function BlogPage() {
 
         const fetchBlogInfo = async () => {
             try {
-                const res = await fetch(`http://localhost:8090/api/v1/blogs/get?blogId=${blogId}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get?blogId=${blogId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -204,7 +215,7 @@ export default function BlogPage() {
 
         const fetchUserBlogId = async () => {
             try {
-                const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -359,11 +370,11 @@ export default function BlogPage() {
                     </div>
                     <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
-                            <Link href="/follow?tab=following" className="text-center hover:opacity-80">
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">{followCount.followerCount}</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
-                            <Link href="/follow?tab=followers" className="text-center hover:opacity-80">
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">{followCount.followingCount}</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
@@ -546,7 +557,7 @@ export default function BlogPage() {
                     <div className="border-b border-gray-200 mb-4"></div>
                     <ul className="space-y-2">
                         {categories.map((category) => (
-                            <li key={category.name}>
+                            <li key={category.id}>
                                 <Link
                                     href={`/blog/category/${category.name}`}
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"

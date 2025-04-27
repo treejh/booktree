@@ -21,7 +21,7 @@ const CategoryGrid = () => {
 
     useEffect(() => {
         const currentCategoryId = categoryIdMap[activeTab as keyof typeof categoryIdMap]
-        fetch(`http://localhost:8090/api/v1/popular/get/posts/${currentCategoryId}`)
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/popular/get/posts/${currentCategoryId}`)
             .then((result) => {
                 if (!result.ok) {
                     setPopPosts([])

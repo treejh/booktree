@@ -57,6 +57,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     Page<Post> findByBookContainingIgnoreCase(String book, Pageable pageable); // 책 제목 검색
 
+    Page<Post> findByBlogIdAndTitleContaining(Long blogId, String keyword, Pageable pageable);//본인의 블로그에서 검색
+
     Page<Post> findByTitleContainingOrContentContaining(
             String titleKeyword,
             String contentKeyword,
