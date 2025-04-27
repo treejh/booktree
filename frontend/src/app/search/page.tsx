@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-
+import Image from 'next/image'
 interface SearchResult {
     postId: number
     title: string
@@ -10,6 +10,7 @@ interface SearchResult {
     author: string
     createdAt: string
     viewCount: number
+    imageUrl?: string
 }
 
 export default function SearchPage() {
@@ -84,14 +85,28 @@ export default function SearchPage() {
                             className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
                             onClick={() => router.push(`/post/${r.postId}/detail/get`)} // ← 클릭 시 이동
                         >
-                            <h2 className="text-xl font-semibold mb-2">{r.title}</h2>
-                            <p className="text-gray-600 mb-4 line-clamp-2">{r.content}</p>
-                            <div className="flex items-center text-sm text-gray-500">
-                                <span>{r.author}</span>
-                                <span className="mx-2">•</span>
-                                <span>{new Date(r.createdAt).toLocaleDateString('ko-KR')}</span>
-                                <span className="mx-2">•</span>
-                                <span>조회 {r.viewCount}</span>
+                            <div className="flex border border-gray-100 rounded-lg p-4 gap-4 hover:shadow-md transition-shadow cursor-pointer">
+                                {/* 이미지 섹션 */}
+                                <div className="w-24 h-32 relative flex-shrink-0">
+                                    <Image
+                                        src={
+                                            r.imageUrl && r.imageUrl.trim() !== ''
+                                                ? r.imageUrl
+                                                : 'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
+                                        }
+                                        alt={r.title || '기본 이미지'}
+                                        fill
+                                        className="object-cover rounded"
+                                    />
+                                </div>
+                                {/* 텍스트 섹션 */}
+                                <div>
+                                    <h3 className="text-lg font-medium mb-2">{r.title}</h3>
+                                    <p className="text-sm text-gray-500 mb-1">조회수: {r.viewCount}</p>
+                                    <p className="text-sm text-gray-500">
+                                        작성일: {new Date(r.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     ))}

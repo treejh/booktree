@@ -214,6 +214,11 @@ public class PostController {
         Page<PostResponseDto> dtoPage = postPage.map(post -> PostResponseDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
+                .imageUrl(
+                        post.getImageList().isEmpty()
+                                ? null
+                                : post.getImageList().get(0).getImageUrl()
+                )
                 .viewCount(post.getView())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
@@ -238,6 +243,11 @@ public class PostController {
                         .postId(post.getId())
                         .title(post.getTitle())
                         .viewCount(post.getView())
+                        .imageUrl(
+                                post.getImageList().isEmpty()
+                                        ? null
+                                        : post.getImageList().get(0).getImageUrl()
+                        )
                         .createdAt(post.getCreatedAt())
                         .modifiedAt(post.getModifiedAt())
                         .build()
