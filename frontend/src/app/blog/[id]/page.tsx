@@ -79,6 +79,7 @@ export default function BlogPage() {
     const [userId, setUserId] = useState<number | null>(null)
     const [categories, setCategories] = useState<Category>([])
     const [followCount, setFollowCount] = useState([])
+    const [postCount, setPostCount] = useState()
 
     //블로그 정보 가져오기
 
@@ -181,6 +182,39 @@ export default function BlogPage() {
         // ✅ userId가 존재할 때만 호출되도록 조건 추가
         if (userId) {
             fetchCategories()
+        }
+    }, [userId])
+
+    useEffect(() => {
+        const fetchPostCount = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/postcount/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('게시글 수를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('게시글 수수 : ', data)
+                setPostCount(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '게시글 수를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchPostCount()
         }
     }, [userId])
 
@@ -445,7 +479,7 @@ export default function BlogPage() {
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
                             <div className="text-center">
-                                <div className="text-xl font-bold">42</div>
+                                <div className="text-xl font-bold">{postCount}</div>
                                 <div className="text-gray-600">포스트</div>
                             </div>
                         </div>
