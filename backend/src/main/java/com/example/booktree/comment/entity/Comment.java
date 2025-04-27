@@ -35,7 +35,7 @@ public class Comment extends Auditable {
     @Column(nullable = false)
     private String content;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
 
