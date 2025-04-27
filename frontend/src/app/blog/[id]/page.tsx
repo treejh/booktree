@@ -593,7 +593,7 @@ export default function BlogPage() {
                                         onClick={() => handleTabChange('popular')}
                                     >
                                         <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
-                                            인기순
+                                            추천순
                                         </span>
                                     </li>
                                     <li
