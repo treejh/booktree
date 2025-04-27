@@ -234,6 +234,9 @@ export default function EditProfilePage() {
             alert('이미지가 성공적으로 업로드되었습니다!')
             setSelectedImage(null)
             setImagePreview(null)
+
+            // 새로고침하여 변경된 이미지 적용
+            window.location.reload()
         } catch (error) {
             console.error(error)
             alert('이미지 업로드 중 오류가 발생했습니다. 다시 시도해주세요.')
