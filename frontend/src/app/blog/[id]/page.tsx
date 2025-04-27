@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import AnnouncementModal from '../../components/AnnouncementModal'
 import { LoginUserContext, useGlobalLoginUser, useLoginUser } from '@/stores/auth/loginMember'
 import ScrapPosts from '../../components/ScrapPosts'
+import FollowingPosts from '../../components/FollowingPosts'
 
 interface Post {
     id: number
@@ -621,35 +622,11 @@ export default function BlogPage() {
                         {activeTab === 'scraps' && isLogin && userBlogId && String(userBlogId) === String(blogId) && (
                             <ScrapPosts userId={Number(blogId)} />
                         )}
+                        {activeTab === 'bookmarks' &&
+                            isLogin &&
+                            userBlogId &&
+                            String(userBlogId) === String(blogId) && <FollowingPosts userId={Number(blogId)} />}
                     </div>
-                    {/* 페이지네이션 */}
-                    {/* <div className="flex justify-center gap-2 mt-8">
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            Previous
-                        </button>
-                        {pageNumbers.map((number) => (
-                            <button
-                                key={number}
-                                className={`px-4 py-2 border rounded ${
-                                    currentPage === number ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'
-                                }`}
-                                onClick={() => handlePageChange(number)}
-                            >
-                                {number}
-                            </button>
-                        ))}
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                        </button>
-                    </div> */}
                 </div>
             </main>
 
