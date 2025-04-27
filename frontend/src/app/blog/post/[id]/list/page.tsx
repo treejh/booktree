@@ -112,14 +112,14 @@ export default function BlogPostListPage() {
                         {/* <h2 className="text-2xl font-bold mb-6">
                             {activeTab === 'latest' && '최신 게시물'}
                             {activeTab === 'popular' && '인기 게시물'}
-                            {activeTab === 'bookmarks' && '팔로잉 게시글'}
+                            {activeTab === 'bookmarks' && '팔로잉 게시글'}dddddddddd
                         </h2> */}
 
                         <h2 className="text-2xl font-bold mb-6">
                             {sortType === 'latest' ? '최신 게시물' : '인기 게시물'}
                         </h2>
                         {posts.map((post) => (
-                            <Link href={`/blog/get/${post.postId}/detail`} key={post.postId} className="block">
+                            <Link href={`/post/${post.postId}/detail/get`} key={post.postId} className="block">
                                 <article
                                     key={post.postId}
                                     className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"

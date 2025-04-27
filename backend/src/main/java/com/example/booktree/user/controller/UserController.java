@@ -125,14 +125,21 @@ public class UserController {
 
     // Delete
     @DeleteMapping("/delete")
-    public ResponseEntity deleteBlog() {
+    public ResponseEntity deleteUser(HttpServletResponse response) {
         userService.deleteUser();
+        // accessToken 쿠키 삭제
+        Cookie accessTokenCookie = new Cookie("accessToken", null);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");  // 쿠키의 경로 지정
+        accessTokenCookie.setMaxAge(0);  // 쿠키의 유효 기간을 0으로 설정하여 삭제
+        response.addCookie(accessTokenCookie);
+
         return new ResponseEntity<>("삭제 완료", HttpStatus.OK);
     }
 
-    // Delete
-    @DeleteMapping("/delete/{userId}")
-    public ResponseEntity deleteBlog(@Positive @PathVariable("userId") Long userId) {
+    // Delete, 어드민이 유저 아이디로 유저 삭제하기
+    @DeleteMapping("/delete/admin/{userId}")
+    public ResponseEntity deleteUser(@Positive @PathVariable("userId") Long userId) {
         userService.deleteUserById(userId);
         return new ResponseEntity<>("삭제 완료", HttpStatus.OK);
     }

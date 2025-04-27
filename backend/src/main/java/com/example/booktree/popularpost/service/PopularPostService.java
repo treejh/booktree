@@ -1,3 +1,4 @@
+
 package com.example.booktree.popularpost.service;
 
 import com.example.booktree.exception.BusinessLogicException;
@@ -105,3 +106,4 @@ public class PopularPostService {
         return REDIS_KEY + mainCategoryId + ":month:" + monthKey;
     }
 }
+

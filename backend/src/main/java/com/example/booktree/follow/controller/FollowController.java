@@ -102,5 +102,11 @@ public class FollowController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/get/isfollowing/{userId}")
+    public ResponseEntity<?> getIsFollowing(@PathVariable Long userId) {
+        boolean response = followService.isIn(tokenService.getIdFromToken(), userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
 }

@@ -19,5 +19,6 @@ public class AllFollowListResponseDto {
     private LocalDateTime update_at;
     private boolean isFollowing;
     private boolean isMe;
+    private Long blogId;
 
 }

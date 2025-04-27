@@ -10,10 +10,11 @@ export default function LoginPage() {
     const [rememberLogin, setRememberLogin] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const socialLoginForKakaoUrl = `http://localhost:8090/oauth2/authorization/kakao`
-    const socialLoginForGithubUrl = `http://localhost:8090/oauth2/authorization/github`
-    const redirectUrlAfterSocialLogin = 'http://localhost:3000'
+    const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao`
+    const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
+    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_FRONT_BASE_URL}`
     const router = useRouter()
+    const [showAlert, setShowAlert] = useState(false) // 알림 모달 상태
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -24,7 +25,7 @@ export default function LoginPage() {
         }
 
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/login', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,10 +39,11 @@ export default function LoginPage() {
                 window.location.href = '/'
             } else {
                 console.error('로그인 실패:', response.status)
-                // 에러 처리
+                setShowAlert(true) // 로그인 실패 시 알림 모달 표시
             }
         } catch (error) {
             console.error('로그인 요청 중 오류 발생:', error)
+            setShowAlert(true) // 로그인 실패 시 알림 모달 표시
         }
     }
 
@@ -116,8 +118,8 @@ export default function LoginPage() {
                             </button>
 
                             <Link
-                                href={`${socialLoginForKakaoUrl}?redirectUrl=http://localhost:3000`}
-                                className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                                href={`${socialLoginForKakaoUrl}?redirectUrl=${redirectUrlAfterSocialLogin}`}
+                                className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-700 bg-[#FFE812] hover:bg-[#FFE200] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                             >
                                 <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2 fill-current">
                                     <path d="M12 3C6.5 3 2 6.5 2 11c0 2.5 1.2 4.7 3 6.2l-1 3.8 4-2.4c1.3.4 2.6.6 4 .6 5.5 0 10-3.5 10-8s-4.5-8-10-8z" />
@@ -153,6 +155,23 @@ export default function LoginPage() {
                     </form>
                 </div>
             </div>
+
+            {/* 알림 모달 */}
+            {showAlert && (
+                <div className={styles.alertOverlay}>
+                    <div className={styles.alertModal}>
+                        <p>아이디, 비밀번호를 확인해주세요.</p>
+                        <button
+                            type="button"
+                            onClick={() => setShowAlert(false)} // 알림 닫기
+                            className={styles.alertButton}
+                        >
+                            확인
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <footer className={styles.footer}>
                 <div className={styles.footerDivider}></div>
                 <div className={styles.footerLine}></div>

@@ -5,14 +5,12 @@ import com.example.booktree.exception.ExceptionCode;
 //import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
-import com.example.booktree.post.dto.response.PostDetailResponseDto;
-import com.example.booktree.post.dto.response.PostFollowingPageDto;
+import com.example.booktree.post.dto.response.*;
 
 
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
 import com.example.booktree.post.dto.response.PostFollowingPageDto;
 
-import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
 import jakarta.transaction.Transactional;
@@ -28,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,7 +129,18 @@ public class PostController {
         Post post = postService.findPostById(postId);
 
         // 조회수 업데이트
+
+        //popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+
+        String mainCategory = post.getMainCategory() != null ? post.getMainCategory().getName() : "기본 카테고리";
+        String category = post.getCategory() != null ? post.getCategory().getName() : "기본 서브 카테고리";
+//        String username = post.getUser() != null ? post.getUser().getUsername() : "알 수 없음";
+//        List<String> imageUrls = post.getImageList() != null ? post.getImageList().stream()
+//                .map(image -> image.getImageUrl())
+//                .toList() : Collections.emptyList();
+
 //        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+
 
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
@@ -145,6 +155,12 @@ public class PostController {
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
+                .author(post.getAuthor() != null ? post.getAuthor() : "알 수 없음")
+                .book(post.getBook() != null ? post.getBook() : "알 수 없음")
+                .category(category)
+                .mainCategory(mainCategory)
+                .mainCategoryId(post.getMainCategory().getId()) // 메인 카테고리 ID
+                .categoryId(post.getCategory().getId()) // 카테고리 ID
                 .build();
 
 
@@ -229,6 +245,33 @@ public class PostController {
     }
 
 
+    @GetMapping("/search/{blogId}/post")
+    public ResponseEntity<Page<PostResponseDto>> searchPostByBlog(
+            @RequestParam("search") String search,
+            @PathVariable("blogId") Long blogId,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Page<PostResponseDto> response = postService.searchBlogPost(blogId,search, pageable)
+                .map(post -> PostResponseDto.builder()
+                        .postId(post.getId())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .createdAt(post.getCreatedAt())
+                        .imageUrl(
+                                post.getImageList().isEmpty()
+                                        ? null
+                                        : post.getImageList().get(0).getImageUrl()
+                        )
+                        .modifiedAt(post.getModifiedAt())
+                        .build()
+                );
+        return ResponseEntity.ok(response);
+    }
+
+
+
 
     @GetMapping("/get/followingPost")
     public ResponseEntity<?> getFollowingPost( @RequestParam(name = "page", defaultValue = "1") int page,
@@ -269,6 +312,20 @@ public class PostController {
 
         return new ResponseEntity<>(response,HttpStatus.OK);
 
+    }
+
+    @GetMapping("/get/postcount/{userId}")
+    public ResponseEntity<?> getPostCountByUserId(@PathVariable("userId") Long userId) {
+
+        Long response = postService.findPostCount(userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get/top3/post")
+    public ResponseEntity<?> getTop3Posts() {
+
+        List<PostTop3ResponseDto> reponse = postService.getTop3PostsByView();
+        return new ResponseEntity<>(reponse, HttpStatus.OK);
     }
 
 

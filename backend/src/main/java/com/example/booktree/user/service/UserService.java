@@ -35,6 +35,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final ImageService imageService;
+    private static final String USER_IMAGE="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png";
+
 
 
     public User findById(Long userId) {
@@ -68,6 +70,7 @@ public class UserService {
                 .password(passwordEncoder.encode(userPostRequestDto.getPassword()))
                 .phoneNumber(userPostRequestDto.getPhoneNumber())
                 //이미 UserValidation에서 검증을 했기 때문에 get() 사용
+                .image(USER_IMAGE)
                 .role(roleRepository.findById(userPostRequestDto.getRoleId()).get())
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
@@ -231,7 +234,6 @@ public class UserService {
 
     public void deleteUserById(Long userId){
         User user = ownerValidation(userId);
-
         userRepository.delete(user);
     }
 
@@ -359,6 +361,7 @@ public class UserService {
                 .password(password)
                 .username(username)
                 .phoneNumber(" ")
+                .image(USER_IMAGE)
                 .ssoProvider(provider)
                 .role(role)
                 .socialId(socialId)

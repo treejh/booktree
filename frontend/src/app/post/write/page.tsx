@@ -17,6 +17,12 @@ interface Category {
     update_at: string
 }
 
+// 이미지 미리보기를 위한 인터페이스 추가
+interface ImagePreview {
+    file: File
+    url: string
+}
+
 export interface User {
     id: number
     email: string
@@ -74,6 +80,7 @@ export default function PostWritePage() {
 
     // First add state for image files
     const [selectedImages, setSelectedImages] = useState<FileList | null>(null)
+    const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([])
 
     // 블로그 정보를 가져오는 상태 추가
     const [blogInfo, setBlogInfo] = useState<{ blogId: number | null }>({ blogId: null })
@@ -220,8 +227,50 @@ export default function PostWritePage() {
 
     // Add image input handler
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+        if (e.target.files && e.target.files.length > 0) {
             setSelectedImages(e.target.files)
+
+            // 이미지 미리보기 생성
+            const newPreviews: ImagePreview[] = []
+            Array.from(e.target.files).forEach((file) => {
+                const imageUrl = URL.createObjectURL(file)
+                newPreviews.push({ file, url: imageUrl })
+            })
+            setImagePreviews((prev) => [...prev, ...newPreviews])
+        }
+    }
+
+    // 이미지 삭제 핸들러 추가
+    const handleRemoveImage = (index: number) => {
+        setImagePreviews((prev) => {
+            const newPreviews = [...prev]
+            URL.revokeObjectURL(newPreviews[index].url)
+            newPreviews.splice(index, 1)
+            return newPreviews
+        })
+    }
+
+    // 컴포넌트 언마운트 시 URL 정리
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
+        }
+    }, [])
+
+    // 에디터 콘텐츠 변경 핸들러 추가
+    const handleEditorChange = () => {
+        if (editorRef.current) {
+            const content = editorRef.current.innerHTML
+            // 스타일을 적용하기 위한 클래스 추가
+            editorRef.current.querySelectorAll('b, strong').forEach((element) => {
+                element.classList.add('font-bold')
+            })
+            editorRef.current.querySelectorAll('i, em').forEach((element) => {
+                element.classList.add('italic')
+            })
+            editorRef.current.querySelectorAll('u').forEach((element) => {
+                element.classList.add('underline')
+            })
         }
     }
 
@@ -368,99 +417,42 @@ export default function PostWritePage() {
         // Execute the command
         try {
             // For simple formatting commands
-            if (format === 'bold' || format === 'italic' || format === 'underline') {
+            if (format === 'bold' || format === 'italic') {
                 document.execCommand(format, false)
-
                 // Update state to reflect active formatting
-                switch (format) {
-                    case 'bold':
-                        setIsBold(!isBold)
-                        break
-                    case 'italic':
-                        setIsItalic(!isItalic)
-                        break
-                    case 'underline':
-                        setIsUnderline(!isUnderline)
-                        break
+                if (format === 'bold') {
+                    setIsBold(!isBold)
+                } else if (format === 'italic') {
+                    setIsItalic(!isItalic)
                 }
+            } else if (format === 'underline') {
+                document.execCommand('underline', false)
+                setIsUnderline(!isUnderline) // Toggle underline state
             }
             // For list commands - handle them manually if execCommand doesn't work
-            else if (format === 'insertUnorderedList') {
-                // Try standard command first
+            else if (format === 'insertUnorderedList' || format === 'insertOrderedList') {
                 const success = document.execCommand(format, false)
 
-                // If standard command fails, manual implementation
                 if (!success && range && editorRef.current) {
                     const selectedText = range.toString()
                     const listItems = selectedText.split('\n').filter((line) => line.trim() !== '')
 
-                    if (listItems.length > 0) {
-                        const ul = document.createElement('ul')
-                        listItems.forEach((item) => {
-                            const li = document.createElement('li')
-                            li.textContent = item
-                            ul.appendChild(li)
-                        })
-
-                        range.deleteContents()
-                        range.insertNode(ul)
-                    } else {
-                        // If no text is selected, just create an empty list item
-                        const ul = document.createElement('ul')
+                    const list = document.createElement(format === 'insertUnorderedList' ? 'ul' : 'ol')
+                    listItems.forEach((item) => {
                         const li = document.createElement('li')
-                        li.innerHTML = '&nbsp;' // Empty list item needs a space to be visible
-                        ul.appendChild(li)
+                        li.textContent = item
+                        list.appendChild(li)
+                    })
 
-                        range.deleteContents()
-                        range.insertNode(ul)
-
-                        // Place caret in the empty list item
-                        range.selectNodeContents(li)
-                        range.collapse(true)
-                        selection?.removeAllRanges()
-                        selection?.addRange(range)
-                    }
+                    range.deleteContents()
+                    range.insertNode(list)
                 }
 
-                setIsBulletList(!isBulletList)
-            } else if (format === 'insertOrderedList') {
-                // Try standard command first
-                const success = document.execCommand(format, false)
-
-                // If standard command fails, manual implementation
-                if (!success && range && editorRef.current) {
-                    const selectedText = range.toString()
-                    const listItems = selectedText.split('\n').filter((line) => line.trim() !== '')
-
-                    if (listItems.length > 0) {
-                        const ol = document.createElement('ol')
-                        listItems.forEach((item) => {
-                            const li = document.createElement('li')
-                            li.textContent = item
-                            ol.appendChild(li)
-                        })
-
-                        range.deleteContents()
-                        range.insertNode(ol)
-                    } else {
-                        // If no text is selected, just create an empty list item
-                        const ol = document.createElement('ol')
-                        const li = document.createElement('li')
-                        li.innerHTML = '&nbsp;' // Empty list item needs a space to be visible
-                        ol.appendChild(li)
-
-                        range.deleteContents()
-                        range.insertNode(ol)
-
-                        // Place caret in the empty list item
-                        range.selectNodeContents(li)
-                        range.collapse(true)
-                        selection?.removeAllRanges()
-                        selection?.addRange(range)
-                    }
+                if (format === 'insertUnorderedList') {
+                    setIsBulletList(!isBulletList)
+                } else {
+                    setIsNumberedList(!isNumberedList)
                 }
-
-                setIsNumberedList(!isNumberedList)
             }
         } catch (e) {
             console.error('Error applying format:', format, e)
@@ -588,6 +580,40 @@ export default function PostWritePage() {
                                 file:bg-green-50 file:text-green-700
                                 hover:file:bg-green-100"
                         />
+
+                        {/* 이미지 미리보기 영역 */}
+                        {imagePreviews.length > 0 && (
+                            <div className="mt-4 grid grid-cols-3 gap-4">
+                                {imagePreviews.map((preview, index) => (
+                                    <div key={index} className="relative">
+                                        <img
+                                            src={preview.url}
+                                            alt={`Preview ${index + 1}`}
+                                            className="w-full h-32 object-cover rounded"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveImage(index)}
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                        >
+                                            <svg
+                                                className="w-4 h-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     {/* Content Area - ContentEditable div instead of textarea */}
                     <div className="min-h-[300px] border border-gray-200 rounded-md overflow-hidden mb-6">
@@ -595,12 +621,11 @@ export default function PostWritePage() {
                             ref={editorRef}
                             contentEditable
                             suppressContentEditableWarning={true}
-                            className="w-full h-full min-h-[300px] p-4 outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+                            className="w-full h-full min-h-[300px] p-4 outline-none prose max-w-none
+                                empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
                             style={{ overflowY: 'auto' }}
                             data-placeholder="내용을 입력하세요"
-                            onInput={() => {
-                                // Additional handling for changes if needed
-                            }}
+                            onInput={handleEditorChange}
                         ></div>
                     </div>
                     {/* Submit Buttons */}
@@ -668,7 +693,7 @@ export default function PostWritePage() {
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                                     </svg>
                                 </div>
                             </div>

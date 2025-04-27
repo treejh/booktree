@@ -26,6 +26,7 @@ export default function MyPage() {
     const { isLogin, loginUser } = useGlobalLoginUser()
     const [isAuthorized, setIsAuthorized] = useState(false)
     const { id: userId } = useParams<{ id: string }>() // URL에서 userId
+    const [postCount, setPostCount] = useState()
 
     useEffect(() => {
         const checkAuthorization = () => {
@@ -57,14 +58,17 @@ export default function MyPage() {
 
     const saveEditedCategory = async (categoryId: number) => {
         try {
-            const response = await fetch(`http://localhost:8090/api/v1/categories/patch/${categoryId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/patch/${categoryId}`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ categoryName: editedCategoryName }),
                 },
-                credentials: 'include',
-                body: JSON.stringify({ categoryName: editedCategoryName }),
-            })
+            )
 
             if (!response.ok) {
                 throw new Error('카테고리 수정에 실패했습니다.')
@@ -93,13 +97,16 @@ export default function MyPage() {
         if (!confirmed) return
 
         try {
-            const response = await fetch(`http://localhost:8090/api/v1/categories/delete/${categoryId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/delete/${categoryId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
                 },
-                credentials: 'include',
-            })
+            )
 
             if (!response.ok) {
                 throw new Error('카테고리 삭제에 실패했습니다.')
@@ -117,14 +124,16 @@ export default function MyPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch('http://localhost:8090/api/v1/categories/get/allcategory', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/allcategory`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
-                })
+                )
                 if (!response.ok) {
                     throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
                 }
@@ -146,18 +155,50 @@ export default function MyPage() {
     }, [])
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchPostCount = async () => {
             try {
-                const response = await fetch('http://localhost:8090/api/v1/follow/get/followcount', {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/postcount/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('게시글 수를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('게시글 수수 : ', data)
+                setPostCount(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '게시글 수를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchPostCount()
+        }
+    }, [userId])
+
+    useEffect(() => {
+        const fetchFollowCount = async () => {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/followcount`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
                     },
                     credentials: 'include', // 쿠키를 포함시키기 위한 설정
                 })
                 if (!response.ok) {
-                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                    throw new Error('팔로우 데이터를 가져오는 데 실패했습니다.')
                 }
                 const data = await response.json()
                 setFollowCount(data) // 가져온 데이터를 상태에 저장
@@ -173,7 +214,7 @@ export default function MyPage() {
             }
         }
 
-        fetchCategories()
+        fetchFollowCount()
     }, [])
 
     const [isEditing, setIsEditing] = useState(false)
@@ -188,14 +229,12 @@ export default function MyPage() {
         router.push('/blog/detail')
     }
 
-    // 팔로잉 클릭 핸들러 추가
     const handleFollowingClick = () => {
-        router.push(`/follow/${userId}`)
+        router.push(`/follow/${loginUser.id}?tab=following`)
     }
 
-    // 팔로워 클릭 핸들러 추가
     const handleFollowerClick = () => {
-        router.push('/follow?tab=followers') // followers 탭으로 이동
+        router.push(`/follow/${loginUser.id}?tab=followers`)
     }
 
     // toggleFollow 함수 제거
@@ -233,13 +272,16 @@ export default function MyPage() {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
-                                                method: 'GET',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
+                                            const res = await fetch(
+                                                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`,
+                                                {
+                                                    method: 'GET',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                    },
+                                                    credentials: 'include', // 쿠키 인증 정보 포함
                                                 },
-                                                credentials: 'include', // 쿠키 인증 정보 포함
-                                            })
+                                            )
 
                                             const data = await res.json()
 
@@ -278,25 +320,6 @@ export default function MyPage() {
                         </div>
                     </div>
                     <div className="flex space-x-2">
-                        <button
-                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                            onClick={() => setIsEditing(!isEditing)}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                />
-                            </svg>
-                        </button>
                         {/* 톱니바퀴 버튼 추가 */}
                         <button
                             className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
@@ -366,7 +389,7 @@ export default function MyPage() {
                             onClick={handlePostsClick}
                         >
                             <h3 className="text-gray-500 mb-2">게시물</h3>
-                            <p className="text-2xl font-bold">42</p>
+                            <p className="text-2xl font-bold">{postCount}</p>
                         </div>
                     </div>
                     <div>
@@ -416,6 +439,7 @@ export default function MyPage() {
                         <div
                             key={category.id}
                             className="p-6 hover:bg-gray-50 transition cursor-pointer flex justify-between items-center"
+                            onClick={() => router.push(`/category/${category.id}`)} // 카테고리 클릭 시 이동
                         >
                             <div className="flex-1">
                                 {editingCategoryId === category.id ? (
@@ -426,28 +450,38 @@ export default function MyPage() {
                                         className="border p-2 rounded w-full"
                                     />
                                 ) : (
-                                    <h3
-                                        className="font-medium"
-                                        onClick={() => handleCategoryClick(category.id, category.name)}
-                                    >
-                                        {category.name}
-                                    </h3>
+                                    <h3 className="font-medium">{category.name}</h3>
                                 )}
                             </div>
                             <div className="flex space-x-2 text-gray-500">
                                 {editingCategoryId === category.id ? (
                                     <button
-                                        onClick={() => saveEditedCategory(category.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
+                                            saveEditedCategory(category.id)
+                                        }}
                                         className="text-green-600 font-semibold"
                                     >
                                         완료
                                     </button>
                                 ) : (
-                                    <button onClick={() => startEditingCategory(category.id, category.name)}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
+                                            startEditingCategory(category.id, category.name)
+                                        }}
+                                    >
                                         수정
                                     </button>
                                 )}
-                                <button onClick={() => handleDeleteCategory(category.id)}>삭제</button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
+                                        handleDeleteCategory(category.id)
+                                    }}
+                                >
+                                    삭제
+                                </button>
                             </div>
                         </div>
                     ))}

@@ -1,5 +1,6 @@
 package com.example.booktree.follow.service;
 
+import com.example.booktree.blog.service.BlogService;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.dto.request.FollowRequestDto;
@@ -28,6 +29,7 @@ public class FollowService {
     public final FollowRepository followRepository;
     public final UserService userService;
     private final TokenService tokenService;
+    private final BlogService blogService;
 
     // 모든 팔로우 정보 제공
     @Transactional(readOnly = true)
@@ -42,16 +44,17 @@ public class FollowService {
                 .map(f -> f.getFollowed().getId())
                 .toList();
 
-
         return IntStream.range(0, follows.size())
                 .mapToObj(index -> {
                     Follow follower = follows.get(index);
                     Long targetId = follower.getFollowed().getId();
+                    Long blogId = blogService.findBlogIdByUserId(targetId);
 
                     return AllFollowListResponseDto.builder()
                             .id(follower.getId())
                             .count(index + 1)
                             .userId(targetId)
+                            .blogId(blogId)
                             .username(follower.getFollowed().getUsername())
                             .isFollowing(myFollowingIds.contains(targetId)) // 로그인한 유저가 팔로우 중인지 여부
                             .create_at(follower.getCreatedAt())
@@ -77,11 +80,13 @@ public class FollowService {
                 .mapToObj(index -> {
                     Follow followed = follows.get(index);
                     Long targetId = followed.getFollower().getId();
+                    Long blogId = blogService.findBlogIdByUserId(targetId);
 
                     return AllFollowListResponseDto.builder()
                             .id(followed.getId())
                             .count(index + 1)
                             .userId(targetId)
+                            .blogId(blogId)
                             .username(followed.getFollower().getUsername())
                             .isFollowing(myFollowingIds.contains(targetId))
                             .create_at(followed.getCreatedAt())
