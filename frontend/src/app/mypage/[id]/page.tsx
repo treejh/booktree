@@ -26,6 +26,7 @@ export default function MyPage() {
     const { isLogin, loginUser } = useGlobalLoginUser()
     const [isAuthorized, setIsAuthorized] = useState(false)
     const { id: userId } = useParams<{ id: string }>() // URL에서 userId
+    const [postCount, setPostCount] = useState()
 
     useEffect(() => {
         const checkAuthorization = () => {
@@ -154,6 +155,39 @@ export default function MyPage() {
     }, [])
 
     useEffect(() => {
+        const fetchPostCount = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/postcount/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('게시글 수를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('게시글 수수 : ', data)
+                setPostCount(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '게시글 수를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchPostCount()
+        }
+    }, [userId])
+
+    useEffect(() => {
         const fetchFollowCount = async () => {
             try {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/followcount`, {
@@ -195,14 +229,12 @@ export default function MyPage() {
         router.push('/blog/detail')
     }
 
-    // 팔로잉 클릭 핸들러 추가
     const handleFollowingClick = () => {
-        router.push('/follow')
+        router.push(`/follow/${loginUser.id}?tab=following`)
     }
 
-    // 팔로워 클릭 핸들러 추가
     const handleFollowerClick = () => {
-        router.push('/follow?tab=followers') // followers 탭으로 이동
+        router.push(`/follow/${loginUser.id}?tab=followers`)
     }
 
     // toggleFollow 함수 제거
@@ -376,7 +408,7 @@ export default function MyPage() {
                             onClick={handlePostsClick}
                         >
                             <h3 className="text-gray-500 mb-2">게시물</h3>
-                            <p className="text-2xl font-bold">42</p>
+                            <p className="text-2xl font-bold">{postCount}</p>
                         </div>
                     </div>
                     <div>

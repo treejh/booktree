@@ -311,6 +311,13 @@ public class PostController {
 
     }
 
+    @GetMapping("/get/postcount/{userId}")
+    public ResponseEntity<?> getPostCountByUserId(@PathVariable("userId") Long userId) {
+
+        Long response = postService.findPostCount(userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
 
 

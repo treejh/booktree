@@ -83,7 +83,6 @@ interface PostList {
 
 export default function DetailPage() {
     // 2. 모든 hooks를 최상단에 배치
-    const { loginUser } = useGlobalLoginUser()
     const router = useRouter()
     const { postId } = useParams()
     // 로그인 상태와 토큰 정보 함께 꺼내기
