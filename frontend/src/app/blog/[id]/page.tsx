@@ -679,13 +679,9 @@ export default function BlogPage() {
                 </div>
             </main>
 
-            {/* 카테고리 사이드바 */}
-            <aside className="w-64 flex-shrink-0 mt-100">
-                <div
-                    className="bg-white ro
-                    unded-xl shadow
-                -lg p-6"
-                >
+            <aside className="w-64 flex-shrink-0 sticky top-8 self-start mr-8">
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                    {/* 게시글 검색 섹션 */}
                     <div className="mb-6">
                         <h2 className="text-xl font-bold mb-4">게시글 검색</h2>
                         <div className="flex flex-col items-center">
@@ -705,6 +701,7 @@ export default function BlogPage() {
                         </div>
                     </div>
 
+                    {/* 카테고리 목록 섹션 */}
                     <h2 className="text-xl font-bold mb-4">카테고리 목록</h2>
                     <div className="border-b border-gray-200 mb-4"></div>
                     <ul className="space-y-2">
