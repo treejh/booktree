@@ -101,4 +101,19 @@ public class CategoryController {
         List<PostByCategoryResponseDto> response = categoryService.getPostByCategory(categoryId, userId);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+
+
+    @GetMapping("/get/category/{categoryId}/posts")
+    @Operation(
+            summary = "카테고리별 게시글 찾기 기능",
+            description = "카테고리 아이디를 통해서 게시글을 사용자에게 제공하는 메서드 ",
+            tags = "카테고리 관리 컨트롤러"
+    )
+    public ResponseEntity<?> getPostsByCategoryId(@PathVariable Long categoryId,
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "8") int size) {
+
+        List<PostByCategoryResponseDto> response = categoryService.getPostByCategoryId(categoryId,page,size);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
 }

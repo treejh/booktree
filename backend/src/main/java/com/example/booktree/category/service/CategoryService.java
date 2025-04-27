@@ -9,10 +9,15 @@ import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.maincategory.dto.response.AllMainCategoryResponseDto;
 import com.example.booktree.post.entity.Post;
+import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.post.service.PostService;
 import com.example.booktree.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,7 @@ public class CategoryService {
     public final CategoryRepository categoryRepository;
     public final UserService userService;
     public final PostService postService;
+    public final PostRepository postRepository;
 
 
     // read
@@ -112,6 +118,31 @@ public class CategoryService {
                 .map(post -> PostByCategoryResponseDto.builder()
                         .postId(post.getId())
                         .create_at(post.getCreatedAt())
+                        .update_at(post.getModifiedAt())
+                        .view(post.getView())
+                        .postTitle(post.getTitle())
+                        .build())
+                .toList();
+    }
+
+
+    @Transactional
+    public List<PostByCategoryResponseDto> getPostByCategoryId(Long categoryId,int page, int size){
+        Category category = findById(categoryId);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
+
+        return posts.stream()
+                .map(post -> PostByCategoryResponseDto.builder()
+                        .postId(post.getId())
+                        .create_at(post.getCreatedAt())
+                        .imageUrl(
+                                post.getImageList().isEmpty()
+                                        ? null
+                                        : post.getImageList().get(0).getImageUrl()
+                        )
                         .update_at(post.getModifiedAt())
                         .view(post.getView())
                         .postTitle(post.getTitle())
