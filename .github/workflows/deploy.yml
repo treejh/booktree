@@ -9,6 +9,7 @@ on:
       - "backend/Dockerfile"
     branches:
       - main
+      - feat/#236-gihub-action-cicd-배포
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
@@ -38,7 +39,7 @@ jobs:
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE_NAME: BookTree
+      DOCKER_IMAGE_NAME: booktree
     outputs:
       DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ env.OWNER_LC }}
