@@ -13,4 +13,7 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
 
     @Query("SELECT b.user.id FROM Blog b WHERE b.id = :blogId")
     Long findUserIdByBlogId(@Param("blogId") Long blogId);
+
+    @Query("SELECT b.id FROM Blog b WHERE b.user.id = :userId")
+    Long findBlogIdByUserId(@Param("userId") Long userId);
 }
