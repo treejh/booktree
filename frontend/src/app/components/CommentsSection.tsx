@@ -6,6 +6,7 @@ import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
 export interface Reply {
     id: number
+    userId: number
     author: string
     date: string
     content: string
@@ -14,6 +15,7 @@ export interface Reply {
 
 export interface Comment {
     id: number
+    userId: number
     author: string
     date: string
     content: string
@@ -43,6 +45,10 @@ export function CommentsSection({ postId }: { postId: number }) {
     const [editedReplyContent, setEditedReplyContent] = useState('')
     const [hasReplied, setHasReplied] = useState<Record<number, boolean>>({})
 
+    // ─── 2.1) 팝오버 상태 ───────────────────────────────────────────────
+    const [activeCommentId, setActiveCommentId] = useState<number | null>(null)
+    const [isFollowing, setIsFollowing] = useState<{ [username: string]: boolean }>({})
+
     // ─── 공통 헬퍼
     const ensureLogin = () => {
         if (!isLogin) router.push('/login')
@@ -60,12 +66,14 @@ export function CommentsSection({ postId }: { postId: number }) {
                 const json = await res.json()
                 const mapped: Comment[] = json.content.map((c: any) => ({
                     id: c.commentId,
+                    userId: c.userId,
                     author: c.username ?? c.userEmail,
                     date: new Date(c.createdAt).toLocaleDateString(),
                     content: c.content,
                     likes: c.likeCount || 0,
                     replies: c.replies.content.map((r: any) => ({
                         id: r.replyId,
+                        userId: r.userId,
                         author: r.username ?? r.userEmail,
                         date: new Date(r.createdAt).toLocaleDateString(),
                         content: r.content,
@@ -103,6 +111,7 @@ export function CommentsSection({ postId }: { postId: number }) {
             // ← 새 댓글 매핑 후 앞에 추가
             const newComment: Comment = {
                 id: raw.commentId,
+                userId: raw.userId,
                 author: raw.username ?? raw.userEmail,
                 date: new Date(raw.createdAt).toLocaleDateString(),
                 content: raw.content,
@@ -202,6 +211,7 @@ export function CommentsSection({ postId }: { postId: number }) {
             const raw = await res.json()
             const newR: Reply = {
                 id: raw.replyId,
+                userId: raw.userId,
                 author: raw.username ?? raw.userEmail,
                 date: new Date(raw.createdAt).toLocaleDateString(),
                 content: raw.content,
@@ -297,6 +307,36 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
     }
 
+    const handleFollow = async (author: string) => {
+        if (!isLogin) {
+            router.push('/login')
+            return
+        }
+
+        // comments 배열에서 글쓴이(author)에 해당하는 userId 찾기
+        const followeeId = comments.find((c) => c.author === author)?.userId
+        if (!followeeId) {
+            alert('유저 ID를 찾을 수 없습니다.')
+            return
+        }
+
+        try {
+            const res = await fetch(
+                `${API}/api/v1/follow/${isFollowing[author] ? 'delete/unfollow' : 'create/follow'}`,
+                {
+                    method: isFollowing[author] ? 'DELETE' : 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ followeeId }),
+                },
+            )
+            if (!res.ok) throw new Error('실패')
+            setIsFollowing((f) => ({ ...f, [author]: !f[author] }))
+        } catch {
+            alert('팔로우 처리에 실패했습니다.')
+        }
+    }
+
     // ─── 9) 렌더링 ─────────────────────────────────────────────────
     return (
         <div>
@@ -328,7 +368,47 @@ export function CommentsSection({ postId }: { postId: number }) {
             {comments.map((comment) => (
                 <div key={comment.id} className="border-b pb-6 mb-6">
                     <div className="flex justify-between items-center">
-                        <span className="font-medium">{comment.author}</span>
+                        <div className="relative">
+                            <button
+                                onClick={() => setActiveCommentId((id) => (id === comment.id ? null : comment.id))}
+                                className="font-medium hover:text-[#2E804E]"
+                            >
+                                {comment.author}
+                            </button>
+                            {activeCommentId === comment.id && (
+                                <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200">
+                                    <div className="p-3 space-y-2">
+                                        {/* 프로필 버튼 */}
+                                        <button
+                                            onClick={() => router.push(`/mypage/${comment.userId}`)}
+                                            className="flex items-center space-x-2 w-full hover:bg-gray-100 p-2 rounded"
+                                        >
+                                            {/* 집 아이콘 */}
+                                            {/* 집 아이콘 */}
+                                            <svg
+                                                className="w-5 h-5"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                {/* TODO: 집 아이콘 path 여기에 입력 */}
+                                                <path d="M3 9L12 2l9 7v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V13H9v7a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9z" />
+                                            </svg>
+                                            <span>마이페이지</span>
+                                        </button>
+                                        {/* 팔로우/언팔 */}
+                                        <button
+                                            onClick={() => handleFollow(comment.author)}
+                                            className={`w-full text-center py-2 rounded ${
+                                                isFollowing[comment.author] ? 'bg-gray-100' : 'bg-green-600 text-white'
+                                            }`}
+                                        >
+                                            {isFollowing[comment.author] ? '팔로우 취소' : '팔로우'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <span className="text-xs text-gray-500">{comment.date}</span>
                     </div>
 
