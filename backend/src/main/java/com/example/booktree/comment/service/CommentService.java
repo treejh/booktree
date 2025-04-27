@@ -92,7 +92,7 @@ public class CommentService {
         Long postId = Optional.ofNullable(comment.getPost())
                 .map(Post::getId)
                 .orElse(null);
-        String userEmail = comment.getUser() != null ? comment.getUser().getEmail() : null;
+        String username = comment.getUser() != null ? comment.getUser().getUsername() : null;
         // 기본적으로 대댓글은 첫 페이지(0번 페이지), 한 페이지 당 10개, 최신순(생성일 내림차순)으로 조회함
         PageRequest replyPageRequest = PageRequest.of(0, 10, Sort.by("createdAt").descending());
         Page<ReplyDto.Response> replies = replyRepository.findByComment_Id(comment.getId(), replyPageRequest)
@@ -102,7 +102,7 @@ public class CommentService {
                         reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getModifiedAt(),
-                        reply.getUser() != null ? reply.getUser().getEmail() : null
+                        reply.getUser() != null ? reply.getUser().getUsername() : null
                 ));
         return new CommentDto.Response(
                 comment.getId(),
@@ -110,7 +110,7 @@ public class CommentService {
                 postId,
                 comment.getCreatedAt(),
                 comment.getModifiedAt(),
-                userEmail,
+                username,
                 replies
         );
     }
