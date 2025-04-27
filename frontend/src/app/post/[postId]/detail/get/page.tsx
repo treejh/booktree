@@ -47,6 +47,7 @@ interface Category {
     path: string
     isParent?: boolean
     isOpen?: boolean
+    postCount: number
     subCategories?: Category[]
 }
 
