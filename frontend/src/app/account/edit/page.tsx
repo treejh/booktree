@@ -11,9 +11,9 @@ export default function EditProfilePage() {
 
     const [password, setPassword] = useState('')
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const socialLoginForKakaoUrl = `http://localhost:8090/oauth2/authorization/kakao`
-    const socialLoginForGithubUrl = `http://localhost:8090/oauth2/authorization/github`
-    const redirectUrlAfterSocialLogin = 'http://localhost:3000/account/edit'
+    const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao`
+    const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
+    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_API_BASE_URL}`
     const [provider, setProvider] = useState<string | null>(null)
 
     const [phoneNumber, setPhoneNumber] = useState('')
@@ -56,7 +56,7 @@ export default function EditProfilePage() {
 
     const handlePasswordAuth = async () => {
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/validation/password', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/validation/password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,13 +113,16 @@ export default function EditProfilePage() {
             setFormData((prev) => ({ ...prev, email }))
 
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/users/patch/email?email=${email}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/email?email=${email}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('이메일 변경에 실패했습니다.')
@@ -141,7 +144,7 @@ export default function EditProfilePage() {
             }
 
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/users/patch/phoneNumber`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/phoneNumber`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -166,7 +169,7 @@ export default function EditProfilePage() {
         if (field === 'username') {
             try {
                 const response = await fetch(
-                    `http://localhost:8090/api/v1/users/patch/username?username=${formData.username}`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/username?username=${formData.username}`,
                     {
                         method: 'PATCH',
                         headers: {
@@ -218,7 +221,7 @@ export default function EditProfilePage() {
         formData.append('images', selectedImage)
 
         try {
-            const response = await fetch('http://localhost:8090/api/v1/users/patch/image', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/patch/image`, {
                 method: 'PATCH',
                 credentials: 'include',
                 body: formData,
@@ -231,6 +234,9 @@ export default function EditProfilePage() {
             alert('이미지가 성공적으로 업로드되었습니다!')
             setSelectedImage(null)
             setImagePreview(null)
+
+            // 새로고침하여 변경된 이미지 적용
+            window.location.reload()
         } catch (error) {
             console.error(error)
             alert('이미지 업로드 중 오류가 발생했습니다. 다시 시도해주세요.')
@@ -246,7 +252,7 @@ export default function EditProfilePage() {
                     {/* 비밀번호 인증 섹션 */}
                     {!provider && (
                         <div className={styles.section}>
-                            <h2 className={styles.subtitle}>비밀번호 인증</h2>
+                            <h2 className={styles.subtitle}></h2>
                             <input
                                 type="password"
                                 id="password"
@@ -254,6 +260,12 @@ export default function EditProfilePage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="비밀번호를 입력하세요"
                                 className={`${styles.input} w-full`}
+                                style={{
+                                    border: '1px solid #d1d5db', // 얇은 회색 테두리
+                                    borderRadius: '4px', // 모서리 둥글게
+                                    padding: '8px', // 내부 여백
+                                    marginBottom: '16px', // 버튼과 간격 추가
+                                }}
                             />
                             <button
                                 type="button"
@@ -498,6 +510,15 @@ export default function EditProfilePage() {
                             className={styles.cancelButton}
                         >
                             취소
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => router.push('/account/withdraw')}
+                            className="px-3 py-2 text-sm text-white bg-red-500 rounded-md hover:bg-red-600 transition ml-4"
+                            style={{ marginLeft: 'auto' }}
+                        >
+                            회원 탈퇴
                         </button>
                     </div>
                 </div>

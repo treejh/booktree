@@ -35,9 +35,9 @@ public class ReplyService {
         // 부모 댓글 검증
         Comment comment = commentRepository.findById(dto.getCommentId())
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + dto.getCommentId()));
-        // JWT 토큰에서 사용자 이메일 추출 후, User 조회
-        String userEmail = tokenService.getEmailFromToken();
-        User user = userService.findUserByEmail(userEmail);
+        // JWT 토큰에서 사용자 ID 추출 후, User 조회
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
 
 
         // 대댓글 생성
@@ -100,14 +100,14 @@ public class ReplyService {
         Long commentId = Optional.ofNullable(reply.getComment())
                 .map(Comment::getId)
                 .orElse(null);
-        String userEmail = reply.getUser() != null ? reply.getUser().getEmail() : null;
+        String username = reply.getUser() != null ? reply.getUser().getUsername() : null;
         return new ReplyDto.Response(
                 reply.getId(),
                 commentId,
                 reply.getContent(),
                 reply.getCreatedAt(),
                 reply.getModifiedAt(),
-                userEmail
+                username
         );
     }
 }

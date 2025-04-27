@@ -62,6 +62,8 @@ public class SecurityConfigBookTree {
                                 "/api/v1/users/patch/image","/api/v1/users/delete/image","/api/v1/users/get/image",
                                 "/api/v1/users/delete/**")
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/v1/users/delete/admin/**")
+                        .hasAnyAuthority("ROLE_ADMIN")
 
                         //대댓글 /api/v1/replies
                         .requestMatchers("/api/v1/replies/get"
@@ -72,7 +74,7 @@ public class SecurityConfigBookTree {
 
                         //게시글 api/v1/posts
                         .requestMatchers("/api/v1/users/get/profile/**","/api/v1/posts/search"
-                                ,"api/v1/posts/get/**"
+                                ,"api/v1/posts/get/**","/api/v1/posts/search/**"
 
 
                         ).permitAll()
@@ -117,9 +119,14 @@ public class SecurityConfigBookTree {
                         //팔로우 /api/v1/follow/create
                         .requestMatchers(
                                 "/api/v1/follow/create/follow",
-                                "/api/v1/follow/get/**"
+                                "/api/v1/follow/get"
                         )
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
+                        .requestMatchers(
+                                "/api/v1/follow/get/followcount/{userId}"
+                        )
+                        .permitAll()
 
 
                         //댓글 /api/v1/follow/create
@@ -135,7 +142,9 @@ public class SecurityConfigBookTree {
 
                         //카테고리 (개인)
                         .requestMatchers(
-                            "/api/v1/categories/get/**"
+                            "/api/v1/categories/get/**",
+                                    "/api/v1/categories/get/category/**"
+
                         ).permitAll()
                         .requestMatchers(
                                 "/api/v1/categories/create",
@@ -147,7 +156,7 @@ public class SecurityConfigBookTree {
 
                         //블로그 컨트롤러
                         .requestMatchers(
-                            "/api/v1/blogs/get"
+                            "/api/v1/blogs/get/**"
                         ).permitAll()
                         .requestMatchers(
                             "/api/v1/blogs/create/**",

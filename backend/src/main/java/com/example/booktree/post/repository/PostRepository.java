@@ -57,11 +57,18 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     Page<Post> findByBookContainingIgnoreCase(String book, Pageable pageable); // 책 제목 검색
 
+    Page<Post> findByBlogIdAndTitleContaining(Long blogId, String keyword, Pageable pageable);//본인의 블로그에서 검색
+
     Page<Post> findByTitleContainingOrContentContaining(
             String titleKeyword,
             String contentKeyword,
             Pageable pageable
     );
+
+    List<Post> findTop3ByOrderByViewDesc();
+
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId")
+    Long countPostsByUserId(@Param("userId") Long userId);
 
     @Query("""
       SELECT p
@@ -75,6 +82,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     @Query("SELECT p FROM Post p WHERE p.blog.id = :blogId ORDER BY p.likeCount DESC")
     Page<Post> findPopularPostsByBlogId(@Param("blogId") Long blogId, Pageable pageable);
+
+
+    Page<Post> findByCategoryId(Long categoryId, Pageable pageable);
+
 
 
 }

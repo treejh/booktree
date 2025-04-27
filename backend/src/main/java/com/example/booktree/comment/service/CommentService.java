@@ -37,9 +37,9 @@ public class CommentService {
         }
         Post post = postOptional.get();
 
-        // 현재 로그인한 사용자의 이메일을 토큰에서 추출하고, 해당 User 조회
-        String userEmail = tokenService.getEmailFromToken();
-        User user = userService.findUserByEmail(userEmail);
+        // 이메일 대신 ID로 조회
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
 
         Comment comment = Comment.builder()
                 .content(dto.getContent())
@@ -52,6 +52,12 @@ public class CommentService {
     }
 
     // 페이징 처리된 댓글 조회: postId에 해당하는 댓글들을 Page 객체로 반환
+    /**
+     * @Transactional(readOnly = true)
+     * 트랜잭션 범위를 이 메서드까지로 확장해서 map() 호출 시에도
+     * Hibernate 세션이 살아있도록 합니다.
+     */
+    @Transactional(readOnly = true)
     public Page<CommentDto.Response> getCommentsByPostId(Long postId, PageRequest pageRequest) {
         return commentRepository.findByPostId(postId, pageRequest)
                 .map(this::mapToResponseWithReplies);
@@ -86,7 +92,7 @@ public class CommentService {
         Long postId = Optional.ofNullable(comment.getPost())
                 .map(Post::getId)
                 .orElse(null);
-        String userEmail = comment.getUser() != null ? comment.getUser().getEmail() : null;
+        String username = comment.getUser() != null ? comment.getUser().getUsername() : null;
         // 기본적으로 대댓글은 첫 페이지(0번 페이지), 한 페이지 당 10개, 최신순(생성일 내림차순)으로 조회함
         PageRequest replyPageRequest = PageRequest.of(0, 10, Sort.by("createdAt").descending());
         Page<ReplyDto.Response> replies = replyRepository.findByComment_Id(comment.getId(), replyPageRequest)
@@ -96,7 +102,7 @@ public class CommentService {
                         reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getModifiedAt(),
-                        reply.getUser() != null ? reply.getUser().getEmail() : null
+                        reply.getUser() != null ? reply.getUser().getUsername() : null
                 ));
         return new CommentDto.Response(
                 comment.getId(),
@@ -104,7 +110,7 @@ public class CommentService {
                 postId,
                 comment.getCreatedAt(),
                 comment.getModifiedAt(),
-                userEmail,
+                username,
                 replies
         );
     }

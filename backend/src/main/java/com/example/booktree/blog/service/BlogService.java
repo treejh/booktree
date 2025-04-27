@@ -133,4 +133,8 @@ public class BlogService {
     public Long findUserIdByBlogId(Long blogId){
         return blogRepository.findUserIdByBlogId(blogId);
     }
+
+    public Long findBlogIdByUserId(Long userId){
+            return blogRepository.findBlogIdByUserId(userId);
+    }
     }

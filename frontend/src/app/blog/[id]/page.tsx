@@ -5,6 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import AnnouncementModal from '../../components/AnnouncementModal'
 import { LoginUserContext, useGlobalLoginUser, useLoginUser } from '@/stores/auth/loginMember'
+import ScrapPosts from '../../components/ScrapPosts'
+import PopularPosts from '@/app/components/PopularPosts'
+import LatestPosts from '@/app/components/LastestPosts'
+import FollowingPosts from '../../components/FollowingPosts'
 
 interface Post {
     id: number
@@ -79,6 +83,7 @@ export default function BlogPage() {
     const [userId, setUserId] = useState<number | null>(null)
     const [categories, setCategories] = useState<Category>([])
     const [followCount, setFollowCount] = useState([])
+    const [postCount, setPostCount] = useState()
 
     //블로그 정보 가져오기
 
@@ -86,22 +91,38 @@ export default function BlogPage() {
     const [blog, setBlog] = useState<BlogInfo | null>(null)
     const [userBlogId, setUserBlogId] = useState<string | null>(null) // 로그인 유저의 블로그 ID
 
+    //블로그 검색
+    const [searchInput, setSearchInput] = useState('') // 검색 입력 상태
+
+    const handleSearch = () => {
+        if (!searchInput.trim()) {
+            alert('검색어를 입력해주세요.')
+            return
+        }
+        // 검색 결과 페이지로 이동
+        router.push(`/blog/${blogId}/search?query=${encodeURIComponent(searchInput)}`)
+    }
+
     useEffect(() => {
         const fetchFollowCount = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/followcount/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // 추가적인 헤더가 필요하면 여기에 추가
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/followcount/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 추가적인 헤더가 필요하면 여기에 추가
+                        },
+                        // credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                    credentials: 'include', // 쿠키를 포함시키기 위한 설정
-                })
+                )
                 if (!response.ok) {
-                    throw new Error('카테고리 데이터를 가져오는 데 실패했습니다.')
+                    throw new Error('팔로우 수를 가져오는 데 실패했습니다.')
                 }
                 const data = await response.json()
                 setFollowCount(data) // 가져온 데이터를 상태에 저장
+                console.log('FollowCount : ', data)
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     // err가 Error 인스턴스인지 확인
@@ -121,12 +142,16 @@ export default function BlogPage() {
     useEffect(() => {
         const fetchUserId = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${blogId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/findUserId/${blogId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        // credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('유저 ID를 불러오는데 실패했습니다다.')
@@ -146,12 +171,15 @@ export default function BlogPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/categories/get/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     },
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
@@ -174,6 +202,39 @@ export default function BlogPage() {
     }, [userId])
 
     useEffect(() => {
+        const fetchPostCount = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/postcount/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('게시글 수를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('게시글 수수 : ', data)
+                setPostCount(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '게시글 수를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchPostCount()
+        }
+    }, [userId])
+
+    useEffect(() => {
         if (!blogId) {
             console.error('blogId is missing or undefined')
             return
@@ -181,7 +242,7 @@ export default function BlogPage() {
 
         const fetchBlogInfo = async () => {
             try {
-                const res = await fetch(`http://localhost:8090/api/v1/blogs/get?blogId=${blogId}`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get?blogId=${blogId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -204,7 +265,7 @@ export default function BlogPage() {
 
         const fetchUserBlogId = async () => {
             try {
-                const res = await fetch('http://localhost:8090/api/v1/blogs/get/token', {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -231,6 +292,72 @@ export default function BlogPage() {
 
         fetchBlogInfo()
     }, [blogId, isLogin])
+
+    useEffect(() => {
+        const fetchIsFollowing = async () => {
+            if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('팔로우 여부:', data)
+                setIsFollowing(data)
+            } catch (err) {
+                console.error('Error fetching isFollowing:', err)
+                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+            }
+        }
+
+        fetchIsFollowing()
+    }, [userId])
+
+    const followUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('팔로우 요청 실패')
+            console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const unfollowUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('언팔로우 요청 실패')
+            console.log(`언팔로우 완료: ${followeeId}`)
+            window.location.reload()
+        } catch (err) {
+            console.error(err)
+        }
+    }
 
     console.log('blogId:', blogId)
     console.log('userBlogId:', userBlogId)
@@ -316,9 +443,9 @@ export default function BlogPage() {
     }
 
     return (
-        <div className="flex gap-8 max-w-8xl mx-auto px-4 py-8">
+        <div className="flex gap-8 w-full py-8">
             {/* 메인 컨텐츠 */}
-            <main className="flex-1 pl-100">
+            <main className="flex-1 pl-10">
                 <div className="bg-white rounded-xl shadow-lg p-8">
                     {/* 프로필 섹션 */}
                     <div>
@@ -359,31 +486,50 @@ export default function BlogPage() {
                     </div>
                     <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
-                            <Link href="/follow?tab=following" className="text-center hover:opacity-80">
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">{followCount.followerCount}</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
-                            <Link href="/follow?tab=followers" className="text-center hover:opacity-80">
+                            <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
                                 <div className="text-xl font-bold">{followCount.followingCount}</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
                             <div className="text-center">
-                                <div className="text-xl font-bold">42</div>
+                                <div className="text-xl font-bold">{postCount}</div>
                                 <div className="text-gray-600">포스트</div>
                             </div>
                         </div>
 
                         <div className="mt-6 flex gap-4 justify-center items-center">
-                            <button
-                                className={`px-4 py-2 rounded-md transition-colors ${
-                                    isFollowing
-                                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        : 'bg-[#2E804E] text-white hover:bg-[#247040]'
-                                }`}
-                                onClick={() => setIsFollowing(!isFollowing)}
-                            >
-                                {isFollowing ? '팔로잉' : '팔로우'}
-                            </button>
+                            {userId !== loginUser?.id && (
+                                <button
+                                    className={`px-4 py-2 rounded-md transition-colors ${
+                                        isFollowing
+                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            : 'bg-[#2E804E] text-white hover:bg-[#247040]'
+                                    }`}
+                                    onClick={async () => {
+                                        if (!isLogin) {
+                                            alert('로그인이 필요합니다.')
+                                            router.push('/account/login')
+                                            return
+                                        }
+
+                                        try {
+                                            if (isFollowing) {
+                                                await unfollowUser(Number(userId)) // 언팔로우 요청
+                                            } else {
+                                                await followUser(Number(userId)) // 팔로우 요청
+                                            }
+                                            setIsFollowing(!isFollowing) // 상태 반전
+                                        } catch (error) {
+                                            console.error('팔로우/언팔로우 실패:', error)
+                                        }
+                                    }}
+                                >
+                                    {isFollowing ? '팔로잉' : '팔로우'}
+                                </button>
+                            )}
                             <button
                                 onClick={() => setIsAnnouncementOpen(true)}
                                 className="bg-[#2E804E] text-white p-2 rounded-md hover:bg-[#247040] transition-colors flex items-center justify-center"
@@ -414,141 +560,119 @@ export default function BlogPage() {
                         </div>
                     </section>
                     {/* 네비게이션 */}
-                    <nav className="border-b border-gray-200 mb-8">
-                        <ul className="flex gap-8">
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('latest')}
-                            >
-                                <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
-                                    최신순
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('popular')}
-                            >
-                                <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
-                                    인기순
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('bookmarks')}
-                            >
-                                <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
-                                    팔로잉
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('scraps')}
-                            >
-                                <span className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}>
-                                    스크랩
-                                </span>
-                            </li>
-                        </ul>
-                    </nav>
-                    {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
-                        <div className="flex justify-end mb-8">
-                            <Link href="/post/write">
-                                <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
-                                    <span>새 글 작성하기</span>
-                                </button>
-                            </Link>
+                    <div className="mb-8">
+                        {/* 새 글 작성하기 버튼 */}
+                        {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
+                            <div className="flex justify-end mb-4">
+                                <Link href="/post/write">
+                                    <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
+                                        <span>새 글 작성하기</span>
+                                    </button>
+                                </Link>
+                            </div>
+                        )}
+
+                        {/* 네비게이션 */}
+                        <div className="border-b border-gray-200 w-full">
+                            <nav>
+                                <ul className="flex gap-8">
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('latest')}
+                                    >
+                                        <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
+                                            최신순
+                                        </span>
+                                    </li>
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('popular')}
+                                    >
+                                        <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
+                                            추천순
+                                        </span>
+                                    </li>
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('bookmarks')}
+                                    >
+                                        <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
+                                            팔로잉
+                                        </span>
+                                    </li>
+                                    {isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                                        <li
+                                            className={`pb-2 border-b-2 ${
+                                                activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
+                                            } cursor-pointer`}
+                                            onClick={() => handleTabChange('scraps')}
+                                        >
+                                            <span
+                                                className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}
+                                            >
+                                                스크랩
+                                            </span>
+                                        </li>
+                                    )}
+                                </ul>
+                            </nav>
                         </div>
-                    )}
+                    </div>
+
                     {/* 블로그 포스트 목록 */}
                     <div className="space-y-8">
                         <h2 className="text-2xl font-bold mb-6">
-                            {activeTab === 'latest' && '최신 게시물'}
-                            {activeTab === 'popular' && '인기 게시물'}
+                            {activeTab === 'latest' && <LatestPosts blogId={blogId} />}
+                            {activeTab === 'popular' && <PopularPosts blogId={blogId} />}
                             {activeTab === 'bookmarks' && '팔로잉 게시글'}
                         </h2>
-                        {currentPosts.map((post) => (
-                            <article
-                                key={post.id}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                            >
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="bg-gray-100 px-2 py-1 rounded text-sm">{post.category}</span>
-                                        <span className="text-gray-500 text-sm">{post.date}</span>
-                                    </div>
-                                    <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-                                    <p className="text-gray-600 mb-4">{post.description}</p>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            <span>조회 {post.views}</span>
-                                            <span>댓글 {post.comments}</span>
-                                        </div>
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            <Link href={`/post/edit/${post.id}`}>
-                                                <span className="hover:text-gray-900 cursor-pointer">수정</span>
-                                            </Link>
-
-                                            <span
-                                                onClick={() => handleDelete(post.id)}
-                                                className="hover:text-gray-900 cursor-pointer"
-                                            >
-                                                삭제
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                    {/* 페이지네이션 */}
-                    <div className="flex justify-center gap-2 mt-8">
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            Previous
-                        </button>
-                        {pageNumbers.map((number) => (
-                            <button
-                                key={number}
-                                className={`px-4 py-2 border rounded ${
-                                    currentPage === number ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'
-                                }`}
-                                onClick={() => handlePageChange(number)}
-                            >
-                                {number}
-                            </button>
-                        ))}
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                        </button>
+                        {activeTab === 'scraps' && isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                            <ScrapPosts userId={Number(blogId)} />
+                        )}
+                        {activeTab === 'bookmarks' &&
+                            isLogin &&
+                            userBlogId &&
+                            String(userBlogId) === String(blogId) && <FollowingPosts userId={Number(blogId)} />}
                     </div>
                 </div>
             </main>
 
-            {/* 카테고리 사이드바 */}
-            <aside className="w-64 flex-shrink-0 mt-100">
+            <aside className="w-64 flex-shrink-0 sticky top-8 self-start mr-8">
                 <div className="bg-white rounded-xl shadow-lg p-6">
-                    <h2 className="text-xl font-bold mb-4">태그 목록</h2>
+                    {/* 게시글 검색 섹션 */}
+                    <div className="mb-6">
+                        <h2 className="text-xl font-bold mb-4">게시글 검색</h2>
+                        <div className="flex flex-col items-center">
+                            <input
+                                type="text"
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                placeholder="검색어를 입력하세요"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 mb-2"
+                            />
+                            <button
+                                onClick={handleSearch}
+                                className="w-full px-4 py-1 bg-[#247040] text-white rounded-md hover:bg-[#1f6034]"
+                            >
+                                검색
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* 카테고리 목록 섹션 */}
+                    <h2 className="text-xl font-bold mb-4">카테고리 목록</h2>
                     <div className="border-b border-gray-200 mb-4"></div>
                     <ul className="space-y-2">
                         {categories.map((category) => (
-                            <li key={category.name}>
+                            <li key={category.id}>
                                 <Link
-                                    href={`/blog/category/${category.name}`}
+                                    href={`/category/${category.id}`}
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"
                                 >
                                     <span>{category.name}</span>

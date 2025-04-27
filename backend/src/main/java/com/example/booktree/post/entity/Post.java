@@ -4,7 +4,6 @@ import com.example.booktree.auditable.Auditable;
 import com.example.booktree.blog.entity.Blog;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.image.entity.Image;
-import com.example.booktree.like_comment.entity.LikeComment;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.user.entity.User;
 import jakarta.persistence.CascadeType;
@@ -41,7 +40,7 @@ public class Post extends Auditable {
     private Long id;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER) //수정
     @JoinColumn(name = "main_category_id", nullable = false)
     private MainCategory mainCategory;
 
@@ -71,7 +70,7 @@ public class Post extends Auditable {
     @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long view = 0L; //조회수
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category; //개인 카테고리
 

@@ -43,7 +43,7 @@ const CategoryDetailPage = () => {
 
     useEffect(() => {
         const categoryId = getCategoryId()
-        fetch(`http://localhost:8090/api/v1/posts/get/maincategory/${categoryId}/1`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/maincategory/${categoryId}/1`, {
             method: 'GET',
         })
             .then((result) => {
@@ -60,7 +60,10 @@ const CategoryDetailPage = () => {
                     title: post.title,
                     // description: post.content, // 필요에 따라 추가
                     url: post.imageUrl, // 필요에 따라 추가
+                    createAt: post.createdAt,
+                    viewCount: post.viewCount,
                 }))
+                console.log('결과 : ', result)
 
                 setPosts(transformedPosts)
             })
@@ -71,7 +74,7 @@ const CategoryDetailPage = () => {
 
     useEffect(() => {
         const categoryId = getCategoryId()
-        fetch(`http://localhost:8090/api/v1/posts/get/maincategory/${categoryId}/view`)
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/maincategory/${categoryId}/view`)
             .then((result) => {
                 if (!result.ok) {
                     setPopPosts([])
@@ -134,8 +137,9 @@ const CategoryDetailPage = () => {
 
     return (
         <div className="w-full">
-            <CategoryNav currentSlug={slug} />
-
+            <div className="my-2">
+                <CategoryNav currentSlug={slug} />
+            </div>
             <h1 className="text-3xl font-bold mb-8 mt-6">{getCategoryTitle()}</h1>
 
             <div className="flex flex-col lg:flex-row gap-8">
@@ -157,7 +161,12 @@ const CategoryDetailPage = () => {
                                         </div>
                                         <div>
                                             <h3 className="text-lg font-medium mb-2">{post.title}</h3>
-                                            {/* <p className="text-gray-600 text-sm">{post.description}</p> */}
+                                            <br></br>
+                                            <p className="text-sm text-gray-500 mb-1">조회수: {post.viewCount}</p>
+                                            <p className="text-sm text-gray-500">
+                                                작성일:{' '}
+                                                {new Date(post.createAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
+                                            </p>
                                         </div>
                                     </div>
                                 </Link>
@@ -182,11 +191,11 @@ const CategoryDetailPage = () => {
 
                 <div className="lg:w-1/3">
                     <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <h2 className="text-lg font-medium mb-4">인기 {getCategoryTitle()} 게시글 TOP 5</h2>
+                        <h2 className="text-lg font-medium mb-4">인기 {getCategoryTitle()} 게시글 조회수 TOP 5</h2>
 
                         <div className="space-y-0">
                             {popularPosts.slice(0, 5).map((post, index) => (
-                                <Link href={`/blog/get/${post.id}/detail`} key={index} className="block">
+                                <Link href={`/post/${post.id}/detail/get`} key={index} className="block">
                                     <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-md cursor-pointer border-b border-gray-100">
                                         <div className="w-6 h-6 rounded-full bg-[#2E804E] text-white flex items-center justify-center text-sm">
                                             {index + 1}

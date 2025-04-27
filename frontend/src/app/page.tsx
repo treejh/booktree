@@ -7,10 +7,11 @@ import CategoryNav from './components/CategoryNav'
 export default function Home() {
     console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
 
-
     return (
         <>
-            <CategoryNav currentSlug="" />
+            <div className="my-2">
+                <CategoryNav currentSlug="" />
+            </div>
             <div className="w-full px-0 py-4">
                 <div className="w-full h-96 rounded-lg overflow-hidden mb-12">
                     <img
@@ -71,8 +72,7 @@ export default function Home() {
                 </section>
 
                 <section>
-
-                    <h2 className="text-xl font-semibold mb-6">카테고리별 월간 인기 게시물</h2>
+                    <h2 className="text-xl font-semibold mb-6">카테고리별 월간 실기간 인기 게시물</h2>
 
                     <CategoryGrid />
                 </section>

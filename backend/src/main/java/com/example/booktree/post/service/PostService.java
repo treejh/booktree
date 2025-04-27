@@ -16,6 +16,7 @@ import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import com.example.booktree.maincategory.service.MainCategortService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
+import com.example.booktree.post.dto.response.PostTop3ResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
@@ -62,6 +63,8 @@ public class PostService {
     private final UserService userService;
     private final BlogService blogService;
     private final FollowService followService;
+
+    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
 
 
 
@@ -168,6 +171,23 @@ public class PostService {
         post.setBook(dto.getBook());
         post.setModifiedAt(LocalDateTime.now());
 
+        // mainCategoryId 수정
+        if (dto.getMainCategoryId() != null) {
+            MainCategory mainCategory = mainCategoryRepository.findById(dto.getMainCategoryId())
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MAIN_CATEGORY_NOT_FOUND));
+            post.setMainCategory(mainCategory);
+        }
+
+// categoryId 수정
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
+            post.setCategory(category);
+        }
+
+
+
+
         if (dto.getImages() != null && !dto.getImages().isEmpty()) {
             List<String> currentImageUrls = new ArrayList<>();
             for (Image image : post.getImageList()) {
@@ -240,6 +260,12 @@ public class PostService {
     public Page<Post> searchAll(String keyword, Pageable pageable) {
         return postRepository.searchAll(keyword, pageable);
     }
+
+    //해당되는 블로그 아이디에서, search에 해당되는 post 가져오기
+    public Page<Post> searchBlogPost(Long blogId, String search, Pageable pageable) {
+        return postRepository.findByBlogIdAndTitleContaining(blogId, search, pageable);
+    }
+
 
     //팔로잉 한 유저들의 게시글을 최신순으로 가져오기
     @Transactional
@@ -318,6 +344,8 @@ public class PostService {
         }
         return response;
     }
+
+
 
     // 회원별로 게시글 목록을 조회
     public List<PostResponseDto> getPostsByUser(Long userId) {
@@ -425,6 +453,24 @@ public class PostService {
             throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
         }
         return userId;
+    }
+
+    public Long findPostCount(Long userId){
+
+        return postRepository.countPostsByUserId(userId);
+    }
+
+    public List<PostTop3ResponseDto> getTop3PostsByView() {
+        List<Post> posts = postRepository.findTop3ByOrderByViewDesc();
+
+        return posts.stream().map(post -> PostTop3ResponseDto.builder()
+                        .id(post.getId())
+                        .mainCategory(post.getMainCategory().getName())
+                        .title(post.getTitle())
+                        .viewCount(post.getView())
+                        .imageUrl(post.getImageList().isEmpty() ? defaultImageUrl : post.getImageList().get(0).getImageUrl())
+                        .build())
+                .collect(Collectors.toList()); // 리스트로 변환
     }
 
 

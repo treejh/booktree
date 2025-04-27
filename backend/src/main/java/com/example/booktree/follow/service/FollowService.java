@@ -1,5 +1,6 @@
 package com.example.booktree.follow.service;
 
+import com.example.booktree.blog.service.BlogService;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.dto.request.FollowRequestDto;
@@ -28,24 +29,37 @@ public class FollowService {
     public final FollowRepository followRepository;
     public final UserService userService;
     private final TokenService tokenService;
+    private final BlogService blogService;
 
     // 모든 팔로우 정보 제공
     @Transactional(readOnly = true)
-    public List<AllFollowListResponseDto> getAllFollowerList() {
+    public List<AllFollowListResponseDto> getAllFollowerList(Long userId) {
 
-        Long userId = tokenService.getIdFromToken();
         List<Follow> follows = followRepository.findByFollower_Id(userId);
+        Long loginUserId = tokenService.getIdFromToken();
+
+        // 로그인한 유저가 팔로우한 사람 목록
+        List<Long> myFollowingIds = followRepository.findByFollower_Id(loginUserId)
+                .stream()
+                .map(f -> f.getFollowed().getId())
+                .toList();
 
         return IntStream.range(0, follows.size())
                 .mapToObj(index -> {
                     Follow follower = follows.get(index);
+                    Long targetId = follower.getFollowed().getId();
+                    Long blogId = blogService.findBlogIdByUserId(targetId);
+
                     return AllFollowListResponseDto.builder()
                             .id(follower.getId())
                             .count(index + 1)
-                            .userId(follower.getFollowed().getId())
+                            .userId(targetId)
+                            .blogId(blogId)
                             .username(follower.getFollowed().getUsername())
+                            .isFollowing(myFollowingIds.contains(targetId)) // 로그인한 유저가 팔로우 중인지 여부
                             .create_at(follower.getCreatedAt())
                             .update_at(follower.getModifiedAt())
+                            .isMe(targetId.equals(loginUserId))
                             .build();
                 })
                 .toList();
@@ -53,22 +67,31 @@ public class FollowService {
 
     // 모든 팔로잉 정보 제공
     @Transactional(readOnly = true)
-    public List<AllFollowListResponseDto> getAllFollowedList() {
-
-        Long userId = tokenService.getIdFromToken();
-
+    public List<AllFollowListResponseDto> getAllFollowedList(Long userId) {
         List<Follow> follows = followRepository.findByFollowed_Id(userId);
+        Long loginUserId = tokenService.getIdFromToken();
+
+        List<Long> myFollowingIds = followRepository.findByFollower_Id(loginUserId)
+                .stream()
+                .map(f -> f.getFollowed().getId())
+                .toList();
 
         return IntStream.range(0, follows.size())
                 .mapToObj(index -> {
                     Follow followed = follows.get(index);
+                    Long targetId = followed.getFollower().getId();
+                    Long blogId = blogService.findBlogIdByUserId(targetId);
+
                     return AllFollowListResponseDto.builder()
                             .id(followed.getId())
                             .count(index + 1)
-                            .userId(followed.getFollower().getId())
+                            .userId(targetId)
+                            .blogId(blogId)
                             .username(followed.getFollower().getUsername())
+                            .isFollowing(myFollowingIds.contains(targetId))
                             .create_at(followed.getCreatedAt())
                             .update_at(followed.getModifiedAt())
+                            .isMe(targetId.equals(loginUserId))
                             .build();
                 })
                 .toList();
