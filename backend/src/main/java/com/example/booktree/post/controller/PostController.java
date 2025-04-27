@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,7 +131,18 @@ public class PostController {
         Post post = postService.findPostById(postId);
 
         // 조회수 업데이트
+
+        //popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+
+        String mainCategory = post.getMainCategory() != null ? post.getMainCategory().getName() : "기본 카테고리";
+        String category = post.getCategory() != null ? post.getCategory().getName() : "기본 서브 카테고리";
+//        String username = post.getUser() != null ? post.getUser().getUsername() : "알 수 없음";
+//        List<String> imageUrls = post.getImageList() != null ? post.getImageList().stream()
+//                .map(image -> image.getImageUrl())
+//                .toList() : Collections.emptyList();
+
 //        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+
 
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
@@ -145,6 +157,12 @@ public class PostController {
                 .likeCount(post.getLikeCount())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
+                .author(post.getAuthor() != null ? post.getAuthor() : "알 수 없음")
+                .book(post.getBook() != null ? post.getBook() : "알 수 없음")
+                .category(category)
+                .mainCategory(mainCategory)
+                .mainCategoryId(post.getMainCategory().getId()) // 메인 카테고리 ID
+                .categoryId(post.getCategory().getId()) // 카테고리 ID
                 .build();
 
 
@@ -296,6 +314,13 @@ public class PostController {
 
         return new ResponseEntity<>(response,HttpStatus.OK);
 
+    }
+
+    @GetMapping("/get/postcount/{userId}")
+    public ResponseEntity<?> getPostCountByUserId(@PathVariable("userId") Long userId) {
+
+        Long response = postService.findPostCount(userId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 

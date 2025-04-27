@@ -79,6 +79,7 @@ export default function BlogPage() {
     const [userId, setUserId] = useState<number | null>(null)
     const [categories, setCategories] = useState<Category>([])
     const [followCount, setFollowCount] = useState([])
+    const [postCount, setPostCount] = useState()
 
     //블로그 정보 가져오기
 
@@ -109,7 +110,7 @@ export default function BlogPage() {
                             'Content-Type': 'application/json',
                             // 추가적인 헤더가 필요하면 여기에 추가
                         },
-                        credentials: 'include', // 쿠키를 포함시키기 위한 설정
+                        // credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
                 )
                 if (!response.ok) {
@@ -197,6 +198,39 @@ export default function BlogPage() {
     }, [userId])
 
     useEffect(() => {
+        const fetchPostCount = async () => {
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/postcount/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('게시글 수를 불러오는데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('게시글 수수 : ', data)
+                setPostCount(data)
+                console.log(categories)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '게시글 수를 불러오지 못했습니다')
+            }
+        }
+
+        // ✅ userId가 존재할 때만 호출되도록 조건 추가
+        if (userId) {
+            fetchPostCount()
+        }
+    }, [userId])
+
+    useEffect(() => {
         if (!blogId) {
             console.error('blogId is missing or undefined')
             return
@@ -254,6 +288,72 @@ export default function BlogPage() {
 
         fetchBlogInfo()
     }, [blogId, isLogin])
+
+    useEffect(() => {
+        const fetchIsFollowing = async () => {
+            if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
+            try {
+                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('팔로우 여부:', data)
+                setIsFollowing(data)
+            } catch (err) {
+                console.error('Error fetching isFollowing:', err)
+                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+            }
+        }
+
+        fetchIsFollowing()
+    }, [userId])
+
+    const followUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('팔로우 요청 실패')
+            console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const unfollowUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('언팔로우 요청 실패')
+            console.log(`언팔로우 완료: ${followeeId}`)
+            window.location.reload()
+        } catch (err) {
+            console.error(err)
+        }
+    }
 
     console.log('blogId:', blogId)
     console.log('userBlogId:', userBlogId)
@@ -391,7 +491,7 @@ export default function BlogPage() {
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
                             <div className="text-center">
-                                <div className="text-xl font-bold">42</div>
+                                <div className="text-xl font-bold">{postCount}</div>
                                 <div className="text-gray-600">포스트</div>
                             </div>
                         </div>
@@ -403,7 +503,24 @@ export default function BlogPage() {
                                         ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         : 'bg-[#2E804E] text-white hover:bg-[#247040]'
                                 }`}
-                                onClick={() => setIsFollowing(!isFollowing)}
+                                onClick={async () => {
+                                    if (!isLogin) {
+                                        alert('로그인이 필요합니다.')
+                                        router.push('/account/login')
+                                        return
+                                    }
+
+                                    try {
+                                        if (isFollowing) {
+                                            await unfollowUser(Number(userId)) // 언팔로우 요청
+                                        } else {
+                                            await followUser(Number(userId)) // 팔로우 요청
+                                        }
+                                        setIsFollowing(!isFollowing) // 상태 반전
+                                    } catch (error) {
+                                        console.error('팔로우/언팔로우 실패:', error)
+                                    }
+                                }}
                             >
                                 {isFollowing ? '팔로잉' : '팔로우'}
                             </button>

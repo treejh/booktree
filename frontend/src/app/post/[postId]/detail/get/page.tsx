@@ -66,6 +66,7 @@ interface PostList {
 
 export default function DetailPage() {
     // 라우터 초기화
+    // 2. 모든 hooks를 최상단에 배치
     const router = useRouter()
     const { postId } = useParams()
     // 로그인 상태와 토큰 정보 함께 꺼내기
