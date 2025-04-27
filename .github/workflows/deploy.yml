@@ -9,6 +9,7 @@ on:
       - "backend/Dockerfile"
     branches:
       - main
+      - feat/#236-gihub-action-cicd-배포
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
