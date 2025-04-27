@@ -662,7 +662,7 @@ export default function DetailPage() {
         fetchUserId()
     }, [postId])
 
-    /* useEffect(() => {
+    useEffect(() => {
         const fetchIsFollowing = async () => {
             if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
 
@@ -723,7 +723,7 @@ export default function DetailPage() {
         if (userId) {
             fetchCategories()
         }
-    }, [userId]) */
+    }, [userId])
 
     // 게시글을 불러오는 함수
 
