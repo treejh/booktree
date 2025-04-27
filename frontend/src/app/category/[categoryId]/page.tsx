@@ -21,19 +21,24 @@ export default function CategoryPage() {
     const [posts, setPosts] = useState<PostByCategoryResponseDto[]>([]) // 카테고리 게시글 상태
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState(1) // 현재 페이지
+    const [totalPages, setTotalPages] = useState(1) // 총 페이지 수
 
     useEffect(() => {
         const fetchPostsByCategory = async () => {
             setIsLoading(true)
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/category/${categoryId}/posts`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/category/${categoryId}/posts?page=${
+                        currentPage - 1
+                    }&size=4`,
                 )
                 if (!response.ok) {
                     throw new Error('카테고리 게시글을 가져오는 데 실패했습니다.')
                 }
                 const data = await response.json()
-                setPosts(data) // 카테고리 게시글 저장
+                setPosts(data.content) // 현재 페이지의 게시글 저장
+                setTotalPages(data.totalPages) // 총 페이지 수 저장
             } catch (err) {
                 setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
             } finally {
@@ -44,7 +49,12 @@ export default function CategoryPage() {
         if (categoryId) {
             fetchPostsByCategory()
         }
-    }, [categoryId])
+    }, [categoryId, currentPage])
+
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber)
+        window.scrollTo(0, 0) // 페이지 변경 시 스크롤을 맨 위로 이동
+    }
 
     return (
         <div className="w-full px-8">
@@ -60,7 +70,7 @@ export default function CategoryPage() {
                             <p className="text-center text-gray-500">로딩 중...</p>
                         ) : error ? (
                             <p className="text-center text-red-500">{error}</p>
-                        ) : posts.length === 0 ? (
+                        ) : !posts || posts.length === 0 ? (
                             <p className="text-center text-gray-500">게시글이 없습니다.</p>
                         ) : (
                             <div className="grid grid-cols-1 gap-6">
@@ -96,6 +106,21 @@ export default function CategoryPage() {
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    {/* 페이징 버튼 */}
+                    <div className="flex justify-center mt-8">
+                        {Array.from({ length: totalPages }, (_, i) => (
+                            <button
+                                key={i + 1}
+                                onClick={() => handlePageChange(i + 1)}
+                                className={`w-10 h-10 border border-gray-200 rounded flex items-center justify-center mx-1 ${
+                                    currentPage === i + 1 ? 'bg-[#247040] text-white' : 'hover:bg-gray-100'
+                                }`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
