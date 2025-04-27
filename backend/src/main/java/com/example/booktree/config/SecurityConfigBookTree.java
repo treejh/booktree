@@ -62,6 +62,8 @@ public class SecurityConfigBookTree {
                                 "/api/v1/users/patch/image","/api/v1/users/delete/image","/api/v1/users/get/image",
                                 "/api/v1/users/delete/**")
                         .hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/v1/users/delete/admin/**")
+                        .hasAnyAuthority("ROLE_ADMIN")
 
                         //대댓글 /api/v1/replies
                         .requestMatchers("/api/v1/replies/get"

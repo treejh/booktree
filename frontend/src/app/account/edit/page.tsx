@@ -13,7 +13,7 @@ export default function EditProfilePage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/kakao`
     const socialLoginForGithubUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/oauth2/authorization/github`
-    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_FRONT_BASE_URL}`
+    const redirectUrlAfterSocialLogin = `${process.env.NEXT_PUBLIC_API_BASE_URL}`
     const [provider, setProvider] = useState<string | null>(null)
 
     const [phoneNumber, setPhoneNumber] = useState('')
@@ -249,7 +249,7 @@ export default function EditProfilePage() {
                     {/* 비밀번호 인증 섹션 */}
                     {!provider && (
                         <div className={styles.section}>
-                            <h2 className={styles.subtitle}>비밀번호 인증</h2>
+                            <h2 className={styles.subtitle}></h2>
                             <input
                                 type="password"
                                 id="password"
@@ -257,6 +257,12 @@ export default function EditProfilePage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="비밀번호를 입력하세요"
                                 className={`${styles.input} w-full`}
+                                style={{
+                                    border: '1px solid #d1d5db', // 얇은 회색 테두리
+                                    borderRadius: '4px', // 모서리 둥글게
+                                    padding: '8px', // 내부 여백
+                                    marginBottom: '16px', // 버튼과 간격 추가
+                                }}
                             />
                             <button
                                 type="button"
@@ -501,6 +507,15 @@ export default function EditProfilePage() {
                             className={styles.cancelButton}
                         >
                             취소
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => router.push('/account/withdraw')}
+                            className="px-3 py-2 text-sm text-white bg-red-500 rounded-md hover:bg-red-600 transition ml-4"
+                            style={{ marginLeft: 'auto' }}
+                        >
+                            회원 탈퇴
                         </button>
                     </div>
                 </div>
