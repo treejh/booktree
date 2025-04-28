@@ -33,8 +33,8 @@ public class LikeReplyService {
         Reply reply = replyRepository.findById(dto.getReplyId())
                 .orElseThrow(() -> new RuntimeException("Reply not found with id: " + dto.getReplyId()));
 
-        String userEmail = tokenService.getEmailFromToken();
-        User user = userService.findUserByEmail(userEmail);
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
 
         Optional<LikeReply> existingLike = likeReplyRepository.findByReply_IdAndUser_Id(dto.getReplyId(), user.getId());
         if (existingLike.isPresent()) {
