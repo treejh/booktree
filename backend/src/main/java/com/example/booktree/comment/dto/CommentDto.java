@@ -39,6 +39,7 @@ public class CommentDto {
         private String username;
         // 대댓글은 각 댓글에 대해 페이징 처리된 결과로 포함
         private Long userId;
+        private long likeCount;
         private Page<ReplyDto.Response> replies;
     }
 }

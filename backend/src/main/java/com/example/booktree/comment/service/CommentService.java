@@ -87,6 +87,14 @@ public class CommentService {
         commentRepository.deleteById(commentId);
     }
 
+    /** 특정 댓글의 좋아요 개수 조회 */
+    @Transactional(readOnly = true)
+    public long getLikeCount(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        return comment.getLikeCommentList().size();
+    }
+
     // 각 Comment 엔티티에 대해 Reply(대댓글)를 페이징 처리하여 Response DTO에 포함시키는 헬퍼 메서드
     private CommentDto.Response mapToResponseWithReplies(Comment comment) {
         Long postId = Optional.ofNullable(comment.getPost())
@@ -105,6 +113,7 @@ public class CommentService {
                         reply.getModifiedAt(),
                         reply.getUser() != null ? reply.getUser().getUsername() : null
                 ));
+        long likeCount = comment.getLikeCommentList().size();
         return new CommentDto.Response(
                 comment.getId(),
                 comment.getContent(),
@@ -113,6 +122,7 @@ public class CommentService {
                 comment.getModifiedAt(),
                 username,
                 userId,
+                likeCount,
                 replies
         );
     }
