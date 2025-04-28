@@ -35,9 +35,9 @@ public class LikeCommentService {
         Comment comment = commentRepository.findById(dto.getCommentId())
                 .orElseThrow(() -> new RuntimeException("Comment not found with id: " + dto.getCommentId()));
 
-        // 토큰에서 현재 사용자 이메일 추출 후 User 조회
-        String userEmail = tokenService.getEmailFromToken();
-        User user = userService.findUserByEmail(userEmail);  // 수정된 메서드명
+        // 토큰에서 현재 사용자 아이디 추출 후 User 조회
+        Long userId = tokenService.getIdFromToken();
+        User user = userService.findById(userId);
 
         // 기존 좋아요 여부 체크
         Optional<LikeComment> existingLike = likeCommentRepository.findByComment_IdAndUser_Id(dto.getCommentId(), user.getId());

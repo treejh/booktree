@@ -136,14 +136,32 @@ export function CommentsSection({ postId }: { postId: number }) {
     // ─── 5) 댓글 좋아요 토글 ───────────────────────────────────────
     const handleCommentLike = async (cid: number) => {
         ensureLogin()
-        const res = await fetch(`${API}/api/v1/comments/${cid}/like`, {
-            method: 'POST',
-            credentials: 'include',
-        })
-        if (!res.ok) return alert('좋아요 실패')
-        const { likeCount } = await res.json()
-        setComments((cs) => cs.map((c) => (c.id === cid ? { ...c, likes: likeCount } : c)))
-        setLikedComments((l) => ({ ...l, [cid]: !l[cid] }))
+        try {
+            const res = await fetch(`${API}/api/v1/like-comments/create`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ commentId: cid }),
+            })
+            if (!res.ok) {
+                const err = await res.json()
+                throw new Error(err.message || '댓글 좋아요 처리 실패')
+            }
+            const { likeCommentId } = await res.json()
+            // 토글 상태에 따라 로컬 카운트 증감
+            setComments((cs) =>
+                cs.map((c) => {
+                    if (c.id === cid) {
+                        const wasLiked = !!likedComments[cid]
+                        return { ...c, likes: c.likes + (wasLiked ? -1 : 1) }
+                    }
+                    return c
+                }),
+            )
+            setLikedComments((l) => ({ ...l, [cid]: likeCommentId !== 0 }))
+        } catch (e: any) {
+            alert(e.message)
+        }
     }
 
     // ─── 6) 댓글 수정 / 삭제 ───────────────────────────────────────
@@ -226,25 +244,44 @@ export function CommentsSection({ postId }: { postId: number }) {
             setLoading(false)
         }
     }
+
+    // ─── 대댓글 좋아요 토글 ─────────────────────────────────────
     const handleReplyLike = async (cid: number, rid: number) => {
         ensureLogin()
-        const res = await fetch(`${API}/api/v1/replies/${rid}/like`, {
-            method: 'POST',
-            credentials: 'include',
-        })
-        if (!res.ok) return alert('좋아요 실패')
-        const { likeCount } = await res.json()
-        setComments((cs) =>
-            cs.map((c) =>
-                c.id === cid
-                    ? {
-                          ...c,
-                          replies: c.replies.map((r) => (r.id === rid ? { ...r, likes: likeCount } : r)),
-                      }
-                    : c,
-            ),
-        )
-        setLikedReplies((l) => ({ ...l, [rid]: !l[rid] }))
+
+        try {
+            const res = await fetch(`${API}/api/v1/like-replies/create`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ replyId: rid }),
+            })
+            if (!res.ok) {
+                const err = await res.text()
+                throw new Error(err || '대댓글 좋아요 처리 실패')
+            }
+            await res.json()
+
+            // 토글 & 카운트 업데이트
+            setLikedReplies((prev) => {
+                const nowLiked = !prev[rid]
+                setComments((comments) =>
+                    comments.map((c) =>
+                        c.id === cid
+                            ? {
+                                  ...c,
+                                  replies: c.replies.map((r) =>
+                                      r.id === rid ? { ...r, likes: r.likes + (nowLiked ? 1 : -1) } : r,
+                                  ),
+                              }
+                            : c,
+                    ),
+                )
+                return { ...prev, [rid]: nowLiked }
+            })
+        } catch (e: any) {
+            alert(e.message)
+        }
     }
 
     // ─── 8) 대댓글 수정 / 삭제 ─────────────────────────────────────
