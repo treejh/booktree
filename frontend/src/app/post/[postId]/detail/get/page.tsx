@@ -146,6 +146,11 @@ export default function DetailPage() {
                     },
                 )
 
+                // 401/403 에러는 조용히 처리
+                if (response.status === 401 || response.status === 403) {
+                    return
+                }
+
                 if (!response.ok) {
                     throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
                 }
@@ -155,7 +160,7 @@ export default function DetailPage() {
                 setIsFollowing(data)
             } catch (err) {
                 console.error('Error fetching isFollowing:', err)
-                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+                // setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
             } finally {
                 setLoading(false)
             }
@@ -232,16 +237,24 @@ export default function DetailPage() {
 
     useEffect(() => {
         const fetchCategories = async () => {
+            if (!post?.causerId) return // causerId가 없으면 실행하지 않음
             try {
                 const response = await fetch(
                     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/${post?.causerId}`,
                     {
+                        // 유저의 모든 카테고리 찾기 기능
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                     },
                 )
+
+                // 401/403 에러는 조용히 처리
+                if (response.status === 401 || response.status === 403) {
+                    console.log('권한이 없습니다')
+                    return
+                }
 
                 if (!response.ok) {
                     throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
@@ -253,7 +266,8 @@ export default function DetailPage() {
                 console.log(categories)
             } catch (err) {
                 console.error('Error fetching post:', err)
-                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+                //setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+                setCategories([])
             }
         }
 
@@ -614,6 +628,30 @@ export default function DetailPage() {
         }
     }
 
+    const handleBlogMainClick = async (username: string) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/username/${username}`,
+                {
+                    method: 'GET',
+                    // credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                },
+            )
+
+            if (!response.ok) {
+                throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            }
+
+            const blogId = await response.json()
+            router.push(`/blog/${blogId}`)
+        } catch (error) {
+            console.error('Error:', error)
+        }
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl bg-gray-50">
             <div className="flex gap-8">
@@ -909,7 +947,7 @@ export default function DetailPage() {
                                                             </button>
                                                         </div>
                                                         <button
-                                                            onClick={() => router.push('/mypage')}
+                                                            onClick={() => handleBlogMainClick(post.username)}
                                                             className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
                                                         >
                                                             <svg
