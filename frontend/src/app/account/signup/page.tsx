@@ -30,16 +30,21 @@ export default function RegisterPage() {
         return passwordRegex.test(password)
     }
 
-    const fullEmail = `${emailLocalPart}@${emailDomain || customEmailDomain}`
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
-        const fullEmail = `${emailLocalPart}@${emailDomain || customEmailDomain}`
+        // 이메일 생성 로직 수정
+        const fullEmail =
+            emailDomain === 'custom' ? `${emailLocalPart}@${customEmailDomain}` : `${emailLocalPart}@${emailDomain}`
 
         // 비어 있는 필드 확인
         if (!emailLocalPart || (!emailDomain && !customEmailDomain)) {
             setErrorMessage('이메일을 올바르게 입력해주세요.')
+            return
+        }
+
+        if (emailDomain === 'custom' && !customEmailDomain) {
+            setErrorMessage('도메인을 입력하세요.')
             return
         }
 
@@ -99,18 +104,12 @@ export default function RegisterPage() {
                 return response.json()
             })
             .then((data) => {
-                console.log('회원가입 성공:', data)
-
-                // 회원가입 성공 알림
                 alert('회원가입이 성공적으로 완료되었습니다!')
 
                 // 로그인 페이지로 이동
                 router.push('/account/login') // 로그인 페이지로 이동
             })
             .catch((error) => {
-                console.error('회원가입 오류:', error)
-
-                // 백엔드에서 반환된 오류 메시지 처리
                 if (error.message === '이미 존재하는 전화번호입니다.') {
                     alert('중복된 전화번호입니다.') // 알림 표시
                 } else {
