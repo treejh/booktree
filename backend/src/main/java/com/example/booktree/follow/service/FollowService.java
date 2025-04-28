@@ -154,6 +154,7 @@ public class FollowService {
         }
     }
 
+    @Transactional
     public boolean isIn(Long followerId, Long followedId){
 
         User follower = userService.findById(followerId);
