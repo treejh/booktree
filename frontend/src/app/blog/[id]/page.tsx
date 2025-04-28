@@ -33,6 +33,7 @@ interface BlogInfo {
     notice: string
     blogId: number
     ownerUsername: string // 추가
+    ownerImageUrl: string
 }
 
 const posts: Post[] = [
@@ -510,38 +511,53 @@ export default function BlogPage() {
                     <div>
                         {/* 프로필 섹션 */}
                         <section className="text-center mb-12">
-                            <h1 className="text-3xl font-bold mb-2 flex flex-col items-center justify-center gap-2">
-                                <span className="text-black-600">{blog?.ownerUsername} 님의</span>
-                                {blog?.name || `블로그`}
-                                {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
-                                    <button
-                                        className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
-                                        onClick={() => router.push('/blog/edit')}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-5 w-5"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
+                            <div className="flex flex-col items-center gap-2">
+                                {/* 블로그 이름 */}
+                                <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
+                                    {blog?.name || `블로그`}
+                                    {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
+                                        <button
+                                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
+                                            onClick={() => router.push('/blog/edit')}
                                         >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                            />
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                            />
-                                        </svg>
-                                    </button>
-                                )}
-                            </h1>
-                            <p className="text-gray-600 mb-6">{blog?.profile || ' '}</p>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-5 w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </h1>
+                                {/* 블로그 프로필 */}
+                                <p className="text-gray-600 mb-2">{blog?.profile || ' '}</p> {/* mb-6 → mb-2로 변경 */}
+                                {/* 유저 이미지와 이름 */}
+                                <div className="flex items-center gap-2 text-base text-gray-700">
+                                    {/* gap-1 → gap-2, text-sm → text-base */}
+                                    {blog?.ownerImageUrl && (
+                                        <img
+                                            src={blog.ownerImageUrl}
+                                            alt={`${blog.ownerUsername}의 프로필 이미지`}
+                                            className="w-8 h-8 rounded-full object-cover"
+                                        />
+                                    )}
+                                    <span>{blog?.ownerUsername}</span>
+                                </div>
+                            </div>
                         </section>
                     </div>
                     <section className="text-center mb-12">

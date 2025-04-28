@@ -18,6 +18,7 @@ public class BlogResponseDto {
     private String notice;
     private Long blogId;
     private String ownerUsername; // 추가
+    private String ownerImageUrl; //유저 이미지 추가
 
     public BlogResponseDto(Blog blog){
 
@@ -25,6 +26,11 @@ public class BlogResponseDto {
         this.profile= blog.getProfile();
         this.notice = blog.getNotice();
         this.name = blog.getName();
+        String image = blog.getUser().getImage();
+        this.ownerImageUrl = (image == null || image.isEmpty())
+                ? "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png"
+                : image;
+
         this.ownerUsername = blog.getUser().getUsername(); // 추가
     }
 }
