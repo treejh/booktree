@@ -82,7 +82,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                         author: r.username ?? r.userEmail,
                         date: new Date(r.createdAt).toLocaleDateString(),
                         content: r.content,
-                        likes: r.likeCount || 0,
+                        likes: r.likeCount,
                     })),
                 }))
                 setComments(mapped)
@@ -152,32 +152,17 @@ export function CommentsSection({ postId }: { postId: number }) {
     // ─── 5) 댓글 좋아요 토글 ───────────────────────────────────────
     const handleCommentLike = async (cid: number) => {
         ensureLogin()
-        try {
-            const res = await fetch(`${API}/api/v1/like-comments/create`, {
+        const res = await fetch(
+            `${API}/api/v1/comments/${cid}/like`, // ← 여기
+            {
                 method: 'POST',
                 credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ commentId: cid }),
-            })
-            if (!res.ok) {
-                const err = await res.json()
-                throw new Error(err.message || '댓글 좋아요 처리 실패')
-            }
-            const { likeCommentId } = await res.json()
-            // 토글 상태에 따라 로컬 카운트 증감
-            setComments((cs) =>
-                cs.map((c) => {
-                    if (c.id === cid) {
-                        const wasLiked = !!likedComments[cid]
-                        return { ...c, likes: c.likes + (wasLiked ? -1 : 1) }
-                    }
-                    return c
-                }),
-            )
-            setLikedComments((l) => ({ ...l, [cid]: likeCommentId !== 0 }))
-        } catch (e: any) {
-            alert(e.message)
-        }
+            },
+        )
+        if (!res.ok) return alert('좋아요 실패')
+        const { likeCount } = await res.json() // ← body.likeCount 읽기
+        setComments((cs) => cs.map((c) => (c.id === cid ? { ...c, likes: likeCount } : c)))
+        setLikedComments((l) => ({ ...l, [cid]: !l[cid] }))
     }
 
     // ─── 6) 댓글 수정 / 삭제 ───────────────────────────────────────
@@ -264,39 +249,30 @@ export function CommentsSection({ postId }: { postId: number }) {
     // ─── 대댓글 좋아요 토글 ─────────────────────────────────────
     const handleReplyLike = async (cid: number, rid: number) => {
         ensureLogin()
-
         try {
-            const res = await fetch(`${API}/api/v1/like-replies/create`, {
+            const res = await fetch(`${API}/api/v1/like-replies/toggle`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ replyId: rid }),
             })
-            if (!res.ok) {
-                const err = await res.text()
-                throw new Error(err || '대댓글 좋아요 처리 실패')
-            }
-            await res.json()
-
-            // 토글 & 카운트 업데이트
-            setLikedReplies((prev) => {
-                const nowLiked = !prev[rid]
-                setComments((comments) =>
-                    comments.map((c) =>
-                        c.id === cid
-                            ? {
-                                  ...c,
-                                  replies: c.replies.map((r) =>
-                                      r.id === rid ? { ...r, likes: r.likes + (nowLiked ? 1 : -1) } : r,
-                                  ),
-                              }
-                            : c,
-                    ),
-                )
-                return { ...prev, [rid]: nowLiked }
-            })
-        } catch (e: any) {
-            alert(e.message)
+            if (!res.ok) throw new Error('좋아요 처리 실패')
+            const { likeCount } = await res.json()
+            // (2) 댓글 리스트 중 해당 rid를 찾아 likes 업데이트
+            setComments((cs) =>
+                cs.map((c) =>
+                    c.id === cid
+                        ? {
+                              ...c,
+                              replies: c.replies.map((r) => (r.id === rid ? { ...r, likes: likeCount } : r)),
+                          }
+                        : c,
+                ),
+            )
+            // (3) 로컬 토글 상태도 반영
+            setLikedReplies((l) => ({ ...l, [rid]: !l[rid] }))
+        } catch {
+            alert('대댓글 좋아요 처리에 실패했습니다.')
         }
     }
 

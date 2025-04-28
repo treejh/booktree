@@ -23,5 +23,6 @@ public class LikeReplyDto {
         private Long likeReplyId;
         private Long replyId; // 좋아요 대상 대댓글의 ID
         private Long userId; // 좋아요를 누른 사용자의 ID
+        private Long likeCount;
     }
 }

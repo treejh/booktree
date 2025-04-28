@@ -101,13 +101,17 @@ public class ReplyService {
                 .map(Comment::getId)
                 .orElse(null);
         String username = reply.getUser() != null ? reply.getUser().getUsername() : null;
+        long likeCount = reply.getLikeReplyList() != null
+                ? reply.getLikeReplyList().size()
+                : 0L;
         return new ReplyDto.Response(
                 reply.getId(),
                 commentId,
                 reply.getContent(),
                 reply.getCreatedAt(),
                 reply.getModifiedAt(),
-                username
+                username,
+                likeCount
         );
     }
 }

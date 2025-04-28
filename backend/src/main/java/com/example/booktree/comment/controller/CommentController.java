@@ -2,6 +2,8 @@ package com.example.booktree.comment.controller;
 
 import com.example.booktree.comment.dto.CommentDto;
 import com.example.booktree.comment.service.CommentService;
+import com.example.booktree.like_comment.dto.LikeCommentDto;
+import com.example.booktree.like_comment.service.LikeCommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,6 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/v1/comments")
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
+    private final LikeCommentService likeCommentService;
 
     // 댓글 생성
     @PostMapping("/create")
@@ -52,5 +58,19 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /** 댓글 좋아요 토글 */
+    @PostMapping("/{commentId}/like")
+    public ResponseEntity<Map<String, Long>> toggleLike(@PathVariable Long commentId) {
+        // likeCommentService.toggleLike를 직접 호출하거나, commentService에 위임해도 됩니다.
+        // 여기서는 LikeCommentService를 직접 사용한다고 가정:
+        LikeCommentDto.Response dto = likeCommentService.toggleLike(
+                new LikeCommentDto.Post(commentId)
+        );
+        // 반환값으로 최신 likeCount만 보내도록 맵핑
+        Map<String, Long> body = Collections.singletonMap("likeCount",
+                commentService.getLikeCount(commentId));
+        return ResponseEntity.ok(body);
     }
 }

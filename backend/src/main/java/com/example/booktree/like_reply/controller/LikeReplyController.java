@@ -15,11 +15,14 @@ public class LikeReplyController {
     private final LikeReplyService likeReplyService;
 
     // 대댓글 좋아요 : /api/v1/like-replies/create
-    @PostMapping("/create")
+    @PostMapping("/toggle")
     public ResponseEntity<LikeReplyDto.Response> toggleLike(@RequestBody LikeReplyDto.Post dto) {
         LikeReplyDto.Response response = likeReplyService.toggleLike(dto);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     //  삭제는 토글로 처리하는 방식으로 변경
+
+
+
 }
