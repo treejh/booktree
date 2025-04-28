@@ -7,6 +7,7 @@ import com.example.booktree.oauth.handler.CustomOAuth2AuthenticationSuccessHandl
 import com.example.booktree.oauth.resolver.CustomAuthorizationRequestResolver;
 import com.example.booktree.oauth.service.CustomOAuth2UserService;
 import com.example.booktree.user.service.UserService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -223,17 +224,18 @@ public class SecurityConfigBookTree {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        //config.addAllowedOrigin("*");
-        config.addAllowedOrigin("http://localhost:3000");
-        config.addAllowedOrigin("https://www.booktri.site");
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://www.booktri.site"
+        ));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
 
-        source.registerCorsConfiguration("/**",config);
+        source.registerCorsConfiguration("/**", config);
         return source;
-
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder(){
