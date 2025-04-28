@@ -297,13 +297,16 @@ export default function BlogPage() {
         const fetchIsFollowing = async () => {
             if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/isfollowing/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')

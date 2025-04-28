@@ -46,8 +46,8 @@ export default function BlogPostListPage() {
             setLoading(true)
             const endpoint =
                 sortType === 'latest'
-                    ? `http://localhost:8090/api/v1/posts/get/blog/${blogId}?page=${currentPage}&size=8`
-                    : `http://localhost:8090/api/v1/posts/get/blog/popular/${blogId}?page=${currentPage}&size=8`
+                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/${blogId}?page=${currentPage}&size=8`
+                    : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/popular/${blogId}?page=${currentPage}&size=8`
 
             console.log('요청 URL:', endpoint) // 요청 URL 확인
 

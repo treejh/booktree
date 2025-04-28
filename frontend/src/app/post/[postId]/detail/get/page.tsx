@@ -103,12 +103,15 @@ export default function DetailPage() {
         const fetchUserId = async () => {
             try {
                 setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/posts/get/userid/${postId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/userid/${postId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     },
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('유저 ID를 불러오는데 실패했습니다다.')
@@ -132,13 +135,16 @@ export default function DetailPage() {
 
             try {
                 setLoading(true)
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/isfollowing/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
