@@ -41,6 +41,7 @@ interface follower {
     username: string
     isFollowing: boolean
     isMe: boolean
+    image: string
 }
 
 interface followed {
@@ -50,6 +51,7 @@ interface followed {
     username: string
     isFollowing: boolean
     isMe: boolean
+    image: string
 }
 
 export default function FollowPage() {
@@ -110,11 +112,12 @@ export default function FollowPage() {
                 id: user.userId,
                 name: user.username, // name이 따로 없으면 username을 name으로 사용
                 username: `@${user.username}`,
-                avatar: '/avatars/default.jpg', // 나중에 API에서 내려주면 교체
+                avatar: user.imageUrl, // 나중에 API에서 내려주면 교체
                 isFollowing: user.following,
                 isMe: user.me,
                 blogId: user.blogId,
             }))
+            console.log()
             setUsers(transformed)
             console.log('user : ', transformed)
         } else if (activeTab === 'followers') {
@@ -122,13 +125,14 @@ export default function FollowPage() {
                 id: user.userId,
                 name: user.username,
                 username: `@${user.username}`,
-                avatar: '/avatars/default.jpg',
+                avatar: user.imageUrl,
                 isFollowing: user.following,
                 isMe: user.me,
                 blogId: user.blogId,
             }))
             setUsers(transformed)
             console.log('user : ', transformed)
+            window.location.reload()
         }
     }, [activeTab, follower, followed])
 
@@ -146,6 +150,7 @@ export default function FollowPage() {
                         credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
                 )
+                console.log('response : ', response)
                 if (!response.ok) {
                     throw new Error('팔로워 데이터를 가져오는 데 실패했습니다.')
                 }
