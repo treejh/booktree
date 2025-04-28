@@ -220,8 +220,9 @@ export default function DetailPage() {
                     imageUrls: [...formattedPost.imageUrls],
                     images: [],
                 })
-            } catch (err: any) {
-                setError(err instanceof Error ? err.message : '게시글을 불러오지 못했습니다')
+            } catch (error) {
+                console.error('게시글 로드 실패:', error)
+                // 에러 시 UI에 표시하지 않음
             } finally {
                 setLoading(false)
             }
@@ -289,6 +290,12 @@ export default function DetailPage() {
                     credentials: 'include', // 이 부분 추가
                 })
 
+                // 401/403 에러는 조용히 처리
+                if (mainResponse.status === 401 || mainResponse.status === 403) {
+                    console.log('메인 카테고리 조회 권한이 없습니다')
+                    return
+                }
+
                 if (!mainResponse.ok) {
                     throw new Error('메인 카테고리를 불러오는데 실패했습니다.')
                 }
@@ -318,6 +325,7 @@ export default function DetailPage() {
                 setEditCategories(categoryData)
             } catch (error) {
                 console.error('카테고리 로드 에러:', error)
+                // 에러 시 빈 배열로 초기화
                 setEditMainCategories([])
                 setEditCategories([])
             }
@@ -337,6 +345,11 @@ export default function DetailPage() {
                         credentials: 'include',
                     },
                 )
+                // 401/403 에러는 조용히 처리
+                if (response.status === 401 || response.status === 403) {
+                    console.log('좋아요 상태 확인 권한이 없습니다')
+                    return
+                }
 
                 if (!response.ok) throw new Error('좋아요 상태를 불러오는데 실패했습니다.')
 
@@ -345,6 +358,9 @@ export default function DetailPage() {
                 setPost((prev) => (prev ? { ...prev, likeCount: data.likeCount } : null))
             } catch (error) {
                 console.error('좋아요 상태 로드 실패:', error)
+                // 에러 시 기본값 설정
+                setPostLiked(false)
+                setPost((prev) => (prev ? { ...prev, likeCount: 0 } : null))
             }
         }
 
