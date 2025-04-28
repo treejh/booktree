@@ -943,10 +943,10 @@ export default function DetailPage() {
                                         onClick={togglePostLike}
                                         className={`flex items-center justify-center px-4 py-2 
                                             ${
-                                                post.username === loginUser?.username
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-green-50 hover:bg-green-100 transition'
-                                            } 
+                                            post.username === loginUser?.username
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-green-50 hover:bg-green-100 transition'
+                                        } 
                                             rounded-md ${postLiked ? 'text-red-500' : 'text-green-600'}`}
                                     >
                                         <svg
