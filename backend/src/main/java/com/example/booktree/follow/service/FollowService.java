@@ -60,6 +60,7 @@ public class FollowService {
                             .create_at(follower.getCreatedAt())
                             .update_at(follower.getModifiedAt())
                             .isMe(targetId.equals(loginUserId))
+                            .imageUrl(follower.getFollowed().getImage())
                             .build();
                 })
                 .toList();
@@ -92,6 +93,7 @@ public class FollowService {
                             .create_at(followed.getCreatedAt())
                             .update_at(followed.getModifiedAt())
                             .isMe(targetId.equals(loginUserId))
+                            .imageUrl(followed.getFollower().getImage())
                             .build();
                 })
                 .toList();
