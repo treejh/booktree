@@ -15,7 +15,7 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: "${custom.site.backUrl}/{action}/oauth2/code/{registrationId}"
           github:
-            redirect-uri: "${custom.site.backUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "${custom.site.backUrl}/{action}/oauth2/code/{registrationId}"
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
