@@ -225,6 +225,7 @@ public class SecurityConfigBookTree {
 
         //config.addAllowedOrigin("*");
         config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("https://www.booktri.site");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
