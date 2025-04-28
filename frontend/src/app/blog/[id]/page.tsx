@@ -32,6 +32,7 @@ interface BlogInfo {
     profile: string
     notice: string
     blogId: number
+    ownerUsername: string // 추가
 }
 
 const posts: Post[] = [
@@ -445,6 +446,61 @@ export default function BlogPage() {
         }
     }
 
+    /* const handleBlogMainClick = async (username: string) => {
+        try {
+            // 경로를 백엔드 엔드포인트와 일치하도록 수정
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/username/${username}`,
+                {
+                    credentials: 'include',
+                },
+            )
+
+            if (!response.ok) {
+                throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            }
+
+            const blogId = await response.json()
+            router.push(`/blog/${blogId}`)
+        } catch (error) {
+            console.error('Error:', error)
+            alert('블로그 정보를 가져오는데 실패했습니다.')
+        }
+    } */
+
+    // 기존 fetchBlogInfo useEffect에서 받아온 데이터를 그대로 사용
+    useEffect(() => {
+        const fetchBlogInfo = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/info?blogId=${blogId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        // credentials: 'include',
+                    },
+                )
+
+                if (!res.ok) {
+                    throw new Error('블로그 정보를 가져오지 못했습니다.')
+                }
+
+                const data = await res.json()
+                setBlog(data) // 이제 data에는 ownerUsername이 포함되어 있음
+            } catch (error) {
+                setError(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.')
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        if (blogId) {
+            fetchBlogInfo()
+        }
+    }, [blogId])
+
     return (
         <div className="flex gap-8 w-full py-8">
             {/* 메인 컨텐츠 */}
@@ -454,8 +510,9 @@ export default function BlogPage() {
                     <div>
                         {/* 프로필 섹션 */}
                         <section className="text-center mb-12">
-                            <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
-                                {blog?.name || `${loginUser.username} 블로그`}
+                            <h1 className="text-3xl font-bold mb-2 flex flex-col items-center justify-center gap-2">
+                                <span className="text-black-600">{blog?.ownerUsername} 님의</span>
+                                {blog?.name || `블로그`}
                                 {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
                                     <button
                                         className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer"
