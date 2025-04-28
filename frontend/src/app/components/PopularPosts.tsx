@@ -83,7 +83,7 @@ export default function PopularPosts({ blogId }: PopularPostsProps) {
 
     return (
         <div>
-            <h2 className="text-2xl font-bold mb-6">인기 게시글</h2>
+            <h2 className="text-2xl font-bold mb-6">추천 게시글</h2>
             {loading ? (
                 <p className="text-center text-gray-500">로딩 중...</p>
             ) : posts.length === 0 ? (

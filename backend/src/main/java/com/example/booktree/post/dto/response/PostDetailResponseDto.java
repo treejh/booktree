@@ -34,6 +34,9 @@ public class PostDetailResponseDto {
     private Long mainCategoryId; // mainCategory의 ID
     private Long categoryId; // category의 ID
 
+    //유저 아이디 추가
+    private Long userId;
+
 
 
 

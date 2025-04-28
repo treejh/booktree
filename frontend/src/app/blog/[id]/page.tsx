@@ -593,7 +593,7 @@ export default function BlogPage() {
                                         onClick={() => handleTabChange('popular')}
                                     >
                                         <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
-                                            인기순
+                                            추천순
                                         </span>
                                     </li>
                                     <li
@@ -672,7 +672,7 @@ export default function BlogPage() {
                         {categories.map((category) => (
                             <li key={category.id}>
                                 <Link
-                                    href={`/blog/category/${category.name}`}
+                                    href={`/category/${category.id}`}
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"
                                 >
                                     <span>{category.name}</span>

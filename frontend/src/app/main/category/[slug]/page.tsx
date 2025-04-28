@@ -137,8 +137,9 @@ const CategoryDetailPage = () => {
 
     return (
         <div className="w-full">
-            <CategoryNav currentSlug={slug} />
-
+            <div className="my-2">
+                <CategoryNav currentSlug={slug} />
+            </div>
             <h1 className="text-3xl font-bold mb-8 mt-6">{getCategoryTitle()}</h1>
 
             <div className="flex flex-col lg:flex-row gap-8">

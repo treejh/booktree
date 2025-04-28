@@ -147,6 +147,7 @@ public class PostController {
                 .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .userId(post.getUser().getId())
                 .username(post.getUser().getUsername()) // 작성자 이름
                 .imageUrls(post.getImageList().stream()
                         .map(image -> image.getImageUrl()) // 이미지 엔티티에서 URL 꺼내기
@@ -213,6 +214,11 @@ public class PostController {
         Page<PostResponseDto> dtoPage = postPage.map(post -> PostResponseDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
+                .imageUrl(
+                        post.getImageList().isEmpty()
+                                ? null
+                                : post.getImageList().get(0).getImageUrl()
+                )
                 .viewCount(post.getView())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
@@ -237,6 +243,11 @@ public class PostController {
                         .postId(post.getId())
                         .title(post.getTitle())
                         .viewCount(post.getView())
+                        .imageUrl(
+                                post.getImageList().isEmpty()
+                                        ? null
+                                        : post.getImageList().get(0).getImageUrl()
+                        )
                         .createdAt(post.getCreatedAt())
                         .modifiedAt(post.getModifiedAt())
                         .build()
