@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
+
+// 검색 결과 타입 정의
 interface SearchResult {
     postId: number
     title: string
@@ -15,42 +17,52 @@ interface SearchResult {
 
 export default function SearchPage() {
     const params = useSearchParams()
-    const router = useRouter() // ← 추가
+    const router = useRouter()
     const query = params.get('q') ?? ''
     const type = params.get('type') ?? 'all'
+
+    // 검색 결과, 페이지 상태
     const [results, setResults] = useState<SearchResult[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+
+    // 총 페이지 수 및 총 결과 수
+    const [totalPages, setTotalPages] = useState(1)
+    const [totalResults, setTotalResults] = useState(0)
+
+    // 페이지당 표시 개수 고정
+    const pageSize = 8
 
     useEffect(() => {
         if (!query.trim()) return
 
-        const fetchResults = async () => {
+        async function fetchResults() {
             setIsLoading(true)
             setError(null)
-
             try {
+                // API URL 구성
+                const base = process.env.NEXT_PUBLIC_API_BASE_URL
                 let url: string
-
+                const commonParams = `&page=${currentPage}&size=${pageSize}`
                 if (type === 'all') {
-                    url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/search/all?q=${encodeURIComponent(
-                        query,
-                    )}&page=1&size=20`
+                    url = `${base}/api/v1/posts/search/all?q=${encodeURIComponent(query)}${commonParams}`
                 } else {
-                    url = `${
-                        process.env.NEXT_PUBLIC_API_BASE_URL
-                    }/api/v1/posts/search?type=${type}&keyword=${encodeURIComponent(query)}&page=1&size=20`
+                    url = `${base}/api/v1/posts/search?type=${type}&keyword=${encodeURIComponent(query)}${commonParams}`
                 }
 
-                const res = await fetch(url, {
-                    method: 'GET',
-                    credentials: 'include',
-                })
-                if (!res.ok) {
-                    throw new Error(`검색 요청 실패: ${res.status}`)
+                const res = await fetch(url, { method: 'GET', credentials: 'include' })
+                if (!res.ok) throw new Error(`검색 요청 실패: ${res.status}`)
+
+                const page = (await res.json()) as {
+                    content: SearchResult[]
+                    totalPages: number
+                    totalElements: number
                 }
-                const page = (await res.json()) as { content: SearchResult[] }
+
                 setResults(page.content)
+                setTotalPages(page.totalPages)
+                setTotalResults(page.totalElements)
             } catch (err) {
                 setError(err instanceof Error ? err.message : '알 수 없는 오류')
             } finally {
@@ -59,15 +71,36 @@ export default function SearchPage() {
         }
 
         fetchResults()
-    }, [query, type])
+    }, [query, type, currentPage])
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-2xl font-bold mb-6">
+            <h1 className="text-2xl font-bold mb-4">
                 &quot;{query}&quot;
                 {type === 'all' ? ' 전체' : type === 'title' ? ' 제목' : type === 'book' ? ' 책' : ' 작성자'} 검색 결과
-                ({results.length})
+                <span className="ml-2 text-gray-600">(전체 {totalResults}건)</span>
             </h1>
+
+            {/* 페이지 네비게이션 */}
+            <div className="flex justify-center items-center space-x-4 mb-6">
+                <button
+                    className="px-4 py-2 border rounded disabled:opacity-50"
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                >
+                    이전
+                </button>
+                <span>
+                    {currentPage} / {totalPages}
+                </span>
+                <button
+                    className="px-4 py-2 border rounded disabled:opacity-50"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                >
+                    다음
+                </button>
+            </div>
 
             {isLoading ? (
                 <div className="flex justify-center items-center h-40">
@@ -80,15 +113,14 @@ export default function SearchPage() {
                     <p>검색 결과가 없습니다.</p>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
                     {results.map((r) => (
                         <div
                             key={r.postId}
-                            className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-                            onClick={() => router.push(`/post/${r.postId}/detail/get`)} // ← 클릭 시 이동
+                            className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition"
+                            onClick={() => router.push(`/post/${r.postId}/detail/get`)}
                         >
-                            <div className="flex border border-gray-100 rounded-lg p-4 gap-4 hover:shadow-md transition-shadow cursor-pointer">
-                                {/* 이미지 섹션 */}
+                            <div className="flex mb-2">
                                 <div className="w-24 h-32 relative flex-shrink-0">
                                     <Image
                                         src={
@@ -96,17 +128,16 @@ export default function SearchPage() {
                                                 ? r.imageUrl
                                                 : 'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
                                         }
-                                        alt={r.title || '기본 이미지'}
+                                        alt={r.title}
                                         fill
                                         className="object-cover rounded"
                                     />
                                 </div>
-                                {/* 텍스트 섹션 */}
-                                <div>
-                                    <h3 className="text-lg font-medium mb-2">{r.title}</h3>
-                                    <p className="text-sm text-gray-500 mb-1">조회수: {r.viewCount}</p>
-                                    <p className="text-sm text-gray-500">
-                                        작성일: {new Date(r.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
+                                <div className="ml-4 flex-1">
+                                    <h3 className="text-lg font-medium mb-1 truncate">{r.title}</h3>
+                                    <p className="text-xs text-gray-500">조회수: {r.viewCount}</p>
+                                    <p className="text-xs text-gray-500">
+                                        작성일: {new Date(r.createdAt).toLocaleDateString('ko-KR')}
                                     </p>
                                 </div>
                             </div>
