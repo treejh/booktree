@@ -943,46 +943,49 @@ export default function DetailPage() {
                                         </button>
 
                                         {/* 팝오버 미니창 수정 */}
+                                        {/* 팝오버 미니창 수정 */}
                                         {showPopover && (
-                                            <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
+                                            <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
                                                 <div className="p-4">
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <div className="flex items-center">
-                                                            <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
+                                                        <div className="flex items-center min-w-0">
+                                                            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                 <img
                                                                     src="https://randomuser.me/api/portraits/women/44.jpg"
                                                                     alt="프로필"
                                                                     className="w-full h-full object-cover"
                                                                 />
                                                             </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <button
+                                                                    onClick={() => handleProfileClick(post.author)}
+                                                                    className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
+                                                                >
+                                                                    {post.username}
+                                                                </button>
+                                                            </div>
                                                             <button
-                                                                onClick={() => handleProfileClick(post.author)}
-                                                                className="font-medium hover:text-[#2E804E] transition-colors duration-200"
+                                                                onClick={() => handleBlogMainClick(post.username)}
+                                                                className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200 ml-2 flex-shrink-0"
                                                             >
-                                                                {post.author}
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    className="h-5 w-5"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                                                                    />
+                                                                </svg>
                                                             </button>
                                                         </div>
-                                                        <button
-                                                            onClick={() => handleBlogMainClick(post.username)}
-                                                            className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
-                                                        >
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                className="h-5 w-5"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                stroke="currentColor"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={2}
-                                                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                                />
-                                                            </svg>
-                                                        </button>
                                                     </div>
-                                                    {loginUser.id !== userId && (
+                                                    {loginUser?.id !== userId && (
                                                         <button
                                                             onClick={handleFollowClick}
                                                             className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
