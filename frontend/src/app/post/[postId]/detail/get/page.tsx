@@ -13,6 +13,8 @@ interface Category {
     count: number
     path: string
     isParent?: boolean
+    postCount: number
+    id: number
     isOpen?: boolean
     subCategories?: Category[]
     // postCount?: number // 일부 코드에서 사용됨
@@ -78,7 +80,7 @@ export default function DetailPage() {
     const [error, setError] = useState<string | null>(null)
     const [post, setPost] = useState<PostDetail | null>(null)
     const [isPostEditing, setIsPostEditing] = useState(false)
-    const [categories, setCategories] = useState<Category>([])
+    const [categories, setCategories] = useState<Category[]>([])
     const [editedPost, setEditedPost] = useState({
         title: '',
         content: '',
@@ -345,7 +347,7 @@ export default function DetailPage() {
         }
 
         // 자신의 글인지 확인
-        if (post.username === loginUser.username) {
+        if (post && post.username === loginUser.username) {
             alert('자신의 글은 좋아요를 할 수 없습니다.')
             return
         }
@@ -412,11 +414,19 @@ export default function DetailPage() {
         try {
             if (isFollowing) {
                 // ✅ 팔로우 상태면 → 언팔로우 요청
-                await unfollowUser(userId)
+                if (userId !== undefined) {
+                    await unfollowUser(userId)
+                } else {
+                    console.error('userId is undefined')
+                }
                 setIsFollowing(false)
             } else {
                 // ✅ 아직 팔로우 안 했으면 → 팔로우 요청
-                await followUser(userId)
+                if (userId !== undefined) {
+                    await followUser(userId)
+                } else {
+                    console.error('userId is undefined')
+                }
                 setIsFollowing(true)
             }
         } catch (error) {

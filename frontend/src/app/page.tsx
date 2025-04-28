@@ -9,7 +9,15 @@ import { useState } from 'react'
 export default function Home() {
     console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
 
-    const [posts, setPosts] = useState([])
+    interface Post {
+        id: string
+        imageUrl: string
+        title: string
+        mainCategory: string
+        viewCount: number
+    }
+
+    const [posts, setPosts] = useState<Post[]>([])
 
     useEffect(() => {
         const fetchPosts = async () => {
