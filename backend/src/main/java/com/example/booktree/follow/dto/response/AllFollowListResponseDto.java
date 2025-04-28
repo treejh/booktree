@@ -20,5 +20,6 @@ public class AllFollowListResponseDto {
     private boolean isFollowing;
     private boolean isMe;
     private Long blogId;
+    private String imageUrl;
 
 }
