@@ -1,10 +1,7 @@
 package com.example.booktree.comment.dto;
 
 import com.example.booktree.reply.dto.ReplyDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.domain.Page;
 import java.time.LocalDateTime;
 
@@ -41,5 +38,7 @@ public class CommentDto {
         private Long userId;
         private long likeCount;
         private Page<ReplyDto.Response> replies;
+        private boolean isFollowing;
+        private boolean isMe;
     }
 }

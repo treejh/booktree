@@ -81,9 +81,9 @@ export default function BlogPage() {
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
     const [userId, setUserId] = useState<number | null>(null)
-    const [categories, setCategories] = useState<Category>([])
-    const [followCount, setFollowCount] = useState([])
-    const [postCount, setPostCount] = useState()
+    const [categories, setCategories] = useState<Category[]>([]) // 수정된 부분
+    const [followCount, setFollowCount] = useState<{ followerCount: number; followingCount: number } | null>(null)
+    const [postCount, setPostCount] = useState<number | null>(null)
 
     //블로그 정보 가져오기
 
@@ -297,13 +297,16 @@ export default function BlogPage() {
         const fetchIsFollowing = async () => {
             if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
             try {
-                const response = await fetch(`http://localhost:8090/api/v1/follow/get/isfollowing/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/isfollowing/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
                     },
-                    credentials: 'include',
-                })
+                )
 
                 if (!response.ok) {
                     throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
@@ -487,11 +490,11 @@ export default function BlogPage() {
                     <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
                             <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">{followCount.followerCount}</div>
+                                <div className="text-xl font-bold">{followCount?.followerCount || 0}</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
                             <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">{followCount.followingCount}</div>
+                                <div className="text-xl font-bold">{followCount?.followingCount || 0}</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
                             <div className="text-center">

@@ -13,6 +13,8 @@ interface Category {
     count: number
     path: string
     isParent?: boolean
+    postCount: number
+    id: number
     isOpen?: boolean
     subCategories?: Category[]
     // postCount?: number // 일부 코드에서 사용됨
@@ -78,7 +80,7 @@ export default function DetailPage() {
     const [error, setError] = useState<string | null>(null)
     const [post, setPost] = useState<PostDetail | null>(null)
     const [isPostEditing, setIsPostEditing] = useState(false)
-    const [categories, setCategories] = useState<Category>([])
+    const [categories, setCategories] = useState<Category[]>([])
     const [editedPost, setEditedPost] = useState({
         title: '',
         content: '',
@@ -98,6 +100,71 @@ export default function DetailPage() {
     const [userId, setUserId] = useState<number>()
     const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
     const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                setLoading(true)
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/userid/${postId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('유저 ID를 불러오는데 실패했습니다다.')
+                }
+
+                const data = await response.json()
+                console.log('UserId : ', data)
+                console.log('LoginUser : ', loginUser)
+                setUserId(data)
+            } catch (err) {
+                console.error('Error fetching post:', err)
+                setError(err instanceof Error ? err.message : '유저 ID를 불러오지 못했습니다')
+            }
+        }
+        fetchUserId()
+    }, [postId])
+
+    useEffect(() => {
+        const fetchIsFollowing = async () => {
+            if (!userId || !isLogin) return // userId가 아직 없으면 요청 안 보냄
+
+            try {
+                setLoading(true)
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/get/isfollowing/${userId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                console.log('팔로우 여부:', data)
+                setIsFollowing(data)
+            } catch (err) {
+                console.error('Error fetching isFollowing:', err)
+                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchIsFollowing()
+    }, [userId])
 
     // 3. 모든 useEffect Hooks를 여기에 모아서 선언
     useEffect(() => {
@@ -280,7 +347,7 @@ export default function DetailPage() {
         }
 
         // 자신의 글인지 확인
-        if (post.username === loginUser.username) {
+        if (post && post.username === loginUser.username) {
             alert('자신의 글은 좋아요를 할 수 없습니다.')
             return
         }
@@ -347,11 +414,19 @@ export default function DetailPage() {
         try {
             if (isFollowing) {
                 // ✅ 팔로우 상태면 → 언팔로우 요청
-                await unfollowUser(userId)
+                if (userId !== undefined) {
+                    await unfollowUser(userId)
+                } else {
+                    console.error('userId is undefined')
+                }
                 setIsFollowing(false)
             } else {
                 // ✅ 아직 팔로우 안 했으면 → 팔로우 요청
-                await followUser(userId)
+                if (userId !== undefined) {
+                    await followUser(userId)
+                } else {
+                    console.error('userId is undefined')
+                }
                 setIsFollowing(true)
             }
         } catch (error) {
@@ -863,16 +938,18 @@ export default function DetailPage() {
                                                             </svg>
                                                         </button>
                                                     </div>
-                                                    <button
-                                                        onClick={handleFollowClick}
-                                                        className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
-                                                            isFollowing
-                                                                ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
-                                                                : 'text-white bg-[#2E804E] hover:bg-[#246A40]'
-                                                        }`}
-                                                    >
-                                                        {isFollowing ? '팔로우 취소' : '팔로우 하기'}
-                                                    </button>
+                                                    {loginUser.id !== userId && (
+                                                        <button
+                                                            onClick={handleFollowClick}
+                                                            className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
+                                                                isFollowing
+                                                                    ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
+                                                                    : 'text-white bg-[#2E804E] hover:bg-[#246A40]'
+                                                            }`}
+                                                        >
+                                                            {isFollowing ? '팔로우 취소' : '팔로우 하기'}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
@@ -943,10 +1020,10 @@ export default function DetailPage() {
                                         onClick={togglePostLike}
                                         className={`flex items-center justify-center px-4 py-2 
                                             ${
-                                            post.username === loginUser?.username
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-green-50 hover:bg-green-100 transition'
-                                        } 
+                                                post.username === loginUser?.username
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-green-50 hover:bg-green-100 transition'
+                                            } 
                                             rounded-md ${postLiked ? 'text-red-500' : 'text-green-600'}`}
                                     >
                                         <svg

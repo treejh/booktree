@@ -21,6 +21,8 @@ export interface Comment {
     content: string
     likes: number
     replies: Reply[]
+    isFollowing: boolean
+    isMe: boolean
 }
 
 export function CommentsSection({ postId }: { postId: number }) {
@@ -47,7 +49,7 @@ export function CommentsSection({ postId }: { postId: number }) {
 
     // ─── 2.1) 팝오버 상태 ───────────────────────────────────────────────
     const [activeCommentId, setActiveCommentId] = useState<number | null>(null)
-    const [isFollowing, setIsFollowing] = useState<{ [username: string]: boolean }>({})
+    const [isFollowing, setIsFollowing] = useState<{ [key: number]: boolean }>({})
 
     // ─── 공통 헬퍼
     const ensureLogin = () => {
@@ -64,6 +66,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 })
                 if (!res.ok) throw new Error('댓글을 불러오지 못했습니다.')
                 const json = await res.json()
+                console.log('json : ', json)
                 const mapped: Comment[] = json.content.map((c: any) => ({
                     id: c.commentId,
                     userId: c.userId,
@@ -71,6 +74,8 @@ export function CommentsSection({ postId }: { postId: number }) {
                     date: new Date(c.createdAt).toLocaleDateString(),
                     content: c.content,
                     likes: c.likeCount || 0,
+                    isFollowing: c.following,
+                    isMe: c.me,
                     replies: c.replies.content.map((r: any) => ({
                         id: r.replyId,
                         userId: r.userId,
@@ -81,6 +86,15 @@ export function CommentsSection({ postId }: { postId: number }) {
                     })),
                 }))
                 setComments(mapped)
+                console.log('mapped : ', mapped)
+
+                const followStatus: { [key: number]: boolean } = {}
+                mapped.forEach((c) => {
+                    followStatus[c.userId] = c.isFollowing
+                })
+
+                setIsFollowing(followStatus)
+
                 setCommentError(null)
             } catch (e: any) {
                 setCommentError(e.message)
@@ -116,6 +130,8 @@ export function CommentsSection({ postId }: { postId: number }) {
                 date: new Date(raw.createdAt).toLocaleDateString(),
                 content: raw.content,
                 likes: raw.likeCount || 0,
+                isFollowing: raw.following,
+                isMe: raw.me,
                 replies: raw.replies.content.map((r: any) => ({
                     id: r.replyId,
                     author: r.username ?? r.userEmail,
@@ -320,33 +336,63 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
     }
 
-    const handleFollow = async (author: string) => {
+    const handleFollow = async (userId: number) => {
         if (!isLogin) {
             router.push('/login')
             return
         }
 
-        // comments 배열에서 글쓴이(author)에 해당하는 userId 찾기
-        const followeeId = comments.find((c) => c.author === author)?.userId
-        if (!followeeId) {
-            alert('유저 ID를 찾을 수 없습니다.')
-            return
-        }
-
         try {
-            const res = await fetch(
-                `${API}/api/v1/follow/${isFollowing[author] ? 'delete/unfollow' : 'create/follow'}`,
-                {
-                    method: isFollowing[author] ? 'DELETE' : 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ followeeId }),
-                },
-            )
-            if (!res.ok) throw new Error('실패')
-            setIsFollowing((f) => ({ ...f, [author]: !f[author] }))
+            if (isFollowing[userId]) {
+                await unfollowUser(userId)
+            } else {
+                await followUser(userId)
+            }
+
+            // 성공하면 상태 반전
+            setIsFollowing((prev) => ({
+                ...prev,
+                [userId]: !prev[userId],
+            }))
         } catch {
-            alert('팔로우 처리에 실패했습니다.')
+            alert('팔로우/언팔로우 처리에 실패했습니다.')
+        }
+    }
+
+    // ─── ?) 팔로우 이벤트 선언 ─────────────────────────────────────────────────
+    const followUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/create/follow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('팔로우 요청 실패')
+            console.log(`팔로우 완료: ${followeeId}`)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const unfollowUser = async (followeeId: number) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/follow/delete/unfollow`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+
+            if (!res.ok) throw new Error('언팔로우 요청 실패')
+            console.log(`언팔로우 완료: ${followeeId}`)
+        } catch (err) {
+            console.error(err)
         }
     }
 
@@ -388,35 +434,34 @@ export function CommentsSection({ postId }: { postId: number }) {
                             >
                                 {comment.author}
                             </button>
+
                             {activeCommentId === comment.id && (
                                 <div className="absolute z-10 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200">
                                     <div className="p-3 space-y-2">
-                                        {/* 프로필 버튼 */}
+                                        {/* 프로필 이동 버튼 */}
                                         <button
                                             onClick={() => router.push(`/mypage/${comment.userId}`)}
                                             className="flex items-center space-x-2 w-full hover:bg-gray-100 p-2 rounded"
                                         >
-                                            {/* 집 아이콘 */}
-                                            {/* 집 아이콘 */}
-                                            <svg
-                                                className="w-5 h-5"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                {/* TODO: 집 아이콘 path 여기에 입력 */}
+                                            <svg className="w-5 h-5" viewBox="0 0 24 24">
                                                 <path d="M3 9L12 2l9 7v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V13H9v7a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9z" />
                                             </svg>
                                             <span>마이페이지</span>
                                         </button>
-                                        {/* 팔로우/언팔 */}
-                                        <button
-                                            onClick={() => handleFollow(comment.author)}
-                                            className={`w-full text-center py-2 rounded ${
-                                                isFollowing[comment.author] ? 'bg-gray-100' : 'bg-green-600 text-white'
-                                            }`}
-                                        >
-                                            {isFollowing[comment.author] ? '팔로우 취소' : '팔로우'}
-                                        </button>
+
+                                        {/* 팔로우 / 언팔로우 버튼 */}
+                                        {!comment.isMe && (
+                                            <button
+                                                onClick={() => handleFollow(comment.userId)}
+                                                className={`w-full text-center py-2 rounded ${
+                                                    isFollowing[comment.userId]
+                                                        ? 'bg-gray-100 text-gray-700'
+                                                        : 'bg-green-600 text-white'
+                                                }`}
+                                            >
+                                                {isFollowing[comment.userId] ? '팔로우 취소' : '팔로우'}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             )}

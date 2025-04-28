@@ -33,11 +33,13 @@ export default function SearchPage() {
                 let url: string
 
                 if (type === 'all') {
-                    url = `http://localhost:8090/api/v1/posts/search/all?q=${encodeURIComponent(query)}&page=1&size=20`
-                } else {
-                    url = `http://localhost:8090/api/v1/posts/search?type=${type}&keyword=${encodeURIComponent(
+                    url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/search/all?q=${encodeURIComponent(
                         query,
                     )}&page=1&size=20`
+                } else {
+                    url = `${
+                        process.env.NEXT_PUBLIC_API_BASE_URL
+                    }/api/v1/posts/search?type=${type}&keyword=${encodeURIComponent(query)}&page=1&size=20`
                 }
 
                 const res = await fetch(url, {

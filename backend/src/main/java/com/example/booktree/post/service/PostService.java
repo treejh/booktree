@@ -6,6 +6,7 @@ import com.example.booktree.blog.entity.Blog;
 import com.example.booktree.blog.service.BlogService;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
+import com.example.booktree.comment.repository.CommentRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
@@ -63,6 +64,7 @@ public class PostService {
     private final UserService userService;
     private final BlogService blogService;
     private final FollowService followService;
+    private final CommentRepository commentRepository;
 
     private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
 
@@ -236,6 +238,9 @@ public class PostService {
         for (Image image : post.getImageList()) {
             s3Uploader.deleteFile(image.getImageUrl());
         }
+
+        // 댓글 삭제 (댓글이 Post를 참조하므로 댓글을 먼저 삭제)
+        commentRepository.deleteByPostId(postId);  // 댓글 테이블에서 해당 게시글 ID를 참조하는 댓글들 삭제
 
         imageRepository.deleteAll(post.getImageList());
         postRepository.delete(post);
