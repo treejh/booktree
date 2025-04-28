@@ -167,6 +167,7 @@ export default function DetailPage() {
 
     useEffect(() => {
         const fetchCategories = async () => {
+            if (!post?.causerId) return // causerId가 없으면 실행하지 않음
             try {
                 const response = await fetch(
                     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/${post?.causerId}`,
@@ -175,20 +176,34 @@ export default function DetailPage() {
                         headers: {
                             'Content-Type': 'application/json',
                         },
+                        credentials: 'include', // 쿠키 포함
                     },
                 )
+
+                // 401, 403 상태 코드는 조용히 처리
+                if (response.status === 401 || response.status === 403) {
+                    console.log('권한이 없습니다')
+                    return
+                }
 
                 if (!response.ok) {
                     throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
                 }
 
                 const data = await response.json()
-                console.log('카테고리 : ', data)
-                setCategories(data)
-                console.log(categories)
+                if (Array.isArray(data)) {
+                    setCategories(data)
+                } else {
+                    console.log('카테고리 데이터가 배열이 아닙니다:', data)
+                    setCategories([])
+                }
+                //console.log('카테고리 : ', data)
+                //setCategories(data)
+                //console.log(categories)
             } catch (err) {
                 console.error('Error fetching post:', err)
-                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+                // setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+                setCategories([]) // 에러 시 빈 배열로 설정
             }
         }
 
@@ -943,10 +958,10 @@ export default function DetailPage() {
                                         onClick={togglePostLike}
                                         className={`flex items-center justify-center px-4 py-2 
                                             ${
-                                            post.username === loginUser?.username
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-green-50 hover:bg-green-100 transition'
-                                        } 
+                                                post.username === loginUser?.username
+                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                    : 'bg-green-50 hover:bg-green-100 transition'
+                                            } 
                                             rounded-md ${postLiked ? 'text-red-500' : 'text-green-600'}`}
                                     >
                                         <svg

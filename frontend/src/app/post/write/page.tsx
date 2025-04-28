@@ -347,37 +347,45 @@ export default function PostWritePage() {
                 console.log(`전송 데이터 - ${key}:`, value)
             }
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/create`, {
-                method: 'POST',
-                credentials: 'include', // 쿠키 포함
-                body: formData,
-            })
-
-            // 응답 상태 로깅
-            console.log('응답 상태:', response.status)
-
-            if (!response.ok) {
-                throw new Error('게시글 등록에 실패했습니다.')
-            }
-
-            // 응답 처리를 한 번만 시도
-            const responseText = await response.text()
-            console.log('서버 응답:', responseText)
-
-            // 응답이 JSON인지 확인
             try {
-                const responseData = JSON.parse(responseText)
-                console.log('생성된 게시글:', responseData)
-                alert('게시글이 성공적으로 등록되었습니다.')
-                if (responseData.id) {
-                    router.push(`/post/${responseData.id}/detail/get`)
-                } else {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/create`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData,
+                })
+
+                // 응답 상태 로깅
+                console.log('응답 상태:', response.status)
+
+                if (!response.ok) {
+                    throw new Error('게시글 등록에 실패했습니다.')
+                }
+
+                // 응답 처리를 한 번만 시도
+                const responseText = await response.text()
+                console.log('서버 응답:', responseText)
+
+                try {
+                    const responseData = JSON.parse(responseText)
+                    console.log('생성된 게시글:', responseData)
+
+                    // postId가 응답에 포함되어 있는지 확인
+                    if (responseData.postId) {
+                        alert('게시글이 성공적으로 등록되었습니다.')
+                        router.push(`/post/${responseData.postId}/detail/get`)
+                    } else {
+                        console.error('게시글 ID를 찾을 수 없습니다:', responseData)
+                        alert('게시글이 등록되었지만 상세 페이지로 이동할 수 없습니다.')
+                        router.push(`/blog/post/${blogInfo.blogId}/list`)
+                    }
+                } catch (jsonError) {
+                    console.error('JSON 파싱 실패:', jsonError, '원본 응답:', responseText)
+                    alert('게시글이 등록되었지만 상세 페이지로 이동할 수 없습니다.')
                     router.push(`/blog/post/${blogInfo.blogId}/list`)
                 }
-            } catch (jsonError) {
-                // JSON 파싱 실패시 (일반 텍스트 응답)
-                alert('게시글이 성공적으로 등록되었습니다.')
-                router.push(`/blog/post/${blogInfo.blogId}/list`)
+            } catch (error) {
+                console.error('Error:', error)
+                alert('게시글 등록에 실패했습니다.')
             }
         } catch (error) {
             console.error('Error:', error)
