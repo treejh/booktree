@@ -148,6 +148,11 @@ export default function DetailPage() {
                     },
                 )
 
+                // 401/403 에러는 조용히 처리
+                if (response.status === 401 || response.status === 403) {
+                    return
+                }
+
                 if (!response.ok) {
                     throw new Error('팔로우 현황을 불러오는 데 실패했습니다.')
                 }
@@ -157,7 +162,7 @@ export default function DetailPage() {
                 setIsFollowing(data)
             } catch (err) {
                 console.error('Error fetching isFollowing:', err)
-                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+                // setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
             } finally {
                 setLoading(false)
             }
@@ -217,8 +222,9 @@ export default function DetailPage() {
                     imageUrls: [...formattedPost.imageUrls],
                     images: [],
                 })
-            } catch (err: any) {
-                setError(err instanceof Error ? err.message : '게시글을 불러오지 못했습니다')
+            } catch (error) {
+                console.error('게시글 로드 실패:', error)
+                // 에러 시 UI에 표시하지 않음
             } finally {
                 setLoading(false)
             }
@@ -234,16 +240,24 @@ export default function DetailPage() {
 
     useEffect(() => {
         const fetchCategories = async () => {
+            if (!post?.causerId) return // causerId가 없으면 실행하지 않음
             try {
                 const response = await fetch(
                     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/${post?.causerId}`,
                     {
+                        // 유저의 모든 카테고리 찾기 기능
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                     },
                 )
+
+                // 401/403 에러는 조용히 처리
+                if (response.status === 401 || response.status === 403) {
+                    console.log('권한이 없습니다')
+                    return
+                }
 
                 if (!response.ok) {
                     throw new Error('유저 카테고리를 불러오는데 실패했습니다.')
@@ -255,7 +269,8 @@ export default function DetailPage() {
                 console.log(categories)
             } catch (err) {
                 console.error('Error fetching post:', err)
-                setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+                //setError(err instanceof Error ? err.message : '유저 카테고리를 불러오지 못했습니다')
+                setCategories([])
             }
         }
 
@@ -276,6 +291,12 @@ export default function DetailPage() {
                     },
                     credentials: 'include', // 이 부분 추가
                 })
+
+                // 401/403 에러는 조용히 처리
+                if (mainResponse.status === 401 || mainResponse.status === 403) {
+                    console.log('메인 카테고리 조회 권한이 없습니다')
+                    return
+                }
 
                 if (!mainResponse.ok) {
                     throw new Error('메인 카테고리를 불러오는데 실패했습니다.')
@@ -306,6 +327,7 @@ export default function DetailPage() {
                 setEditCategories(categoryData)
             } catch (error) {
                 console.error('카테고리 로드 에러:', error)
+                // 에러 시 빈 배열로 초기화
                 setEditMainCategories([])
                 setEditCategories([])
             }
@@ -325,6 +347,11 @@ export default function DetailPage() {
                         credentials: 'include',
                     },
                 )
+                // 401/403 에러는 조용히 처리
+                if (response.status === 401 || response.status === 403) {
+                    console.log('좋아요 상태 확인 권한이 없습니다')
+                    return
+                }
 
                 if (!response.ok) throw new Error('좋아요 상태를 불러오는데 실패했습니다.')
 
@@ -333,6 +360,9 @@ export default function DetailPage() {
                 setPost((prev) => (prev ? { ...prev, likeCount: data.likeCount } : null))
             } catch (error) {
                 console.error('좋아요 상태 로드 실패:', error)
+                // 에러 시 기본값 설정
+                setPostLiked(false)
+                setPost((prev) => (prev ? { ...prev, likeCount: 0 } : null))
             }
         }
 
@@ -624,6 +654,30 @@ export default function DetailPage() {
         }
     }
 
+    const handleBlogMainClick = async (username: string) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/username/${username}`,
+                {
+                    method: 'GET',
+                    // credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                },
+            )
+
+            if (!response.ok) {
+                throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            }
+
+            const blogId = await response.json()
+            router.push(`/blog/${blogId}`)
+        } catch (error) {
+            console.error('Error:', error)
+        }
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl bg-gray-50">
             <div className="flex gap-8">
@@ -899,46 +953,49 @@ export default function DetailPage() {
                                         </button>
 
                                         {/* 팝오버 미니창 수정 */}
+                                        {/* 팝오버 미니창 수정 */}
                                         {showPopover && (
-                                            <div className="absolute z-10 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
+                                            <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
                                                 <div className="p-4">
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <div className="flex items-center">
-                                                            <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
+                                                        <div className="flex items-center min-w-0">
+                                                            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                 <img
                                                                     src="https://randomuser.me/api/portraits/women/44.jpg"
                                                                     alt="프로필"
                                                                     className="w-full h-full object-cover"
                                                                 />
                                                             </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <button
+                                                                    onClick={() => handleProfileClick(post.author)}
+                                                                    className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
+                                                                >
+                                                                    {post.username}
+                                                                </button>
+                                                            </div>
                                                             <button
-                                                                onClick={() => handleProfileClick(post.author)}
-                                                                className="font-medium hover:text-[#2E804E] transition-colors duration-200"
+                                                                onClick={() => handleBlogMainClick(post.username)}
+                                                                className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200 ml-2 flex-shrink-0"
                                                             >
-                                                                {post.author}
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    className="h-5 w-5"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={2}
+                                                                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                                                                    />
+                                                                </svg>
                                                             </button>
                                                         </div>
-                                                        <button
-                                                            onClick={() => router.push('/mypage')}
-                                                            className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200"
-                                                        >
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                className="h-5 w-5"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                stroke="currentColor"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={2}
-                                                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                                />
-                                                            </svg>
-                                                        </button>
                                                     </div>
-                                                    {loginUser.id !== userId && (
+                                                    {loginUser?.id !== userId && (
                                                         <button
                                                             onClick={handleFollowClick}
                                                             className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${

@@ -24,14 +24,16 @@ export default function LatestPosts({ blogId }: LatestPostsProps) {
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0)
 
     useEffect(() => {
         const fetchLatestPosts = async () => {
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/${blogId}?page=${currentPage}&size=8`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/${blogId}?page=${
+                        currentPage - 1
+                    }&size=8`,
                     {
                         method: 'GET',
                         headers: {
@@ -57,11 +59,24 @@ export default function LatestPosts({ blogId }: LatestPostsProps) {
         fetchLatestPosts()
     }, [blogId, currentPage])
 
-    if (loading) return <div>로딩중...</div>
-    if (error) return <div>{error}</div>
+    const handlePageChange = async (page: number) => {
+        try {
+            setCurrentPage(page)
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/${blogId}?page=${page - 1}&size=8`,
+                {
+                    credentials: 'include',
+                },
+            )
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page)
+            if (!response.ok) throw new Error('게시글을 불러오는데 실패했습니다.')
+
+            const data = await response.json()
+            setPosts(data.content)
+            setTotalPages(data.totalPages)
+        } catch (error) {
+            console.error('Error fetching posts:', error)
+        }
     }
 
     return (
@@ -94,7 +109,6 @@ export default function LatestPosts({ blogId }: LatestPostsProps) {
                                     <h3 className="text-lg font-medium mb-2">{post.title}</h3>
                                     <p className="text-sm text-gray-500 mb-1">조회수: {post.viewCount}</p>
                                     <p className="text-sm text-gray-500">
-                                        작성일:{' '}
                                         {new Date(post.createdAt).toLocaleDateString('ko-KR').replace(/\.$/, '')}
                                     </p>
                                 </div>

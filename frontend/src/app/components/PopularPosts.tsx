@@ -24,14 +24,16 @@ export default function PopularPosts({ blogId }: PopularPostsProps) {
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [currentPage, setCurrentPage] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0)
 
     useEffect(() => {
         const fetchPopularPosts = async () => {
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/popular/${blogId}?page=${currentPage}&size=8`,
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/popular/${blogId}?page=${
+                        currentPage - 1
+                    }&size=8`,
                     {
                         method: 'GET',
                         headers: {
@@ -57,8 +59,26 @@ export default function PopularPosts({ blogId }: PopularPostsProps) {
         fetchPopularPosts()
     }, [blogId, currentPage])
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page)
+    const handlePageChange = async (page: number) => {
+        try {
+            setCurrentPage(page)
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/blog/popular/${blogId}?page=${
+                    page - 1
+                }&size=8`,
+                {
+                    credentials: 'include',
+                },
+            )
+
+            if (!response.ok) throw new Error('게시글을 불러오는데 실패했습니다.')
+
+            const data = await response.json()
+            setPosts(data.content)
+            setTotalPages(data.totalPages)
+        } catch (error) {
+            console.error('Error fetching posts:', error)
+        }
     }
 
     return (
