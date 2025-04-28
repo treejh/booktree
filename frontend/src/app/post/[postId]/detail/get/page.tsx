@@ -953,7 +953,6 @@ export default function DetailPage() {
                                         </button>
 
                                         {/* 팝오버 미니창 수정 */}
-                                        {/* 팝오버 미니창 수정 */}
                                         {showPopover && (
                                             <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
                                                 <div className="p-4">
@@ -961,7 +960,7 @@ export default function DetailPage() {
                                                         <div className="flex items-center min-w-0">
                                                             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                 <img
-                                                                    src="https://randomuser.me/api/portraits/women/44.jpg"
+                                                                    //src="https://randomuser.me/api/portraits/women/44.jpg"
                                                                     alt="프로필"
                                                                     className="w-full h-full object-cover"
                                                                 />
