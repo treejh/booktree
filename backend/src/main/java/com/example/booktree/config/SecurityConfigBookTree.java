@@ -7,7 +7,6 @@ import com.example.booktree.oauth.handler.CustomOAuth2AuthenticationSuccessHandl
 import com.example.booktree.oauth.resolver.CustomAuthorizationRequestResolver;
 import com.example.booktree.oauth.service.CustomOAuth2UserService;
 import com.example.booktree.user.service.UserService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -206,7 +205,7 @@ public class SecurityConfigBookTree {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(configurationSource()))
 
                 .logout(logout -> logout
                         .invalidateHttpSession(true)
@@ -218,18 +217,23 @@ public class SecurityConfigBookTree {
 
 
 
-    public CorsConfigurationSource corsConfigurationSource() {
+
+    //특정 포트 번호 허락
+    public CorsConfigurationSource configurationSource(){
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000","https://www.booktri.site")); // 프론트 도메인
-        config.setAllowedMethods(List.of("GET", "POST", "OPTIONS", "PUT", "DELETE"));
-        config.setAllowedHeaders(List.of("*"));
+
+        //config.addAllowedOrigin("*");
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("https://www.booktri.site");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**",config);
         return source;
-    }
 
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
