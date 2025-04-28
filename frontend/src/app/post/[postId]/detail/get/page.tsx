@@ -100,6 +100,7 @@ export default function DetailPage() {
     const [userId, setUserId] = useState<number>()
     const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
     const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -130,6 +131,36 @@ export default function DetailPage() {
         }
         fetchUserId()
     }, [postId])
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            if (!post?.causerId) return // post.causerId가 없으면 요청하지 않음
+
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/get/profile/${post.causerId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('프로필 정보를 가져오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                setProfileImageUrl(data.imageUrl) // imageUrl을 상태로 저장
+            } catch (error) {
+                console.error('프로필 이미지 로드 실패:', error)
+                setProfileImageUrl(null) // 실패 시 기본값 설정
+            }
+        }
+
+        fetchUserProfile()
+    }, [post?.causerId])
 
     useEffect(() => {
         const fetchIsFollowing = async () => {
@@ -634,6 +665,24 @@ export default function DetailPage() {
         if (!post || !loginUser) return
 
         try {
+            // 먼저 해당 유저의 blogId를 가져옴
+            const blogResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/username/${post.username}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                },
+            )
+
+            if (!blogResponse.ok) {
+                throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            }
+
+            const blogId = await blogResponse.json()
+
+            // 게시글 삭제 요청
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/delete/${post.postId}`, {
                 method: 'DELETE',
                 credentials: 'include',
@@ -647,7 +696,7 @@ export default function DetailPage() {
             }
 
             alert('게시글이 성공적으로 삭제되었습니다.')
-            router.push('/') // 홈페이지로 리다이렉트
+            router.push(`/blog/${blogId}`) // 홈페이지로 리다이렉트
         } catch (error) {
             console.error('게시글 삭제 실패:', error)
             alert('게시글 삭제에 실패했습니다.')
@@ -937,7 +986,10 @@ export default function DetailPage() {
                                 <div className="flex items-center mb-6">
                                     <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 overflow-hidden">
                                         <img
-                                            src="https://randomuser.me/api/portraits/women/44.jpg"
+                                            src={
+                                                profileImageUrl ||
+                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                            } // 기본 이미지 설정
                                             alt="프로필"
                                             className="w-full h-full object-cover"
                                         />
@@ -953,6 +1005,7 @@ export default function DetailPage() {
                                         </button>
 
                                         {/* 팝오버 미니창 수정 */}
+                                        {/* 팝오버 미니창 수정 */}
                                         {showPopover && (
                                             <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
                                                 <div className="p-4">
@@ -960,7 +1013,10 @@ export default function DetailPage() {
                                                         <div className="flex items-center min-w-0">
                                                             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                 <img
-                                                                    //src="https://randomuser.me/api/portraits/women/44.jpg"
+                                                                    src={
+                                                                        profileImageUrl ||
+                                                                        'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                                                    } // 기본 이미지 설정
                                                                     alt="프로필"
                                                                     className="w-full h-full object-cover"
                                                                 />
