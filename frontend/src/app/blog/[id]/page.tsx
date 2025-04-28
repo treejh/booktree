@@ -5,6 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import AnnouncementModal from '../../components/AnnouncementModal'
 import { LoginUserContext, useGlobalLoginUser, useLoginUser } from '@/stores/auth/loginMember'
+import ScrapPosts from '../../components/ScrapPosts'
+import PopularPosts from '@/app/components/PopularPosts'
+import LatestPosts from '@/app/components/LastestPosts'
+import FollowingPosts from '../../components/FollowingPosts'
 
 interface Post {
     id: number
@@ -556,127 +560,85 @@ export default function BlogPage() {
                         </div>
                     </section>
                     {/* 네비게이션 */}
-                    <nav className="border-b border-gray-200 mb-8">
-                        <ul className="flex gap-8">
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('latest')}
-                            >
-                                <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
-                                    최신순
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('popular')}
-                            >
-                                <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
-                                    인기순
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('bookmarks')}
-                            >
-                                <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
-                                    팔로잉
-                                </span>
-                            </li>
-                            <li
-                                className={`pb-2 border-b-2 ${
-                                    activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
-                                } cursor-pointer`}
-                                onClick={() => handleTabChange('scraps')}
-                            >
-                                <span className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}>
-                                    스크랩
-                                </span>
-                            </li>
-                        </ul>
-                    </nav>
-                    {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
-                        <div className="flex justify-end mb-8">
-                            <Link href="/post/write">
-                                <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
-                                    <span>새 글 작성하기</span>
-                                </button>
-                            </Link>
+                    <div className="mb-8">
+                        {/* 새 글 작성하기 버튼 */}
+                        {isLogin && userBlogId && blogId && String(userBlogId) === String(blogId) && (
+                            <div className="flex justify-end mb-4">
+                                <Link href="/post/write">
+                                    <button className="bg-[#2E804E] text-white px-4 py-2 rounded-md hover:bg-[#247040] transition-colors flex items-center gap-2">
+                                        <span>새 글 작성하기</span>
+                                    </button>
+                                </Link>
+                            </div>
+                        )}
+
+                        {/* 네비게이션 */}
+                        <div className="border-b border-gray-200 w-full">
+                            <nav>
+                                <ul className="flex gap-8">
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'latest' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('latest')}
+                                    >
+                                        <span className={activeTab === 'latest' ? 'text-gray-900' : 'text-gray-600'}>
+                                            최신순
+                                        </span>
+                                    </li>
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'popular' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('popular')}
+                                    >
+                                        <span className={activeTab === 'popular' ? 'text-gray-900' : 'text-gray-600'}>
+                                            추천순
+                                        </span>
+                                    </li>
+                                    <li
+                                        className={`pb-2 border-b-2 ${
+                                            activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
+                                        } cursor-pointer`}
+                                        onClick={() => handleTabChange('bookmarks')}
+                                    >
+                                        <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
+                                            팔로잉
+                                        </span>
+                                    </li>
+                                    {isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                                        <li
+                                            className={`pb-2 border-b-2 ${
+                                                activeTab === 'scraps' ? 'border-gray-900' : 'border-transparent'
+                                            } cursor-pointer`}
+                                            onClick={() => handleTabChange('scraps')}
+                                        >
+                                            <span
+                                                className={activeTab === 'scraps' ? 'text-gray-900' : 'text-gray-600'}
+                                            >
+                                                스크랩
+                                            </span>
+                                        </li>
+                                    )}
+                                </ul>
+                            </nav>
                         </div>
-                    )}
+                    </div>
+
                     {/* 블로그 포스트 목록 */}
                     <div className="space-y-8">
                         <h2 className="text-2xl font-bold mb-6">
-                            {activeTab === 'latest' && '최신 게시물'}
-                            {activeTab === 'popular' && '인기 게시물'}
+                            {activeTab === 'latest' && <LatestPosts blogId={blogId} />}
+                            {activeTab === 'popular' && <PopularPosts blogId={blogId} />}
                             {activeTab === 'bookmarks' && '팔로잉 게시글'}
                         </h2>
-                        {currentPosts.map((post) => (
-                            <article
-                                key={post.id}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow "
-                            >
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="bg-gray-100 px-2 py-1 rounded text-sm">{post.category}</span>
-                                        <span className="text-gray-500 text-sm">{post.date}</span>
-                                    </div>
-                                    <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-                                    <p className="text-gray-600 mb-4">{post.description}</p>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            <span>조회 {post.views}</span>
-                                            <span>댓글 {post.comments}</span>
-                                        </div>
-                                        <div className="flex items-center gap-4 text-gray-500">
-                                            <Link href={`/post/edit/${post.id}`}>
-                                                <span className="hover:text-gray-900 cursor-pointer">수정</span>
-                                            </Link>
-
-                                            <span
-                                                onClick={() => handleDelete(post.id)}
-                                                className="hover:text-gray-900 cursor-pointer"
-                                            >
-                                                삭제
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                    {/* 페이지네이션 */}
-                    <div className="flex justify-center gap-2 mt-8">
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                        >
-                            Previous
-                        </button>
-                        {pageNumbers.map((number) => (
-                            <button
-                                key={number}
-                                className={`px-4 py-2 border rounded ${
-                                    currentPage === number ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'
-                                }`}
-                                onClick={() => handlePageChange(number)}
-                            >
-                                {number}
-                            </button>
-                        ))}
-                        <button
-                            className="px-4 py-2 border rounded hover:bg-gray-50"
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            Next
-                        </button>
+                        {activeTab === 'scraps' && isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                            <ScrapPosts userId={Number(blogId)} />
+                        )}
+                        {activeTab === 'bookmarks' &&
+                            isLogin &&
+                            userBlogId &&
+                            String(userBlogId) === String(blogId) && <FollowingPosts userId={Number(blogId)} />}
                     </div>
                 </div>
             </main>
@@ -710,7 +672,7 @@ export default function BlogPage() {
                         {categories.map((category) => (
                             <li key={category.id}>
                                 <Link
-                                    href={`/category/${category.id}`} // 카테고리 ID를 기반으로 이동
+                                    href={`/category/${category.id}`}
                                     className="flex justify-between items-center text-gray-700 hover:text-gray-900"
                                 >
                                     <span>{category.name}</span>

@@ -38,6 +38,6 @@ public class ReplyDto {
         private String content;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
-        private String userEmail;
+        private String username;
     }
 }
