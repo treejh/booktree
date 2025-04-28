@@ -32,21 +32,25 @@ public class LikeReplyService {
     public LikeReplyDto.Response toggleLike(LikeReplyDto.Post dto) {
         Reply reply = replyRepository.findById(dto.getReplyId())
                 .orElseThrow(() -> new RuntimeException("Reply not found with id: " + dto.getReplyId()));
-
         Long userId = tokenService.getIdFromToken();
         User user = userService.findById(userId);
 
-        Optional<LikeReply> existingLike = likeReplyRepository.findByReply_IdAndUser_Id(dto.getReplyId(), user.getId());
-        if (existingLike.isPresent()) {
-            likeReplyRepository.delete(existingLike.get());
-            return new LikeReplyDto.Response(0L, reply.getId(), user.getId());
+        Optional<LikeReply> existing = likeReplyRepository.findByReply_IdAndUser_Id(reply.getId(), userId);
+        if (existing.isPresent()) {
+            likeReplyRepository.delete(existing.get());
         } else {
-            LikeReply likeReply = LikeReply.builder()
-                    .reply(reply)
-                    .user(user)
-                    .build();
-            LikeReply saved = likeReplyRepository.save(likeReply);
-            return new LikeReplyDto.Response(saved.getId(), reply.getId(), user.getId());
+            LikeReply lr = LikeReply.builder().reply(reply).user(user).build();
+            likeReplyRepository.save(lr);
         }
+
+        // 최종 좋아요 수 계산
+        long likeCount = likeReplyRepository.countByReply_Id(reply.getId());
+
+        return new LikeReplyDto.Response(
+                existing.map(LikeReply::getId).orElse(0L),
+                reply.getId(),
+                userId,
+                likeCount
+        );
     }
 }

@@ -39,5 +39,6 @@ public class ReplyDto {
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
         private String username;
+        private Long likeCount;
     }
 }

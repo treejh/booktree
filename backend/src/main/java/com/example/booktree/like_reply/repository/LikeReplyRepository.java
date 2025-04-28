@@ -8,4 +8,5 @@ import java.util.Optional;
 @Repository
 public interface LikeReplyRepository extends JpaRepository<LikeReply, Long> {
     Optional<LikeReply> findByReply_IdAndUser_Id(Long replyId, Long userId);
+    long countByReply_Id(Long replyId);
 }

@@ -47,4 +47,9 @@ public class Reply extends Auditable {
 
     @OneToMany(mappedBy = "reply", cascade = CascadeType.REMOVE, orphanRemoval = false)
     List<LikeReply> likeReplyList = new ArrayList<>();
+
+    // 새로 추가
+    public long getLikeCount() {
+        return likeReplyList != null ? likeReplyList.size() : 0L;
+    }
 }

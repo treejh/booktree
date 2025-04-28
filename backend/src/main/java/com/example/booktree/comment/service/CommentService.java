@@ -111,9 +111,12 @@ public class CommentService {
                         reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getModifiedAt(),
-                        reply.getUser() != null ? reply.getUser().getUsername() : null
+                        reply.getUser() != null ? reply.getUser().getUsername() : null,
+                        reply.getLikeCount()
                 ));
-        long likeCount = comment.getLikeCommentList().size();
+        long likeCount = comment.getLikeCommentList() != null
+                ? comment.getLikeCommentList().size()
+                : 0L;
         return new CommentDto.Response(
                 comment.getId(),
                 comment.getContent(),

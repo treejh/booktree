@@ -77,7 +77,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                         author: r.username ?? r.userEmail,
                         date: new Date(r.createdAt).toLocaleDateString(),
                         content: r.content,
-                        likes: r.likeCount || 0,
+                        likes: r.likeCount,
                     })),
                 }))
                 setComments(mapped)
@@ -233,20 +233,31 @@ export function CommentsSection({ postId }: { postId: number }) {
     // ─── 대댓글 좋아요 토글 ─────────────────────────────────────
     const handleReplyLike = async (cid: number, rid: number) => {
         ensureLogin()
-        const res = await fetch(`${API}/api/v1/replies/${rid}/like`, {
-            method: 'POST',
-            credentials: 'include',
-        })
-        if (!res.ok) return alert('좋아요 실패')
-        const { likeCount } = await res.json()
-        setComments((cs) =>
-            cs.map((c) =>
-                c.id === cid
-                    ? { ...c, replies: c.replies.map((r) => (r.id === rid ? { ...r, likes: likeCount } : r)) }
-                    : c,
-            ),
-        )
-        setLikedReplies((l) => ({ ...l, [rid]: !l[rid] }))
+        try {
+            const res = await fetch(`${API}/api/v1/like-replies/toggle`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ replyId: rid }),
+            })
+            if (!res.ok) throw new Error('좋아요 처리 실패')
+            const { likeCount } = await res.json()
+            // (2) 댓글 리스트 중 해당 rid를 찾아 likes 업데이트
+            setComments((cs) =>
+                cs.map((c) =>
+                    c.id === cid
+                        ? {
+                              ...c,
+                              replies: c.replies.map((r) => (r.id === rid ? { ...r, likes: likeCount } : r)),
+                          }
+                        : c,
+                ),
+            )
+            // (3) 로컬 토글 상태도 반영
+            setLikedReplies((l) => ({ ...l, [rid]: !l[rid] }))
+        } catch {
+            alert('대댓글 좋아요 처리에 실패했습니다.')
+        }
     }
 
     // ─── 8) 대댓글 수정 / 삭제 ─────────────────────────────────────
