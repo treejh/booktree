@@ -17,6 +17,7 @@ public class BlogResponseDto {
     private String profile;
     private String notice;
     private Long blogId;
+    private String ownerUsername; // 추가
 
     public BlogResponseDto(Blog blog){
 
@@ -24,5 +25,6 @@ public class BlogResponseDto {
         this.profile= blog.getProfile();
         this.notice = blog.getNotice();
         this.name = blog.getName();
+        this.ownerUsername = blog.getUser().getUsername(); // 추가
     }
 }
