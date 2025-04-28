@@ -88,4 +88,9 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
 
 
+    @Query("SELECT COALESCE(MAX(p.id), 0) FROM Post p")
+    Long findMaxPostId();
+
+
+
 }

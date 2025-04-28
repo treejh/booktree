@@ -479,4 +479,10 @@ public class PostService {
     }
 
 
+    public Long getNextPostId() {
+        Long maxPostId = postRepository.findMaxPostId();
+        return maxPostId + 1;
+    }
+
+
 }
