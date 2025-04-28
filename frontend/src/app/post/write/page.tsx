@@ -277,6 +277,18 @@ export default function PostWritePage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
+        // 메인카테고리와 카테고리 유효성 검사 추가
+
+        if (selectedCategoryId === 0) {
+            alert('카테고리를 선택해주세요.')
+            return
+        }
+
+        if (selectedMainCategoryId === 0) {
+            alert('메인 카테고리를 선택해주세요.')
+            return
+        }
+
         // blogId 체크
         if (!blogInfo.blogId) {
             console.error('블로그 정보가 없습니다:', blogInfo)
