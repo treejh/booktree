@@ -388,7 +388,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                         value={commentInput}
                         onChange={(e) => setCommentInput(e.target.value)}
                     />
-                    <button type="submit" className="px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                    <button type="submit" className="px-4 py-1 bg-[#2E804E] text-white rounded hover:bg-[#246A40]">
                         댓글 등록
                     </button>
                 </form>
