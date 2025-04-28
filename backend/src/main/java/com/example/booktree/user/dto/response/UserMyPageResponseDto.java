@@ -18,11 +18,17 @@ import lombok.Setter;
 public class UserMyPageResponseDto {
 
     private String username;
+    private String imageUrl;
     private LocalDateTime createdAt;
 
     public UserMyPageResponseDto(User user){
         this.username  = user.getUsername();
         this.createdAt=user.getCreatedAt();
+        String image = user.getImage();
+        this.imageUrl = (image == null || image.isEmpty())
+                ? "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png"
+                : image;
+
     }
 
 }
