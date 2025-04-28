@@ -55,7 +55,11 @@ export default function Home() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {posts.length > 0 ? (
                             posts.map((post) => (
-                                <div key={post.id} className="rounded-lg overflow-hidden shadow-sm">
+                                <Link
+                                    key={post.id}
+                                    href={`/post/${post.id}/detail/get`}
+                                    className="rounded-lg overflow-hidden shadow-sm block"
+                                >
                                     <div className="relative h-48 bg-gray-200">
                                         <img
                                             src={post.imageUrl}
@@ -72,7 +76,7 @@ export default function Home() {
                                             조회수 {post.viewCount.toLocaleString()}
                                         </p>
                                     </div>
-                                </div>
+                                </Link>
                             ))
                         ) : (
                             <p>인기 게시물이 없습니다.</p>
