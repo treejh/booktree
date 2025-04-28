@@ -106,6 +106,7 @@ public class ReplyService {
                 : 0L;
         return new ReplyDto.Response(
                 reply.getId(),
+                reply.getUser().getId(),
                 commentId,
                 reply.getContent(),
                 reply.getCreatedAt(),

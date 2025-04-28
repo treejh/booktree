@@ -108,10 +108,11 @@ public class CommentService {
                 .map(reply -> new ReplyDto.Response(
                         reply.getId(),
                         reply.getComment() != null ? reply.getComment().getId() : null,
+                        reply.getUser().getId(),
                         reply.getContent(),
                         reply.getCreatedAt(),
                         reply.getModifiedAt(),
-                        reply.getUser() != null ? reply.getUser().getUsername() : null,
+                        reply.getUser().getUsername(),
                         reply.getLikeCount()
                 ));
         long likeCount = comment.getLikeCommentList() != null
