@@ -88,10 +88,16 @@ export default function RegisterPage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include',
             body: JSON.stringify(requestData),
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.message) // 백엔드에서 반환된 오류 메시지
+                    })
+                }
+                return response.json()
+            })
             .then((data) => {
                 console.log('회원가입 성공:', data)
 
@@ -103,8 +109,13 @@ export default function RegisterPage() {
             })
             .catch((error) => {
                 console.error('회원가입 오류:', error)
-                alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.')
-                router.push('/account/signup')
+
+                // 백엔드에서 반환된 오류 메시지 처리
+                if (error.message === '이미 존재하는 전화번호입니다.') {
+                    alert('중복된 전화번호입니다.') // 알림 표시
+                } else {
+                    alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.')
+                }
             })
     }
 

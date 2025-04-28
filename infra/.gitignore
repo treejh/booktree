@@ -1,7 +1,18 @@
 .terraform
 .terraform.lock.hcl
 terraform.tfstate
+<<<<<<< HEAD
+terraform.tfstate.backup
+.terraform.tfstate.lock.info
+terraform.tfstate
+terraform.tfstate.*
+secrets.tf
+
+
+
+=======
 terraform.tfstate.*
 
 secrets.tf
 secrets.*
+>>>>>>> b2dfc160f0ca0438151e595cbb1c4fe0c7ebe236
