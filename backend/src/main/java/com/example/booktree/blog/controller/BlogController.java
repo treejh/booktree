@@ -4,6 +4,8 @@ package com.example.booktree.blog.controller;
 import com.example.booktree.blog.dto.request.BlogRequestDto;
 import com.example.booktree.blog.dto.response.BlogResponseDto;
 import com.example.booktree.blog.service.BlogService;
+import com.example.booktree.exception.BusinessLogicException;
+import com.example.booktree.exception.ExceptionCode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -63,5 +65,23 @@ public class BlogController {
     public ResponseEntity<?> findUserIdByBlogId(@PathVariable Long blogId) {
         Long response = blogService.findUserIdByBlogId(blogId);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/get/username/{username}")
+    public ResponseEntity<Long> getBlogIdByUsername(@PathVariable(name = "username") String username) {
+        try {
+            Long blogId = blogService.findBlogIdByUsername(username);
+            return ResponseEntity.ok(blogId);
+        } catch (BusinessLogicException e) {
+            if (e.getExceptionCode() == ExceptionCode.USER_NOT_FOUND) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .build();
+            } else if (e.getExceptionCode() == ExceptionCode.BLOG_NOT_FOUND) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build();
+        }
     }
 }

@@ -26,6 +26,7 @@ public class BlogService {
         private final UserService userService;
         private final TokenService tokenService;
 
+
         @Transactional
      public Blog createBlog(BlogRequestDto blogRequestDto) {
         //블로그 가지고 있는지 확인
@@ -137,4 +138,23 @@ public class BlogService {
     public Long findBlogIdByUserId(Long userId){
             return blogRepository.findBlogIdByUserId(userId);
     }
+
+    public Long findBlogIdByUsername(String username) {
+        // UserService를 통해 user 조회
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
+        }
+
+        // 해당 유저의 블로그 조회
+        Blog blog = blogRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
+
+        return blog.getId();
+    }
+
+
+
+
+
     }
