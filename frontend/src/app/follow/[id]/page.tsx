@@ -9,30 +9,10 @@ interface User {
     id: number
     name: string
     username: string
-    // avatar: string
+    avatar: string
     isFollowing: boolean
     isMe: boolean
 }
-
-const mockUsers: User[] = [
-    {
-        id: 1,
-        name: '김개발',
-        username: '@kimdev',
-        // avatar: '/avatars/user1.jpg',
-        isFollowing: true,
-        isMe: false,
-    },
-    {
-        id: 2,
-        name: '이코딩',
-        username: '@coding_lee',
-        // avatar: '/avatars/user2.jpg',
-        isFollowing: false,
-        isMe: false,
-    },
-    // Add more mock users as needed
-]
 
 interface follower {
     id: number
@@ -41,6 +21,7 @@ interface follower {
     username: string
     isFollowing: boolean
     isMe: boolean
+    image: string
 }
 
 interface followed {
@@ -50,12 +31,13 @@ interface followed {
     username: string
     isFollowing: boolean
     isMe: boolean
+    image: string
 }
 
 export default function FollowPage() {
     const searchParams = useSearchParams()
     const [activeTab, setActiveTab] = useState<'following' | 'followers'>('following')
-    const [users, setUsers] = useState<User[]>(mockUsers)
+    const [users, setUsers] = useState<User[]>([])
     const [error, setError] = useState<string | null>(null)
     const { id: userId } = useParams<{ id: string }>()
     const [follower, setFollower] = useState<follower[]>([])
@@ -110,11 +92,12 @@ export default function FollowPage() {
                 id: user.userId,
                 name: user.username, // name이 따로 없으면 username을 name으로 사용
                 username: `@${user.username}`,
-                avatar: '/avatars/default.jpg', // 나중에 API에서 내려주면 교체
+                avatar: user.imageUrl, // 나중에 API에서 내려주면 교체
                 isFollowing: user.following,
                 isMe: user.me,
                 blogId: user.blogId,
             }))
+            console.log()
             setUsers(transformed)
             console.log('user : ', transformed)
         } else if (activeTab === 'followers') {
@@ -122,13 +105,14 @@ export default function FollowPage() {
                 id: user.userId,
                 name: user.username,
                 username: `@${user.username}`,
-                avatar: '/avatars/default.jpg',
+                avatar: user.imageUrl,
                 isFollowing: user.following,
                 isMe: user.me,
                 blogId: user.blogId,
             }))
             setUsers(transformed)
             console.log('user : ', transformed)
+            window.location.reload()
         }
     }, [activeTab, follower, followed])
 
@@ -146,6 +130,7 @@ export default function FollowPage() {
                         credentials: 'include', // 쿠키를 포함시키기 위한 설정
                     },
                 )
+                console.log('response : ', response)
                 if (!response.ok) {
                     throw new Error('팔로워 데이터를 가져오는 데 실패했습니다.')
                 }
@@ -246,7 +231,11 @@ export default function FollowPage() {
                             <div className="flex items-center gap-4">
                                 <Link href={`/blog/${user.blogId}`} className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                                        {/* Avatar Placeholder */}
+                                        <img
+                                            src={user.avatar || '/default-avatar.png'}
+                                            alt={`${user.name}님의 프로필 이미지`}
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
                                     <div>
                                         <h3 className="font-bold">{user.name}</h3>
