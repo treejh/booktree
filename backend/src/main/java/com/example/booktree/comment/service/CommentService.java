@@ -101,9 +101,8 @@ public class CommentService {
                 .map(Post::getId)
                 .orElse(null);
         String username = comment.getUser() != null ? comment.getUser().getUsername() : null;
-        Long userId   = comment.getUser() != null ? comment.getUser().getId()       : null;
-
-        // 대댓글 페이징 조회
+        Long userId = comment.getUser() != null ? comment.getUser().getId() : null;
+        // 기본적으로 대댓글은 첫 페이지(0번 페이지), 한 페이지 당 10개, 최신순(생성일 내림차순)으로 조회함
         PageRequest replyPageRequest = PageRequest.of(0, 10, Sort.by("createdAt").descending());
         Page<ReplyDto.Response> replies = replyRepository.findByComment_Id(comment.getId(), replyPageRequest)
                 .map(reply -> new ReplyDto.Response(
@@ -115,18 +114,9 @@ public class CommentService {
                         reply.getUser() != null ? reply.getUser().getUsername() : null,
                         reply.getLikeCount()
                 ));
-
-        // 좋아요 개수
         long likeCount = comment.getLikeCommentList() != null
                 ? comment.getLikeCommentList().size()
                 : 0L;
-
-        // 추가 파라미터 계산
-        Long currentUserId = tokenService.getIdFromToken();
-        boolean isAuthor    = currentUserId != null && currentUserId.equals(userId);
-        boolean isLiked     = comment.getLikeCommentList().stream()
-                .anyMatch(like -> like.getUser().getId().equals(currentUserId));
-
         return new CommentDto.Response(
                 comment.getId(),
                 comment.getContent(),
@@ -136,10 +126,7 @@ public class CommentService {
                 username,
                 userId,
                 likeCount,
-                replies,
-                // 여기서부터 2개의 boolean 추가
-                isAuthor,
-                isLiked
+                replies
         );
     }
 }
