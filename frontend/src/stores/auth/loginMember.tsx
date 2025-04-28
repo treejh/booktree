@@ -66,7 +66,6 @@ export function useLoginUser() {
 
   const logout = (callback: () => void) => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/logout`, {
-      // 환경 변수 사용
       method: "POST",
       credentials: "include",
     }).then(() => {

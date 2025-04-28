@@ -1,10 +1,7 @@
 package com.example.booktree.comment.dto;
 
 import com.example.booktree.reply.dto.ReplyDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.domain.Page;
 import java.time.LocalDateTime;
 
@@ -40,5 +37,7 @@ public class CommentDto {
         // 대댓글은 각 댓글에 대해 페이징 처리된 결과로 포함
         private Long userId;
         private Page<ReplyDto.Response> replies;
+        private boolean isFollowing;
+        private boolean isMe;
     }
 }
