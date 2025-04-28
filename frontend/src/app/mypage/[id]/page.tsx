@@ -383,7 +383,31 @@ export default function MyPage() {
                     <div>
                         <div
                             className="text-center px-4 cursor-pointer hover:bg-gray-50 transition"
-                            onClick={handlePostsClick}
+                            onClick={async () => {
+                                try {
+                                    const res = await fetch(
+                                        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`,
+                                        {
+                                            method: 'GET',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                            },
+                                            credentials: 'include', // 쿠키 인증 정보 포함
+                                        },
+                                    )
+
+                                    const data = await res.json()
+
+                                    if (data && data.blogId) {
+                                        router.push(`/blog/${data.blogId}`)
+                                    } else {
+                                        router.push('/blog/create')
+                                    }
+                                } catch (err) {
+                                    console.error(err)
+                                    router.push('/blog/create') // 예외 발생 시도 /blog/create로 이동
+                                }
+                            }}
                         >
                             <h3 className="text-gray-500 mb-2">게시물</h3>
                             <p className="text-2xl font-bold">{postCount}</p>
