@@ -6,6 +6,7 @@ import com.example.booktree.category.entity.Category;
 import com.example.booktree.image.entity.Image;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +34,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Post extends Auditable {
 
     @Id
