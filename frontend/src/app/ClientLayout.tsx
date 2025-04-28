@@ -19,7 +19,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     }
 
     useEffect(() => {
-        fetch('http://localhost:8090/api/v1/users/get/token', {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/get/token`, {
             credentials: 'include', // 쿠키를 포함하도록 설정
         })
             .then((response) => response.json())
