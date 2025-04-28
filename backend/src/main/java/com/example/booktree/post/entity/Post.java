@@ -34,7 +34,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Post extends Auditable {
 
     @Id
