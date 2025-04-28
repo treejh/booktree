@@ -3,6 +3,7 @@ package com.example.booktree.comment.service;
 import com.example.booktree.comment.dto.CommentDto;
 import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.comment.repository.CommentRepository;
+import com.example.booktree.follow.service.FollowService;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.reply.dto.ReplyDto;
@@ -28,6 +29,7 @@ public class CommentService {
     private final ReplyRepository replyRepository; // 대댓글 조회용 Repository
     private final TokenService tokenService;
     private final UserService userService;
+    private final FollowService followService;
 
     @Transactional
     public CommentDto.Response createComment(CommentDto.Post dto) {
@@ -94,6 +96,16 @@ public class CommentService {
                 .orElse(null);
         String username = comment.getUser() != null ? comment.getUser().getUsername() : null;
         Long userId = comment.getUser() != null ? comment.getUser().getId() : null;
+        Long loggedUserId = tokenService.getIdFromToken();
+
+        boolean isMe = false;
+
+        if(loggedUserId.equals(userId)) {
+            isMe = true;
+        }
+
+        Boolean isFollow = followService.isIn(loggedUserId, userId);
+
         // 기본적으로 대댓글은 첫 페이지(0번 페이지), 한 페이지 당 10개, 최신순(생성일 내림차순)으로 조회함
         PageRequest replyPageRequest = PageRequest.of(0, 10, Sort.by("createdAt").descending());
         Page<ReplyDto.Response> replies = replyRepository.findByComment_Id(comment.getId(), replyPageRequest)
@@ -113,7 +125,9 @@ public class CommentService {
                 comment.getModifiedAt(),
                 username,
                 userId,
-                replies
+                replies,
+                isFollow,
+                isMe
         );
     }
 }
