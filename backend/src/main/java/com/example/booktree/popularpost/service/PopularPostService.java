@@ -82,6 +82,7 @@ public class PopularPostService {
         List<PostResponseDto> response = ids.stream()
                 .map(id -> {
                     Post post = postMap.get(id);
+                    log.info(post.getImageList().get(0).getImageUrl());
                     double score = scores.get(ids.indexOf(id)); // score 가져오기
                     return PostResponseDto.builder()
                             .postId(post.getId())
