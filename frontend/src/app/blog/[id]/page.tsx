@@ -81,9 +81,9 @@ export default function BlogPage() {
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
     const [userId, setUserId] = useState<number | null>(null)
-    const [categories, setCategories] = useState<Category>([])
-    const [followCount, setFollowCount] = useState([])
-    const [postCount, setPostCount] = useState()
+    const [categories, setCategories] = useState<Category[]>([]) // 수정된 부분
+    const [followCount, setFollowCount] = useState<{ followerCount: number; followingCount: number } | null>(null)
+    const [postCount, setPostCount] = useState<number | null>(null)
 
     //블로그 정보 가져오기
 
@@ -490,11 +490,11 @@ export default function BlogPage() {
                     <section className="text-center mb-12">
                         <div className="flex justify-center gap-8">
                             <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">{followCount.followerCount}</div>
+                                <div className="text-xl font-bold">{followCount?.followerCount || 0}</div>
                                 <div className="text-gray-600">팔로잉</div>
                             </Link>
                             <Link href={`/follow/${userId}`} className="text-center hover:opacity-80">
-                                <div className="text-xl font-bold">{followCount.followingCount}</div>
+                                <div className="text-xl font-bold">{followCount?.followingCount || 0}</div>
                                 <div className="text-gray-600">팔로워</div>
                             </Link>
                             <div className="text-center">
