@@ -9,6 +9,7 @@ export interface Reply {
     userId: number
     author: string
     date: string
+    authorImage: string
     content: string
     likes: number
     isMe: boolean
@@ -18,6 +19,7 @@ export interface Comment {
     id: number
     userId: number
     author: string
+    authorImage: string
     date: string
     content: string
     likes: number
@@ -72,6 +74,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                     id: c.commentId,
                     userId: c.userId,
                     author: c.username ?? c.userEmail,
+                    authorImage: c.userImageUrl ?? loginUser.image,
                     date: new Date(c.createdAt).toLocaleDateString(),
                     content: c.content,
                     likes: c.likeCount || 0,
@@ -81,6 +84,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                         id: r.replyId,
                         userId: r.userId,
                         author: r.username ?? r.userEmail,
+                        authorImage: r.userImageUrl ?? loginUser.image,
                         date: new Date(r.createdAt).toLocaleDateString(),
                         content: r.content,
                         likes: r.likeCount || 0,
@@ -129,6 +133,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 likes: raw.likeCount || 0,
                 isFollowing: raw.following,
                 isMe: loginUser?.id === raw.userId,
+                authorImage: loginUser.image,
                 replies: raw.replies.content.map((r: any) => ({
                     id: r.replyId,
                     userId: r.userId,
@@ -137,6 +142,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                     content: r.content,
                     likes: r.likeCount || 0,
                     isMe: loginUser?.id === r.userId,
+                    authorImage: loginUser.image,
                 })),
             }
             setComments((prev) => [newComment, ...prev])
@@ -232,6 +238,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 content: raw.content,
                 likes: 0,
                 isMe: loginUser?.id === raw.userId,
+                authorImage: loginUser.image,
             }
             setComments((cs) => cs.map((c) => (c.id === cid ? { ...c, replies: [...c.replies, newR] } : c)))
             setReplyInputs((ri) => ({ ...ri, [cid]: '' }))
@@ -382,7 +389,7 @@ export function CommentsSection({ postId }: { postId: number }) {
             {isLogin ? (
                 <form onSubmit={handleCommentSubmit} className="mb-6">
                     <textarea
-                        className="w-full p-2 border border-gray-400 rounded mb-2"
+                        className="w-full p-2 border border-gray-300 rounded mb-2 bg-white"
                         rows={3}
                         placeholder="댓글을 작성하세요."
                         value={commentInput}
@@ -401,6 +408,12 @@ export function CommentsSection({ postId }: { postId: number }) {
                     {/* 댓글 상단 (작성자/팝오버) */}
                     <div className="flex justify-between items-center">
                         <div className="relative">
+                            {/* 프로필 이미지 */}
+                            <img
+                                src={comment.authorImage}
+                                alt={`${comment.author} 프로필`}
+                                className="w-6 h-6 rounded-full mr-2 object-cover"
+                            />
                             <button
                                 onClick={() => setActiveCommentId((id) => (id === comment.id ? null : comment.id))}
                                 className="font-medium hover:text-[#2E804E]"
@@ -552,6 +565,12 @@ export function CommentsSection({ postId }: { postId: number }) {
                                     {/* 작성자·날짜·팝오버 */}
                                     <div className="flex justify-between items-center">
                                         <div className="relative">
+                                            {/* 프로필 이미지 */}
+                                            <img
+                                                src={comment.authorImage}
+                                                alt={`${comment.author} 프로필`}
+                                                className="w-6 h-6 rounded-full mr-2 object-cover"
+                                            />
                                             <button
                                                 onClick={() =>
                                                     setActiveReplyPopoverId((id) => (id === reply.id ? null : reply.id))
