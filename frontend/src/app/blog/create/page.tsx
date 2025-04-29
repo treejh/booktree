@@ -38,7 +38,7 @@ export default function CreateBlogPage() {
         }
 
         // 백엔드로 데이터 전송 (예시)
-        fetch('http://localhost:8090/api/v1/blogs/create', {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
