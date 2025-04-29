@@ -1,6 +1,8 @@
 package com.example.booktree.post.service;
 
-import com.example.booktree.LikePost.repository.LikePostRepository;
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
+
+import com.example.booktree.likepost.repository.LikePostRepository;
 import com.example.booktree.blog.entity.Blog;
 
 import com.example.booktree.blog.service.BlogService;
@@ -9,8 +11,6 @@ import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.comment.repository.CommentRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
-import com.example.booktree.follow.entity.Follow;
 import com.example.booktree.follow.service.FollowService;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
@@ -34,8 +34,6 @@ import org.springframework.stereotype.Service;
 
 
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
-
 
 
 import java.time.LocalDateTime;
@@ -44,7 +42,6 @@ import java.util.List;
 import com.example.booktree.image.entity.Image;
 import com.example.booktree.image.repository.ImageRepository;
 import com.example.booktree.utils.S3Uploader;
-import org.springframework.transaction.annotation.Propagation;
 
 
 @Service
@@ -66,7 +63,7 @@ public class PostService {
     private final FollowService followService;
     private final CommentRepository commentRepository;
 
-    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
+    private final String defaultImageUrl = DEFAULT_POST_IMAGE;
 
 
 

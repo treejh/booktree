@@ -1,8 +1,8 @@
-package com.example.booktree.like_comment.entity;
+package com.example.booktree.likereply.entity;
 
 
 import com.example.booktree.auditable.Auditable;
-import com.example.booktree.comment.entity.Comment;
+import com.example.booktree.reply.entity.Reply;
 import com.example.booktree.user.entity.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,25 +19,25 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name="like_comments")
+@Table(name="like_replies")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
 @ToString
-public class LikeComment extends Auditable {
+public class LikeReply extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "comment_id")
-    private Comment comment;
-    
-    // 좋아용
+    @JoinColumn(name = "reply_id")
+    private Reply reply;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
 }

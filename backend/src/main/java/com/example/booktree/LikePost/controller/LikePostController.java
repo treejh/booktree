@@ -1,10 +1,9 @@
-package com.example.booktree.LikePost.controller;
+package com.example.booktree.likepost.controller;
 
 
-import com.example.booktree.LikePost.dto.LikeUserListDto;
-import com.example.booktree.LikePost.dto.request.LikePostRequestDto;
-import com.example.booktree.LikePost.dto.response.LikePostResponseDto;
-import com.example.booktree.LikePost.service.LikePostService;
+import com.example.booktree.likepost.dto.LikeUserListDto;
+import com.example.booktree.likepost.dto.response.LikePostResponseDto;
+import com.example.booktree.likepost.service.LikePostService;
 import com.example.booktree.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

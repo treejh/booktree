@@ -1,6 +1,8 @@
 package com.example.booktree.user.service;
 
 
+import static com.example.booktree.utils.ImageUtil.DEFAULT_USER_IMAGE;
+
 import com.example.booktree.enums.RoleType;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
@@ -16,6 +18,7 @@ import com.example.booktree.user.dto.request.UserPostRequestDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
 import com.example.booktree.utils.CreateRandomNumber;
+import com.example.booktree.utils.ImageUtil;
 import com.example.booktree.utils.S3Uploader;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
@@ -35,7 +38,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final ImageService imageService;
-    private static final String USER_IMAGE="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png";
+    private static final String USER_IMAGE= DEFAULT_USER_IMAGE;
 
 
 

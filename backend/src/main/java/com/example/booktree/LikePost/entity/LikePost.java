@@ -1,4 +1,4 @@
-package com.example.booktree.LikePost.entity;
+package com.example.booktree.likepost.entity;
 
 import com.example.booktree.auditable.Auditable;
 import com.example.booktree.post.entity.Post;

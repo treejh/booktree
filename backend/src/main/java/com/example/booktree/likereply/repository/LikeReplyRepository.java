@@ -1,6 +1,6 @@
-package com.example.booktree.like_reply.repository;
+package com.example.booktree.likereply.repository;
 
-import com.example.booktree.like_reply.entity.LikeReply;
+import com.example.booktree.likereply.entity.LikeReply;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;

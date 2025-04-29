@@ -1,5 +1,6 @@
 package com.example.booktree.post.controller;
 
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 //import com.example.booktree.popularpost.service.PopularPostService;
@@ -40,7 +41,7 @@ public class PostController {
     private final PostService postService;
 
     private final PopularPostService popularPostService;
-    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png";
+    private final String defaultImageUrl = DEFAULT_POST_IMAGE;
 
 
     // 카테고리 별 최신순 글 가지고 오기
