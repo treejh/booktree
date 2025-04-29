@@ -8,10 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface LikePostRepository extends JpaRepository<LikePost, Long> {
 
     // 특정 유저가 특정 게시글에 좋아요를 눌렀는지 확인하고, 해당 좋아요 엔티티를 반환
