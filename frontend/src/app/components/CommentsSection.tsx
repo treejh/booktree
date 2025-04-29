@@ -36,6 +36,7 @@ export function CommentsSection({ postId }: { postId: number }) {
     const replyPopoverRef = useRef<HTMLDivElement>(null) // 대댓글 팝오버용
     // 댓글 페이지 최상단(useState 모아둔 곳 바로 아래)
     const [userImages, setUserImages] = useState<Record<number, string>>({})
+    const [rawComments, setRawComments] = useState<Omit<Comment, 'authorImage'>[]>([])
 
     // ─── 1) 로딩/에러 상태 ─────────────────────────────────────────────
     const [loading, setLoading] = useState(false)
@@ -67,18 +68,17 @@ export function CommentsSection({ postId }: { postId: number }) {
     // ─── 3) 댓글 불러오기 ────────────────────────────────────────────
     useEffect(() => {
         async function fetchComments() {
+            setLoading(true)
             try {
-                setLoading(true)
                 const res = await fetch(`${API}/api/v1/comments/get?postId=${postId}&page=1&size=10`, {
                     credentials: 'include',
                 })
                 if (!res.ok) throw new Error('댓글을 불러오지 못했습니다.')
                 const json = await res.json()
-                const mapped: Comment[] = json.content.map((c: any) => ({
+                const mapped = json.content.map((c: any) => ({
                     id: c.commentId,
                     userId: c.userId,
                     author: c.username ?? c.userEmail,
-                    authorImage: userImages[c.userId] ?? loginUser.image,
                     date: new Date(c.createdAt).toLocaleDateString(),
                     content: c.content,
                     likes: c.likeCount || 0,
@@ -88,22 +88,14 @@ export function CommentsSection({ postId }: { postId: number }) {
                         id: r.replyId,
                         userId: r.userId,
                         author: r.username ?? r.userEmail,
-                        authorImage: userImages[r.userId] ?? loginUser.image,
                         date: new Date(r.createdAt).toLocaleDateString(),
                         content: r.content,
                         likes: r.likeCount || 0,
                         isMe: loginUser?.id === r.userId,
                     })),
                 }))
-                setComments(mapped)
-
-                const followStatus: { [key: number]: boolean } = {}
-                mapped.forEach((c) => {
-                    followStatus[c.userId] = c.isFollowing
-                })
-                setIsFollowing(followStatus)
-
-                setCommentError(null)
+                setRawComments(mapped)
+                // 팔로우 상태 세팅…
             } catch (e: any) {
                 setCommentError(e.message)
             } finally {
@@ -112,6 +104,19 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
         fetchComments()
     }, [postId, loginUser])
+
+    useEffect(() => {
+        if (rawComments.length === 0) return
+        const merged = rawComments.map((c) => ({
+            ...c,
+            authorImage: userImages[c.userId] ?? loginUser.image,
+            replies: c.replies.map((r) => ({
+                ...r,
+                authorImage: userImages[r.userId] ?? loginUser.image,
+            })),
+        }))
+        setComments(merged)
+    }, [rawComments, userImages, loginUser.image])
 
     // ─── 4) 댓글 등록 ───────────────────────────────────────────────
     const handleCommentSubmit = async (e: FormEvent) => {
@@ -466,7 +471,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                             {/* flex와 items-center 추가 */}
                             {/* 프로필 이미지 */}
                             <img
-                                src={comment.authorImage}
+                                src={userImages[comment.userId] ?? comment.authorImage}
                                 alt={`${comment.author} 프로필`}
                                 className="w-6 h-6 rounded-full mr-2 object-cover"
                             />
@@ -487,7 +492,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                                             <div className="flex items-center min-w-0">
                                                 <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                     <img
-                                                        src={comment.authorImage}
+                                                        src={userImages[comment.userId] ?? comment.authorImage}
                                                         alt={`${comment.author} 프로필`}
                                                         className="w-full h-full object-cover"
                                                     />
