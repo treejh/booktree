@@ -52,7 +52,6 @@ public class PostService {
     private final MainCategoryRepository mainCategoryRepository;
     private final ImageRepository imageRepository;
     private final LikePostRepository likePostRepository;
-
     private final TokenService tokenService;
     private final UserService userService;
     private final BlogService blogService;
