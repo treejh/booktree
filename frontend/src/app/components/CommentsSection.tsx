@@ -34,6 +34,8 @@ export function CommentsSection({ postId }: { postId: number }) {
     const API = process.env.NEXT_PUBLIC_API_BASE_URL
     const popoverRef = useRef<HTMLDivElement>(null) // 댓글 팝오버용
     const replyPopoverRef = useRef<HTMLDivElement>(null) // 대댓글 팝오버용
+    // 댓글 페이지 최상단(useState 모아둔 곳 바로 아래)
+    const [userImages, setUserImages] = useState<Record<number, string>>({})
 
     // ─── 1) 로딩/에러 상태 ─────────────────────────────────────────────
     const [loading, setLoading] = useState(false)
@@ -76,7 +78,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                     id: c.commentId,
                     userId: c.userId,
                     author: c.username ?? c.userEmail,
-                    authorImage: c.userImageUrl ?? loginUser.image,
+                    authorImage: userImages[c.userId] ?? loginUser.image,
                     date: new Date(c.createdAt).toLocaleDateString(),
                     content: c.content,
                     likes: c.likeCount || 0,
@@ -86,7 +88,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                         id: r.replyId,
                         userId: r.userId,
                         author: r.username ?? r.userEmail,
-                        authorImage: r.userImageUrl ?? loginUser.image,
+                        authorImage: userImages[r.userId] ?? loginUser.image,
                         date: new Date(r.createdAt).toLocaleDateString(),
                         content: r.content,
                         likes: r.likeCount || 0,
@@ -404,6 +406,34 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
     }, [activeCommentId, activeReplyPopoverId])
 
+    // comments가 바뀔 때마다 unique userId를 모아서 API 호출
+    useEffect(() => {
+        if (!comments.length) return
+
+        const ids = Array.from(
+            new Set([...comments.map((c) => c.userId), ...comments.flatMap((c) => c.replies.map((r) => r.userId))]),
+        )
+
+        async function fetchUserImages() {
+            const map: Record<number, string> = {}
+            await Promise.all(
+                ids.map(async (id) => {
+                    try {
+                        const res = await fetch(`${API}/api/v1/users/get/profile/${id}`)
+                        if (!res.ok) return
+                        const { imageUrl } = await res.json()
+                        map[id] = imageUrl
+                    } catch {
+                        /**/
+                    }
+                }),
+            )
+            setUserImages(map)
+        }
+
+        fetchUserImages()
+    }, [comments])
+
     // ─── 9) 렌더링 ─────────────────────────────────────────────────
     return (
         <div>
@@ -620,7 +650,10 @@ export function CommentsSection({ postId }: { postId: number }) {
                                                             <div className="flex items-center min-w-0">
                                                                 <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                     <img
-                                                                        src={reply.authorImage}
+                                                                        src={
+                                                                            userImages[reply.userId] ??
+                                                                            reply.authorImage
+                                                                        }
                                                                         alt={`${reply.author} 프로필`}
                                                                         className="w-full h-full object-cover"
                                                                     />
