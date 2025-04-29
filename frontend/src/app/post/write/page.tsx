@@ -36,6 +36,12 @@ export interface LoginResponse {
     accessToken: string
 }
 
+interface ContentPart {
+    type: 'text' | 'image'
+    data?: string // type=text일 때 텍스트
+    index?: number
+}
+
 export default function PostWritePage() {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
@@ -84,6 +90,18 @@ export default function PostWritePage() {
 
     // 블로그 정보를 가져오는 상태 추가
     const [blogInfo, setBlogInfo] = useState<{ blogId: number | null }>({ blogId: null })
+
+    // nst [contentParts, setContentParts] = useState<ContentPart[]>([])
+    // contentParts 상태 추가
+    const [contentParts, setContentParts] = useState<
+        Array<{
+            type: string
+            data?: string
+            index?: number
+        }>
+    >([])
+
+    const [currentContent, setCurrentContent] = useState('')
 
     // 로그인 체크
     useEffect(() => {
@@ -228,16 +246,68 @@ export default function PostWritePage() {
     // Add image input handler
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setSelectedImages(e.target.files)
+            setSelectedImages((prev) => {
+                const newFiles = prev ? [...prev] : []
+                return [...newFiles, ...Array.from(e.target.files || [])]
+            })
 
-            // 이미지 미리보기 생성
-            const newPreviews: ImagePreview[] = []
             Array.from(e.target.files).forEach((file) => {
                 const imageUrl = URL.createObjectURL(file)
-                newPreviews.push({ file, url: imageUrl })
+
+                if (editorRef.current) {
+                    const selection = window.getSelection()
+                    const range = selection?.getRangeAt(0)
+
+                    if (range) {
+                        // 이미지 요소 생성 및 삽입
+                        const imgElement = document.createElement('img')
+                        imgElement.src = imageUrl
+                        imgElement.className = 'max-w-full h-auto my-4'
+                        imgElement.setAttribute('data-filename', file.name)
+
+                        // 현재 커서 위치에 이미지 삽입
+                        range.insertNode(imgElement)
+
+                        // contentParts 업데이트
+                        const currentContent = editorRef.current.innerHTML
+                        updateContentParts(currentContent)
+
+                        // 커서를 이미지 다음으로 이동
+                        range.setStartAfter(imgElement)
+                        range.setEndAfter(imgElement)
+                        selection?.removeAllRanges()
+                        selection?.addRange(range)
+                    }
+                }
             })
-            setImagePreviews((prev) => [...prev, ...newPreviews])
         }
+    }
+
+    const updateContentParts = (content: string) => {
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = content
+
+        const parts: Array<{ type: string; data?: string; index?: number }> = []
+        let imageIndex = 0
+
+        const processNode = (node: Node) => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                parts.push({
+                    type: 'text',
+                    data: node.textContent.trim(),
+                })
+            } else if (node.nodeName === 'IMG') {
+                parts.push({
+                    type: 'image',
+                    index: imageIndex++,
+                })
+            } else if (node.hasChildNodes()) {
+                Array.from(node.childNodes).forEach(processNode)
+            }
+        }
+
+        Array.from(tempDiv.childNodes).forEach(processNode)
+        setContentParts(parts)
     }
 
     // 이미지 삭제 핸들러 추가
@@ -258,7 +328,7 @@ export default function PostWritePage() {
     }, [])
 
     // 에디터 콘텐츠 변경 핸들러 추가
-    const handleEditorChange = () => {
+    /* const handleEditorChange = () => {
         if (editorRef.current) {
             const content = editorRef.current.innerHTML
             // 스타일을 적용하기 위한 클래스 추가
@@ -271,6 +341,22 @@ export default function PostWritePage() {
             editorRef.current.querySelectorAll('u').forEach((element) => {
                 element.classList.add('underline')
             })
+        }
+    }
+
+ */
+
+    const handleEditorChange = () => {
+        if (editorRef.current) {
+            const content = editorRef.current.innerHTML
+            setCurrentContent(content)
+
+            // contentParts 업데이트
+            const textPart: ContentPart = {
+                type: 'text',
+                data: content,
+            }
+            setContentParts((prev) => [...prev, textPart])
         }
     }
 
@@ -314,16 +400,6 @@ export default function PostWritePage() {
             return
         }
 
-        const editorContent = editorRef.current?.innerHTML || ''
-
-        // blogId 체크 추가
-        /* if (!loginUser?.id) {
-            console.error('사용자 정보가 없습니다:', loginUser)
-            alert('로그인이 필요합니다.')
-            router.push('/account/login')
-            return
-        } */
-
         const checkPostExists = async (postId: number): Promise<boolean> => {
             try {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`, {
@@ -358,54 +434,119 @@ export default function PostWritePage() {
             const createdPostId = await postIdResponse.json()
             console.log('생성될 게시글 ID:', createdPostId)
 
-            // FormData 객체 생성
             const formData = new FormData()
-
-            // 필수 필드
-
             formData.append('blogId', blogInfo.blogId.toString())
+            formData.append('title', title.trim())
             formData.append('mainCategoryId', selectedMainCategoryId.toString())
 
-            formData.append('title', title.trim())
-            formData.append('content', editorContent)
+            // content 처리
+            if (editorRef.current) {
+                const tempDiv = document.createElement('div')
+                tempDiv.innerHTML = editorRef.current.innerHTML
 
-            // Add optional fields
-            if (selectedCategoryId && selectedCategoryId !== 0) {
-                formData.append('categoryId', selectedCategoryId.toString())
-            }
-            if (author.trim()) {
-                formData.append('author', author.trim())
-            }
-            if (bookTitle.trim()) {
-                formData.append('book', bookTitle.trim())
+                // blob URL 이미지 제거 및 정리
+                /* tempDiv.querySelectorAll('img').forEach((img) => {
+                    if (img.src.startsWith('blob:')) {
+                        // blob URL 이미지는 제거
+                        img.remove()
+                    }
+                }) */
+
+                const parts: Array<{ type: string; data?: string; index?: number }> = []
+                let imageIndex = 0
+
+                // 이미지 파일 추가
+                const imageFiles: File[] = []
+                if (selectedImages) {
+                    Array.from(selectedImages).forEach((file) => {
+                        imageFiles.push(file)
+                        formData.append('images', file)
+                    })
+                }
+
+                // contentParts 생성
+                /* const parts: Array<{ type: string; data?: string; index?: number }> = []
+                let imageIndex = 0 */
+
+                // content와 contentParts 생성
+                const nodes = Array.from(tempDiv.childNodes)
+                for (const node of nodes) {
+                    if (node instanceof HTMLElement) {
+                        if (node.tagName === 'P') {
+                            const img = node.querySelector('img')
+                            if (img) {
+                                const fileName = img.getAttribute('data-filename')
+                                if (fileName) {
+                                    parts.push({
+                                        type: 'image',
+                                        index: imageIndex++,
+                                    })
+                                }
+                            } else if (node.textContent?.trim()) {
+                                parts.push({
+                                    type: 'text',
+                                    data: node.textContent.trim(),
+                                })
+                            }
+                        } else if (node.tagName === 'IMG') {
+                            const fileName = node.getAttribute('data-filename')
+                            if (fileName) {
+                                parts.push({
+                                    type: 'image',
+                                    index: imageIndex++,
+                                })
+                            }
+                        } else if (node.textContent?.trim()) {
+                            parts.push({
+                                type: 'text',
+                                data: node.textContent.trim(),
+                            })
+                        }
+                    } else if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                        parts.push({
+                            type: 'text',
+                            data: node.textContent.trim(),
+                        })
+                    }
+                }
+
+                // contentParts JSON 문자열로 변환하여 추가
+                formData.append('contentParts', JSON.stringify(parts))
+
+                // 실제 content를 생성할 때는 이미지 플레이스홀더 포함
+                const content = parts
+                    .map((part) => {
+                        if (part.type === 'text') {
+                            return `<p>${part.data}</p>`
+                        } else if (part.type === 'image') {
+                            return `<img src="IMAGE_PLACEHOLDER_${part.index}" />`
+                        }
+                        return ''
+                    })
+                    .join('\n')
+
+                formData.append('content', content)
             }
 
-            // Add images if selected
-            if (selectedImages) {
-                Array.from(selectedImages).forEach((image) => {
-                    formData.append('images', image)
-                })
-            }
+            // 선택적 필드 추가
+            if (selectedCategoryId) formData.append('categoryId', selectedCategoryId.toString())
+            if (author) formData.append('author', author.trim())
+            if (bookTitle) formData.append('book', bookTitle.trim())
 
-            // 게시글의 ID로 nextPostId를 설정 (필요하다면)
-            //formData.append('postId', nextPostId.toString()) // 여기서 nextPostId를 사용
-
-            // 디버깅용 로그
+            // FormData 내용 확인
             for (let [key, value] of formData.entries()) {
-                console.log(`전송 데이터 - ${key}:`, value)
+                console.log(`${key}:`, value instanceof File ? `File: ${value.name}` : value)
             }
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/create`, {
                 method: 'POST',
-                credentials: 'include', // 쿠키 포함
+                credentials: 'include',
                 body: formData,
             })
 
-            // 응답 상태 로깅
-            console.log('응답 상태:', response.status)
-
             if (!response.ok) {
-                throw new Error('게시글 등록에 실패했습니다.')
+                const errorData = await response.text()
+                throw new Error(errorData || '게시글 등록에 실패했습니다.')
             }
 
             // 응답 처리를 한 번만 시도
@@ -435,7 +576,7 @@ export default function PostWritePage() {
             }
         } catch (error) {
             console.error('Error:', error)
-            alert('게시글 등록에 실패했습니다.')
+            alert(error instanceof Error ? error.message : '게시글 등록에 실패했습니다.')
         }
     }
 
@@ -723,7 +864,7 @@ export default function PostWritePage() {
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a 1 1 0 010-1.414z" />
                                     </svg>
                                 </div>
                             </div>
@@ -747,7 +888,7 @@ export default function PostWritePage() {
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a 1 1 0 010-1.414z" />
                                     </svg>
                                 </div>
                             </div>
