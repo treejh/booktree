@@ -1,10 +1,6 @@
 package com.example.booktree.post.service;
 
-import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
-
-import com.example.booktree.likepost.repository.LikePostRepository;
 import com.example.booktree.blog.entity.Blog;
-
 import com.example.booktree.blog.service.BlogService;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
@@ -12,6 +8,10 @@ import com.example.booktree.comment.repository.CommentRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.service.FollowService;
+import com.example.booktree.image.entity.Image;
+import com.example.booktree.image.repository.ImageRepository;
+import com.example.booktree.jwt.service.TokenService;
+import com.example.booktree.likepost.repository.LikePostRepository;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import com.example.booktree.maincategory.service.MainCategortService;
@@ -22,27 +22,22 @@ import com.example.booktree.post.dto.response.PostTop3ResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
-//import jakarta.transaction.Transactional;
-import java.util.stream.Collectors;
+import com.example.booktree.utils.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import com.example.booktree.image.entity.Image;
-import com.example.booktree.image.repository.ImageRepository;
-import com.example.booktree.utils.S3Uploader;
+import java.util.stream.Collectors;
+
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
 
 
 @Service

@@ -2,20 +2,17 @@
 package com.example.booktree.popularpost.service;
 
 
-import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
-import com.example.booktree.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -24,15 +21,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PopularPostService {
 
     private final StringRedisTemplate redisTemplate;
-    private final PostService postService;
     private static final String REDIS_KEY = "popular:posts:";
     private final String defaultImageUrl = DEFAULT_POST_IMAGE;
+    private final PostRepository postRepository;
 
 
     // 메인 카테고리 별 게시글 조회 시 인기순위에 반영
@@ -74,7 +73,7 @@ public class PopularPostService {
         }
 
         // 순서 보장을 안해줌
-        List<Post> posts = postService.findAllByIdWithImages(ids);
+        List<Post> posts = postRepository.findAllByIdWithImages(ids);
 
         // 순서 보장을 위해 Redis에 있던 순서대로 정렬
         Map<Long, Post> postMap = posts.stream()
