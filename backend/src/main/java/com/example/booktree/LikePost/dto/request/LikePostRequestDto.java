@@ -1,4 +1,4 @@
-package com.example.booktree.likepost.dto.request;
+package com.example.booktree.LikePost.dto.request;
 
 import lombok.Getter;
 

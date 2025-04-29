@@ -1,4 +1,4 @@
-package com.example.booktree.likepost.controller;
+package com.example.booktree.LikePost.controller;
 
 
 import com.example.booktree.likepost.dto.LikeUserListDto;
