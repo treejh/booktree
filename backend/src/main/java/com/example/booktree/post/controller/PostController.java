@@ -97,7 +97,7 @@ public class PostController {
     @PostMapping(value = "/create", consumes = {"multipart/form-data"})
     public ResponseEntity<?> createPost(@ModelAttribute @Valid PostRequestDto dto) {
         postService.createPost(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("게시글 등록 성공!");
+        return ResponseEntity.status(HttpStatus.CREATED).body("게시글 등록 성공");
     }
 
     @PatchMapping(value = "/patch/{postId}", consumes = {"multipart/form-data"})
