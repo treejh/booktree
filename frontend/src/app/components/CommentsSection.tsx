@@ -88,7 +88,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                     })),
                 }))
                 setComments(mapped)
-
+                console.log('어이어이 ', mapped)
                 const followStatus: { [key: number]: boolean } = {}
                 mapped.forEach((c) => {
                     followStatus[c.userId] = c.isFollowing
@@ -259,9 +259,9 @@ export function CommentsSection({ postId }: { postId: number }) {
                 cs.map((c) =>
                     c.id === cid
                         ? {
-                            ...c,
-                            replies: c.replies.map((r) => (r.id === rid ? { ...r, likes: likeCount } : r)),
-                        }
+                              ...c,
+                              replies: c.replies.map((r) => (r.id === rid ? { ...r, likes: likeCount } : r)),
+                          }
                         : c,
                 ),
             )
@@ -296,11 +296,11 @@ export function CommentsSection({ postId }: { postId: number }) {
                 cs.map((c) =>
                     c.id === cid
                         ? {
-                            ...c,
-                            replies: c.replies.map((r) =>
-                                r.id === updated.replyId ? { ...r, content: updated.content } : r,
-                            ),
-                        }
+                              ...c,
+                              replies: c.replies.map((r) =>
+                                  r.id === updated.replyId ? { ...r, content: updated.content } : r,
+                              ),
+                          }
                         : c,
                 ),
             )
@@ -346,6 +346,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 ...prev,
                 [userId]: !prev[userId],
             }))
+            window.location.reload()
         } catch {
             alert('팔로우/언팔로우 처리에 실패했습니다.')
         }
