@@ -634,6 +634,24 @@ export default function DetailPage() {
         if (!post || !loginUser) return
 
         try {
+            // 먼저 해당 유저의 blogId를 가져옴
+            const blogResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/username/${post.username}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                },
+            )
+
+            if (!blogResponse.ok) {
+                throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            }
+
+            const blogId = await blogResponse.json()
+
+            // 게시글 삭제 요청
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/delete/${post.postId}`, {
                 method: 'DELETE',
                 credentials: 'include',
@@ -647,7 +665,7 @@ export default function DetailPage() {
             }
 
             alert('게시글이 성공적으로 삭제되었습니다.')
-            router.push('/') // 홈페이지로 리다이렉트
+            router.push(`/blog/${blogId}`) // 홈페이지로 리다이렉트
         } catch (error) {
             console.error('게시글 삭제 실패:', error)
             alert('게시글 삭제에 실패했습니다.')

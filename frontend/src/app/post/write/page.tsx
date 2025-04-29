@@ -324,7 +324,40 @@ export default function PostWritePage() {
             return
         } */
 
+        const checkPostExists = async (postId: number): Promise<boolean> => {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                })
+                return response.ok
+            } catch (error) {
+                return false
+            }
+        }
+
+        const findExistingPost = async (startId: number): Promise<number> => {
+            let currentId = startId
+            while (!(await checkPostExists(currentId))) {
+                currentId++
+            }
+            return currentId
+        }
+
         try {
+            // 1. 다음 게시글 ID 먼저 가져오기
+            const postIdResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/createdId`, {
+                method: 'GET',
+                credentials: 'include',
+            })
+
+            if (!postIdResponse.ok) {
+                throw new Error('게시글 ID를 가져오는데 실패했습니다.')
+            }
+
+            const createdPostId = await postIdResponse.json()
+            console.log('생성될 게시글 ID:', createdPostId)
+
             // FormData 객체 생성
             const formData = new FormData()
 
@@ -354,6 +387,9 @@ export default function PostWritePage() {
                 })
             }
 
+            // 게시글의 ID로 nextPostId를 설정 (필요하다면)
+            //formData.append('postId', nextPostId.toString()) // 여기서 nextPostId를 사용
+
             // 디버깅용 로그
             for (let [key, value] of formData.entries()) {
                 console.log(`전송 데이터 - ${key}:`, value)
@@ -381,15 +417,21 @@ export default function PostWritePage() {
                 const responseData = JSON.parse(responseText)
                 console.log('생성된 게시글:', responseData)
                 alert('게시글이 성공적으로 등록되었습니다.')
-                if (responseData.id) {
-                    router.push(`/post/${responseData.id}/detail/get`)
+
+                // 게시글 존재 여부 확인 후 리다이렉트
+                const finalPostId = await findExistingPost(createdPostId)
+                router.push(`/post/${finalPostId}/detail/get`)
+
+                /* if (responseData.id) {
+                    router.push(`/post/${finalPostId}/detail/get`)
                 } else {
                     router.push(`/blog/post/${blogInfo.blogId}/list`)
-                }
+                } */
             } catch (jsonError) {
                 // JSON 파싱 실패시 (일반 텍스트 응답)
                 alert('게시글이 성공적으로 등록되었습니다.')
-                router.push(`/blog/post/${blogInfo.blogId}/list`)
+                const finalPostId = await findExistingPost(createdPostId)
+                router.push(`/post/${finalPostId}/detail/get`)
             }
         } catch (error) {
             console.error('Error:', error)
