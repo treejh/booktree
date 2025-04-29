@@ -382,7 +382,7 @@ export function CommentsSection({ postId }: { postId: number }) {
             {isLogin ? (
                 <form onSubmit={handleCommentSubmit} className="mb-6">
                     <textarea
-                        className="w-full p-2 border rounded mb-2"
+                        className="w-full p-2 border border-gray-400 rounded mb-2"
                         rows={3}
                         placeholder="댓글을 작성하세요."
                         value={commentInput}
@@ -397,7 +397,7 @@ export function CommentsSection({ postId }: { postId: number }) {
             )}
 
             {comments.map((comment) => (
-                <div key={comment.id} className="border-b pb-6 mb-6">
+                <div key={comment.id} className="border-b border-gray-300 pb-6 mb-6">
                     {/* 댓글 상단 (작성자/팝오버) */}
                     <div className="flex justify-between items-center">
                         <div className="relative">
