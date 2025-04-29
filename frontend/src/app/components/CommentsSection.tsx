@@ -354,6 +354,8 @@ export function CommentsSection({ postId }: { postId: number }) {
                 ...prev,
                 [userId]: !prev[userId],
             }))
+
+            window.location.reload()
         } catch {
             alert('팔로우/언팔로우 처리에 실패했습니다.')
         }
@@ -459,7 +461,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                                                         : 'bg-green-600 text-white'
                                                 }`}
                                             >
-                                                {isFollowing[comment.userId] ? '팔로우 취소' : '팔로우'}
+                                                {isFollowing[comment.isFollowing] ? '팔로우 취소' : '팔로우'}
                                             </button>
                                         )}
                                     </div>
