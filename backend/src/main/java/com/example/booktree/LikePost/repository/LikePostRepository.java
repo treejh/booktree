@@ -1,6 +1,6 @@
-package com.example.booktree.LikePost.repository;
+package com.example.booktree.likepost.repository;
 
-import com.example.booktree.LikePost.entity.LikePost;
+import com.example.booktree.likepost.entity.LikePost;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.user.entity.User;
 import org.springframework.data.domain.Page;

@@ -1,9 +1,9 @@
 package com.example.booktree.blog.dto.response;
 
 
-import static com.example.booktree.utils.ConstData.DEFAULT_IMAGE;
 
 import com.example.booktree.blog.entity.Blog;
+import com.example.booktree.utils.ImageUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,10 +28,7 @@ public class BlogResponseDto {
         this.profile= blog.getProfile();
         this.notice = blog.getNotice();
         this.name = blog.getName();
-        String image = blog.getUser().getImage();
-        this.ownerImageUrl = (image == null || image.isEmpty())
-                ? DEFAULT_IMAGE
-                : image;
+        this.ownerImageUrl = ImageUtil.getValidProfileImage(blog.getUser().getImage());
 
         this.ownerUsername = blog.getUser().getUsername(); // 추가
     }

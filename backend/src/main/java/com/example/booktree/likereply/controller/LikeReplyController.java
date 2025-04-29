@@ -1,9 +1,8 @@
-package com.example.booktree.like_reply.controller;
+package com.example.booktree.likereply.controller;
 
-import com.example.booktree.like_reply.dto.LikeReplyDto;
-import com.example.booktree.like_reply.service.LikeReplyService;
+import com.example.booktree.likereply.dto.LikeReplyDto;
+import com.example.booktree.likereply.service.LikeReplyService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
