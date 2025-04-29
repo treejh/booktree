@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, FormEvent } from 'react'
+import React, { useState, useEffect, useRef, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
@@ -32,6 +32,8 @@ export function CommentsSection({ postId }: { postId: number }) {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
     const API = process.env.NEXT_PUBLIC_API_BASE_URL
+    const popoverRef = useRef<HTMLDivElement>(null) // 댓글 팝오버용
+    const replyPopoverRef = useRef<HTMLDivElement>(null) // 대댓글 팝오버용
 
     // ─── 1) 로딩/에러 상태 ─────────────────────────────────────────────
     const [loading, setLoading] = useState(false)
@@ -380,6 +382,28 @@ export function CommentsSection({ postId }: { postId: number }) {
         } catch {}
     }
 
+    // 클릭 이벤트 핸들러
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            // 댓글 팝오버
+            if (activeCommentId !== null && popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+                setActiveCommentId(null)
+            }
+            // 대댓글 팝오버
+            if (
+                activeReplyPopoverId !== null &&
+                replyPopoverRef.current &&
+                !replyPopoverRef.current.contains(event.target as Node)
+            ) {
+                setActiveReplyPopoverId(null)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [activeCommentId, activeReplyPopoverId])
+
     // ─── 9) 렌더링 ─────────────────────────────────────────────────
     return (
         <div>
@@ -407,7 +431,9 @@ export function CommentsSection({ postId }: { postId: number }) {
                 <div key={comment.id} className="border-b border-gray-300 pb-6 mb-6">
                     {/* 댓글 상단 (작성자/팝오버) */}
                     <div className="flex justify-between items-center">
-                        <div className="relative">
+                        <div className="relative flex items-center">
+                            {' '}
+                            {/* flex와 items-center 추가 */}
                             {/* 프로필 이미지 */}
                             <img
                                 src={comment.authorImage}
@@ -420,23 +446,25 @@ export function CommentsSection({ postId }: { postId: number }) {
                             >
                                 {comment.author}
                             </button>
-
                             {/* 댓글 작성자 팝오버 미니창 */}
                             {activeCommentId === comment.id && (
-                                <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
+                                <div
+                                    ref={popoverRef}
+                                    className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0"
+                                >
                                     <div className="p-4">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center min-w-0">
                                                 <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                     <img
-                                                        src="https://randomuser.me/api/portraits/women/44.jpg"
-                                                        alt="프로필"
+                                                        src={comment.authorImage}
+                                                        alt={`${comment.author} 프로필`}
                                                         className="w-full h-full object-cover"
                                                     />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <button
-                                                        onClick={() => router.push(`/mypage/${comment.userId}`)}
+                                                        onClick={() => router.push(`/blog/${comment.userId}`)}
                                                         className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
                                                     >
                                                         {comment.author}
@@ -564,11 +592,13 @@ export function CommentsSection({ postId }: { postId: number }) {
                                 <div key={reply.id} className="border-l border-gray-300 pl-4">
                                     {/* 작성자·날짜·팝오버 */}
                                     <div className="flex justify-between items-center">
-                                        <div className="relative">
+                                        <div className="relative flex items-center">
+                                            {' '}
+                                            {/* flex와 items-center 추가 */}
                                             {/* 프로필 이미지 */}
                                             <img
-                                                src={comment.authorImage}
-                                                alt={`${comment.author} 프로필`}
+                                                src={reply.authorImage}
+                                                alt={`${reply.author} 프로필`}
                                                 className="w-6 h-6 rounded-full mr-2 object-cover"
                                             />
                                             <button
@@ -581,21 +611,24 @@ export function CommentsSection({ postId }: { postId: number }) {
                                             </button>
                                             {/* 대댓글 작성자 팝오버 미니창 수정 */}
                                             {activeReplyPopoverId === reply.id && (
-                                                <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
+                                                <div
+                                                    ref={replyPopoverRef}
+                                                    className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0"
+                                                >
                                                     <div className="p-4">
                                                         <div className="flex items-center justify-between mb-3">
                                                             <div className="flex items-center min-w-0">
                                                                 <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                     <img
-                                                                        src="https://randomuser.me/api/portraits/women/44.jpg"
-                                                                        alt="프로필"
+                                                                        src={reply.authorImage}
+                                                                        alt={`${reply.author} 프로필`}
                                                                         className="w-full h-full object-cover"
                                                                     />
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <button
                                                                         onClick={() =>
-                                                                            router.push(`/mypage/${reply.userId}`)
+                                                                            router.push(`/blog/${reply.userId}`)
                                                                         }
                                                                         className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
                                                                     >
