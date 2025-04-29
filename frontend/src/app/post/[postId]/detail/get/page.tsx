@@ -100,6 +100,7 @@ export default function DetailPage() {
     const [userId, setUserId] = useState<number>()
     const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
     const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -130,6 +131,36 @@ export default function DetailPage() {
         }
         fetchUserId()
     }, [postId])
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            if (!post?.causerId) return // post.causerId가 없으면 요청하지 않음
+
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/get/profile/${post.causerId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('프로필 정보를 가져오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                setProfileImageUrl(data.imageUrl) // imageUrl을 상태로 저장
+            } catch (error) {
+                console.error('프로필 이미지 로드 실패:', error)
+                setProfileImageUrl(null) // 실패 시 기본값 설정
+            }
+        }
+
+        fetchUserProfile()
+    }, [post?.causerId])
 
     useEffect(() => {
         const fetchIsFollowing = async () => {
@@ -411,6 +442,7 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('팔로우 요청 실패')
             console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -429,6 +461,8 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('언팔로우 요청 실패')
             console.log(`언팔로우 완료: ${followeeId}`)
+
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -955,7 +989,10 @@ export default function DetailPage() {
                                 <div className="flex items-center mb-6">
                                     <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 overflow-hidden">
                                         <img
-                                            src="https://randomuser.me/api/portraits/women/44.jpg"
+                                            src={
+                                                profileImageUrl ||
+                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                            } // 기본 이미지 설정
                                             alt="프로필"
                                             className="w-full h-full object-cover"
                                         />
@@ -979,7 +1016,10 @@ export default function DetailPage() {
                                                         <div className="flex items-center min-w-0">
                                                             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                 <img
-                                                                    src="https://randomuser.me/api/portraits/women/44.jpg"
+                                                                    src={
+                                                                        profileImageUrl ||
+                                                                        'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                                                    } // 기본 이미지 설정
                                                                     alt="프로필"
                                                                     className="w-full h-full object-cover"
                                                                 />
@@ -1054,24 +1094,6 @@ export default function DetailPage() {
 
                                 {/* 게시글 내용 */}
                                 <div className="mb-8">
-                                    {post.imageUrls.length > 0 && (
-                                        <div className="flex flex-col gap-4 mb-8">
-                                            {post.imageUrls.map((url, idx) => (
-                                                <div key={idx} className="w-full rounded-lg overflow-hidden">
-                                                    <img
-                                                        src={url}
-                                                        alt={`게시글 이미지 ${idx + 1}`}
-                                                        className="w-full h-auto object-contain max-h-[600px]"
-                                                        onError={(e) => {
-                                                            e.currentTarget.src =
-                                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
-                                                        }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
                                     {isPostEditing ? (
                                         <textarea
                                             value={editedPost.content}
@@ -1085,7 +1107,13 @@ export default function DetailPage() {
                                             rows={15}
                                         />
                                     ) : (
-                                        <div className="mb-6 whitespace-pre-line">{post.content}</div>
+                                        // HTML 컨텐츠를 직접 렌더링
+                                        <div
+                                            className="prose max-w-none"
+                                            dangerouslySetInnerHTML={{
+                                                __html: post.content,
+                                            }}
+                                        />
                                     )}
                                 </div>
 

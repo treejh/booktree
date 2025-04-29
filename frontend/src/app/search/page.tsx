@@ -81,27 +81,6 @@ export default function SearchPage() {
                 <span className="ml-2 text-gray-600">(전체 {totalResults}건)</span>
             </h1>
 
-            {/* 페이지 네비게이션 */}
-            <div className="flex justify-center items-center space-x-4 mb-6">
-                <button
-                    className="px-4 py-2 border rounded disabled:opacity-50"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage((p) => p - 1)}
-                >
-                    이전
-                </button>
-                <span>
-                    {currentPage} / {totalPages}
-                </span>
-                <button
-                    className="px-4 py-2 border rounded disabled:opacity-50"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                >
-                    다음
-                </button>
-            </div>
-
             {isLoading ? (
                 <div className="flex justify-center items-center h-40">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
@@ -113,37 +92,112 @@ export default function SearchPage() {
                     <p>검색 결과가 없습니다.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
-                    {results.map((r) => (
-                        <div
-                            key={r.postId}
-                            className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition"
-                            onClick={() => router.push(`/post/${r.postId}/detail/get`)}
-                        >
-                            <div className="flex mb-2">
-                                <div className="w-24 h-32 relative flex-shrink-0">
-                                    <Image
-                                        src={
-                                            r.imageUrl && r.imageUrl.trim() !== ''
-                                                ? r.imageUrl
-                                                : 'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
-                                        }
-                                        alt={r.title}
-                                        fill
-                                        className="object-cover rounded"
-                                    />
-                                </div>
-                                <div className="ml-4 flex-1">
-                                    <h3 className="text-lg font-medium mb-1 truncate">{r.title}</h3>
-                                    <p className="text-xs text-gray-500">조회수: {r.viewCount}</p>
-                                    <p className="text-xs text-gray-500">
-                                        작성일: {new Date(r.createdAt).toLocaleDateString('ko-KR')}
-                                    </p>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
+                        {results.map((r) => (
+                            <div
+                                key={r.postId}
+                                className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition"
+                                onClick={() => router.push(`/post/${r.postId}/detail/get`)}
+                            >
+                                <div className="flex mb-2">
+                                    <div className="w-24 h-32 relative flex-shrink-0">
+                                        <Image
+                                            src={
+                                                r.imageUrl && r.imageUrl.trim() !== ''
+                                                    ? r.imageUrl
+                                                    : 'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
+                                            }
+                                            alt={r.title}
+                                            fill
+                                            className="object-cover rounded"
+                                        />
+                                    </div>
+                                    <div className="ml-4 flex-1">
+                                        <h3 className="text-lg font-medium mb-1 truncate">{r.title}</h3>
+                                        <p className="text-xs text-gray-500">조회수: {r.viewCount}</p>
+                                        <p className="text-xs text-gray-500">
+                                            작성일: {new Date(r.createdAt).toLocaleDateString('ko-KR')}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+
+                    {/* 페이지 네비게이션을 결과 목록 하단으로 이동 */}
+                    <div className="flex justify-center items-center space-x-2 mt-6">
+                        {/* 첫 페이지로 이동 */}
+                        <button
+                            className="px-3 py-2 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-white"
+                            onClick={() => setCurrentPage(1)}
+                            disabled={currentPage === 1}
+                        >
+                            &lt;&lt;
+                        </button>
+
+                        {/* 이전 페이지로 이동 */}
+                        <button
+                            className="px-3 py-2 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-white"
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            &lt;
+                        </button>
+
+                        {/* 페이지 숫자 버튼들 */}
+                        {[...Array(totalPages)].map((_, i) => {
+                            const pageNum = i + 1
+                            // 현재 페이지 주변 5개의 페이지만 보여주기
+                            if (
+                                pageNum === 1 ||
+                                pageNum === totalPages ||
+                                (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
+                            ) {
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className={`px-3 py-2 rounded ${
+                                            currentPage === pageNum
+                                                ? 'bg-[#2E804E] text-white'
+                                                : 'border hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                )
+                            }
+                            // 줄임표 표시
+                            if (pageNum === currentPage - 3 || pageNum === currentPage + 3) {
+                                return (
+                                    <span key={pageNum} className="px-2">
+                                        ...
+                                    </span>
+                                )
+                            }
+                            return null
+                        })}
+
+                        {/* 다음 페이지로 이동 */}
+                        <button
+                            className="px-3 py-2 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-white"
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            &gt;
+                        </button>
+
+                        {/* 마지막 페이지로 이동 */}
+                        <button
+                            className="px-3 py-2 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:hover:bg-white"
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages}
+                        >
+                            &gt;&gt;
+                        </button>
+                    </div>
+                </>
             )}
         </div>
     )

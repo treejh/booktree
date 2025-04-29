@@ -1,53 +1,56 @@
 package com.example.booktree.post.service;
 
-import com.example.booktree.LikePost.repository.LikePostRepository;
 import com.example.booktree.blog.entity.Blog;
-
 import com.example.booktree.blog.service.BlogService;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.comment.repository.CommentRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
-import com.example.booktree.follow.dto.response.AllFollowListResponseDto;
-import com.example.booktree.follow.entity.Follow;
 import com.example.booktree.follow.service.FollowService;
+import com.example.booktree.image.entity.Image;
+import com.example.booktree.image.repository.ImageRepository;
+import com.example.booktree.jwt.service.TokenService;
+import com.example.booktree.likepost.repository.LikePostRepository;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import com.example.booktree.maincategory.service.MainCategortService;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.dto.response.PostTop3ResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.user.entity.User;
-import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
+
 //import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.example.booktree.utils.S3Uploader;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-
 import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.transaction.annotation.Propagation;
 import com.fasterxml.jackson.core.type.TypeReference;
+
 
 
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import com.example.booktree.image.entity.Image;
-import com.example.booktree.image.repository.ImageRepository;
-import com.example.booktree.utils.S3Uploader;
-import org.springframework.transaction.annotation.Propagation;
+import java.util.stream.Collectors;
+
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
 
 
 @Service
@@ -62,14 +65,15 @@ public class PostService {
     private final MainCategoryRepository mainCategoryRepository;
     private final ImageRepository imageRepository;
     private final LikePostRepository likePostRepository;
-
     private final TokenService tokenService;
     private final UserService userService;
     private final BlogService blogService;
     private final FollowService followService;
     private final CommentRepository commentRepository;
 
-    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
+    private final PopularPostService popularPostService;
+
+    private final String defaultImageUrl = DEFAULT_POST_IMAGE;
 
 
 
@@ -289,6 +293,9 @@ public class PostService {
         commentRepository.deleteByPostId(postId);  // 댓글 테이블에서 해당 게시글 ID를 참조하는 댓글들 삭제
 
         imageRepository.deleteAll(post.getImageList());
+
+        Long mainCategoryId = post.getMainCategory().getId();
+        popularPostService.removePostFromPopularity(postId, mainCategoryId);
         postRepository.delete(post);
     }
 
@@ -524,6 +531,9 @@ public class PostService {
                 .collect(Collectors.toList()); // 리스트로 변환
     }
 
+    public List<Post> findAllByIdWithImages(List<Long> ids){
+        return postRepository.findAllByIdWithImages(ids);
+    }
 
     public Long getNextPostId() {
         Long maxPostId = postRepository.findMaxPostId();

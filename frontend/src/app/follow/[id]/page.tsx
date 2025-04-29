@@ -56,6 +56,7 @@ export default function FollowPage() {
 
             if (!res.ok) throw new Error('팔로우 요청 실패')
             console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -74,6 +75,7 @@ export default function FollowPage() {
 
             if (!res.ok) throw new Error('언팔로우 요청 실패')
             console.log(`언팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -112,7 +114,6 @@ export default function FollowPage() {
             }))
             setUsers(transformed)
             console.log('user : ', transformed)
-            window.location.reload()
         }
     }, [activeTab, follower, followed])
 
