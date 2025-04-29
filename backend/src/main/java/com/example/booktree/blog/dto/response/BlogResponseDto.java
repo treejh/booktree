@@ -1,6 +1,8 @@
 package com.example.booktree.blog.dto.response;
 
 
+import static com.example.booktree.utils.ConstData.DEFAULT_IMAGE;
+
 import com.example.booktree.blog.entity.Blog;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +30,7 @@ public class BlogResponseDto {
         this.name = blog.getName();
         String image = blog.getUser().getImage();
         this.ownerImageUrl = (image == null || image.isEmpty())
-                ? "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png"
+                ? DEFAULT_IMAGE
                 : image;
 
         this.ownerUsername = blog.getUser().getUsername(); // 추가
