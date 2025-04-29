@@ -30,7 +30,8 @@ public enum ExceptionCode {
     CANNOT_LIKE_OWN_POST(405, "자신이 작성한 게시글에는 좋아요를 누를 수 없습니다."),
     USER_NOT_LOGGED_IN(403, "아직 로그인 상태가 아니어서 좋아요를 누를 권한이 없습니다."),
     BLOG_NOT_OWNER(403, "해당 블로그의 소유자가 아닙니다."),
-    MAIN_CATEGORY_NOT_FOUND(404, "메인 카테고리가 존재하지 않습니다.")
+    MAIN_CATEGORY_NOT_FOUND(404, "메인 카테고리가 존재하지 않습니다."),
+    EMAIL_TYPE_NOT_FOUND(404, "이메일 타입이 존재하지 않습니다");
 
     ;
 
