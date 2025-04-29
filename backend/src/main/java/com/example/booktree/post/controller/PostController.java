@@ -341,6 +341,14 @@ public class PostController {
 
 
 
+    @GetMapping("/get/createdId")
+    public ResponseEntity<Long> getNextPostId() {
+        Long nextId = postService.getNextPostId();
+        return ResponseEntity.ok(nextId);
+    }
+
+
+
 
 
 }
