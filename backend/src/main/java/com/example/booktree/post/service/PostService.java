@@ -210,11 +210,8 @@ public class PostService {
             throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
         }
 
-
-
-
         post.setTitle(dto.getTitle());
-        post.setContent(dto.getContent());
+        post.setContent(dto.getContent()); // 기존 content 덮어쓰기 유지
         post.setAuthor(dto.getAuthor());
         post.setBook(dto.getBook());
         post.setModifiedAt(LocalDateTime.now());
@@ -226,28 +223,24 @@ public class PostService {
             post.setMainCategory(mainCategory);
         }
 
-// categoryId 수정
+        // categoryId 수정
         if (dto.getCategoryId() != null) {
             Category category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CATEGORY_NOT_FOUND));
             post.setCategory(category);
         }
 
-
-
-
+        List<String> uploadedImageUrls = new ArrayList<>();
         if (dto.getImages() != null && !dto.getImages().isEmpty()) {
             List<String> currentImageUrls = new ArrayList<>();
             for (Image image : post.getImageList()) {
                 currentImageUrls.add(image.getImageUrl());
             }
 
-            List<String> uploadedImageUrls = s3Uploader.autoImagesUploadAndDelete(currentImageUrls, dto.getImages());
-
+            uploadedImageUrls = s3Uploader.autoImagesUploadAndDelete(currentImageUrls, dto.getImages());
 
             imageRepository.deleteAll(post.getImageList());
             post.getImageList().clear();
-
 
             for (String imageUrl : uploadedImageUrls) {
                 Image newImage = new Image();
@@ -257,7 +250,34 @@ public class PostService {
             }
         }
 
+        // 💡 contentParts 기반으로 글/이미지 content 조립
+        if (dto.getContentParts() != null) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                List<PostRequestDto.ContentPart> contentParts = objectMapper.readValue(
+                        dto.getContentParts(),
+                        new TypeReference<List<PostRequestDto.ContentPart>>() {}
+                );
+
+                StringBuilder builder = new StringBuilder();
+                for (PostRequestDto.ContentPart part : contentParts) {
+                    if ("text".equals(part.getType())) {
+                        builder.append("<p>").append(part.getData()).append("</p>");
+                    } else if ("image".equals(part.getType()) && part.getIndex() != null) {
+                        // 이미지가 존재할 경우에만
+                        if (part.getIndex() < uploadedImageUrls.size()) {
+                            builder.append("<img src=\"").append(uploadedImageUrls.get(part.getIndex())).append("\" />");
+                        }
+                    }
+                }
+
+                post.setContent(builder.toString()); // 최종 content 반영
+            } catch (Exception e) {
+                throw new BusinessLogicException(ExceptionCode.INVALID_CONTENT_PARTS);
+            }
+        }
     }
+
 
     @Transactional
     public void postViewUpdate(Long postId) {
