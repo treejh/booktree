@@ -69,7 +69,7 @@ dependencies {
     implementation ("org.springframework.boot:spring-boot-starter-data-redis")
 
     //무중단 배포 의존성 추가 ( get 요청 )
-    //implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
 
 
