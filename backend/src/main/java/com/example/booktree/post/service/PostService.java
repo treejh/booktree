@@ -15,6 +15,7 @@ import com.example.booktree.follow.service.FollowService;
 import com.example.booktree.maincategory.entity.MainCategory;
 import com.example.booktree.maincategory.repository.MainCategoryRepository;
 import com.example.booktree.maincategory.service.MainCategortService;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.dto.response.PostTop3ResponseDto;
@@ -62,6 +63,8 @@ public class PostService {
     private final BlogService blogService;
     private final FollowService followService;
     private final CommentRepository commentRepository;
+
+    private final PopularPostService popularPostService;
 
     private final String defaultImageUrl = DEFAULT_POST_IMAGE;
 
@@ -240,6 +243,9 @@ public class PostService {
         commentRepository.deleteByPostId(postId);  // 댓글 테이블에서 해당 게시글 ID를 참조하는 댓글들 삭제
 
         imageRepository.deleteAll(post.getImageList());
+
+        Long mainCategoryId = post.getMainCategory().getId();
+        popularPostService.removePostFromPopularity(postId, mainCategoryId);
         postRepository.delete(post);
     }
 

@@ -111,5 +111,18 @@ public class PopularPostService {
         String monthKey = now.format(DateTimeFormatter.ofPattern("yyyy-MM"));
         return REDIS_KEY + mainCategoryId + ":month:" + monthKey;
     }
+
+
+    // 게시글 삭제 시 Redis 인기 데이터 삭제
+    public void removePostFromPopularity(Long postId, Long mainCategoryId) {
+        String key = getMonthlyKey(mainCategoryId);
+        // ZREM 명령어 사용: 지정된 Sorted Set에서 멤버 제거
+        Long removedCount = redisTemplate.opsForZSet().remove(key, postId.toString());
+        if (removedCount != null && removedCount > 0) {
+            log.info("Removed post {} from Redis popular list key: {}", postId, key);
+        } else {
+            log.warn("Post {} not found in Redis popular list key: {}", postId, key);
+        }
+    }
 }
 
