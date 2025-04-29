@@ -24,7 +24,7 @@ export default function ScrapPosts({ userId }: ScrapPostsProps) {
     const [totalPages, setTotalPages] = useState(1) // 총 페이지 수
     const [isLoading, setIsLoading] = useState(false)
 
-    const postsPerPage = 4 // 페이지당 게시글 수
+    const postsPerPage = 8 // 페이지당 게시글 수
 
     useEffect(() => {
         const fetchScrapPosts = async () => {
@@ -112,8 +112,8 @@ export default function ScrapPosts({ userId }: ScrapPostsProps) {
                 {Array.from({ length: totalPages }, (_, i) => (
                     <button
                         key={i + 1}
-                        className={`px-4 py-2 border rounded ${
-                            currentPage === i + 1 ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'
+                        className={`w-10 h-10 border border-gray-200 rounded flex items-center justify-center mx-1 ${
+                            currentPage === i + 1 ? 'bg-[#247040] text-white' : 'hover:bg-gray-100'
                         }`}
                         onClick={() => handlePageChange(i + 1)}
                     >
