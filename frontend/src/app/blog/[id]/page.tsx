@@ -672,16 +672,23 @@ export default function BlogPage() {
                                             추천순
                                         </span>
                                     </li>
-                                    <li
-                                        className={`pb-2 border-b-2 ${
-                                            activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
-                                        } cursor-pointer`}
-                                        onClick={() => handleTabChange('bookmarks')}
-                                    >
-                                        <span className={activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'}>
-                                            팔로잉
-                                        </span>
-                                    </li>
+                                    {isLogin && userBlogId && String(userBlogId) === String(blogId) && (
+                                        <li
+                                            className={`pb-2 border-b-2 ${
+                                                activeTab === 'bookmarks' ? 'border-gray-900' : 'border-transparent'
+                                            } cursor-pointer`}
+                                            onClick={() => handleTabChange('bookmarks')}
+                                        >
+                                            <span
+                                                className={
+                                                    activeTab === 'bookmarks' ? 'text-gray-900' : 'text-gray-600'
+                                                }
+                                            >
+                                                팔로잉
+                                            </span>
+                                        </li>
+                                    )}
+
                                     {isLogin && userBlogId && String(userBlogId) === String(blogId) && (
                                         <li
                                             className={`pb-2 border-b-2 ${
