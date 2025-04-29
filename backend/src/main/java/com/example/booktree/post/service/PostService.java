@@ -25,6 +25,8 @@ import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 //import jakarta.transaction.Transactional;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +37,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 
 
@@ -118,11 +121,38 @@ public class PostService {
             throw new BusinessLogicException(ExceptionCode.BLOG_NOT_OWNER);
         }
 
+        // 이미지 업로드
+        List<String> uploadedImageUrls = new ArrayList<>();
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            uploadedImageUrls = s3Uploader.autoImagesUploadAndDelete(new ArrayList<>(), dto.getImages());
+        }
+
+        // content 조립
+        StringBuilder contentBuilder = new StringBuilder();
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<PostRequestDto.ContentPart> contentParts = objectMapper.readValue(
+                    dto.getContentParts(), new TypeReference<List<PostRequestDto.ContentPart>>() {}
+            );
+
+            for (PostRequestDto.ContentPart part : contentParts) {
+                if ("text".equals(part.getType())) {
+                    contentBuilder.append("<p>").append(part.getData()).append("</p>");
+                } else if ("image".equals(part.getType()) && part.getIndex() != null) {
+                    String imageUrl = uploadedImageUrls.get(part.getIndex());
+                    contentBuilder.append("<img src=\"").append(imageUrl).append("\" />");
+                }
+            }
+        } catch (Exception e) {
+            throw new BusinessLogicException(ExceptionCode.INVALID_CONTENT_PARTS); // 직접 예외 만들거나 수정
+        }
+        String finalContent = contentBuilder.toString();
+
 
 
         Post post = Post.builder()
                 .title(dto.getTitle())
-                .content(dto.getContent())
+                .content(finalContent)
                 .author(dto.getAuthor())
                 .book(dto.getBook())
                 .user(user)
@@ -135,17 +165,33 @@ public class PostService {
 
         postRepository.save(post);
 
-        // 이미지 업로드
-        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
-            List<String> uploadedImageUrls = s3Uploader.autoImagesUploadAndDelete(new ArrayList<>(), dto.getImages());
 
+        // 이미지 저장 (imageList도 따로 저장하는거면 여기서 추가)
+        if (!uploadedImageUrls.isEmpty()) {
             for (String imageUrl : uploadedImageUrls) {
                 Image image = new Image();
                 image.setPost(post);
                 image.setImageUrl(imageUrl);
-                imageRepository.save(image); // 이미지 저장
+                imageRepository.save(image);
             }
         }
+
+
+
+
+        // 이미지 업로드
+
+
+//        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+//            List<String> uploadedImageUrls = s3Uploader.autoImagesUploadAndDelete(new ArrayList<>(), dto.getImages());
+//
+//            for (String imageUrl : uploadedImageUrls) {
+//                Image image = new Image();
+//                image.setPost(post);
+//                image.setImageUrl(imageUrl);
+//                imageRepository.save(image); // 이미지 저장
+//            }
+//        }
     }
 
 
