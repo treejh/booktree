@@ -442,6 +442,7 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('팔로우 요청 실패')
             console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -460,6 +461,8 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('언팔로우 요청 실패')
             console.log(`언팔로우 완료: ${followeeId}`)
+
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }

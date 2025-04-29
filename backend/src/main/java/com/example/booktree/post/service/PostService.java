@@ -475,6 +475,9 @@ public class PostService {
                 .collect(Collectors.toList()); // 리스트로 변환
     }
 
+    public List<Post> findAllByIdWithImages(List<Long> ids){
+        return postRepository.findAllByIdWithImages(ids);
+    }
 
     public Long getNextPostId() {
         Long maxPostId = postRepository.findMaxPostId();

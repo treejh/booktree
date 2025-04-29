@@ -74,7 +74,7 @@ public class PopularPostService {
         }
 
         // 순서 보장을 안해줌
-        List<Post> posts = postService.findAllById(ids);
+        List<Post> posts = postService.findAllByIdWithImages(ids);
 
         // 순서 보장을 위해 Redis에 있던 순서대로 정렬
         Map<Long, Post> postMap = posts.stream()
@@ -84,6 +84,10 @@ public class PopularPostService {
         List<PostResponseDto> response = ids.stream()
                 .map(id -> {
                     Post post = postMap.get(id);
+                    if(post.getImageList().size()>0){
+                        System.out.println("imageUrl : " + post.getImageList().get(0).getImageUrl());
+                    }
+
                     double score = scores.get(ids.indexOf(id)); // score 가져오기
                     return PostResponseDto.builder()
                             .postId(post.getId())

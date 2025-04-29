@@ -88,7 +88,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                     })),
                 }))
                 setComments(mapped)
-
+                console.log('어이어이 ', mapped)
                 const followStatus: { [key: number]: boolean } = {}
                 mapped.forEach((c) => {
                     followStatus[c.userId] = c.isFollowing
@@ -346,6 +346,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 ...prev,
                 [userId]: !prev[userId],
             }))
+            window.location.reload()
         } catch {
             alert('팔로우/언팔로우 처리에 실패했습니다.')
         }
