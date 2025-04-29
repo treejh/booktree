@@ -89,4 +89,9 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.imageList WHERE p.id IN :ids")
     List<Post> findAllByIdWithImages(@Param("ids") List<Long> ids);
 
+    @Query("SELECT COALESCE(MAX(p.id), 0) FROM Post p")
+    Long findMaxPostId();
+
+
+
 }

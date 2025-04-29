@@ -1,6 +1,8 @@
 
 package com.example.booktree.popularpost.service;
 
+
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.dto.response.PostResponseDto;
@@ -30,7 +32,7 @@ public class PopularPostService {
     private final StringRedisTemplate redisTemplate;
     private final PostService postService;
     private static final String REDIS_KEY = "popular:posts:";
-    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
+    private final String defaultImageUrl = DEFAULT_POST_IMAGE;
 
 
     // 메인 카테고리 별 게시글 조회 시 인기순위에 반영

@@ -85,6 +85,8 @@ public class TokenService {
        // setCookie("refreshToken", user.getRefreshToken());
         setCookie("accessToken", accessToken);
 
+        setCookieHttps("accessToken", accessToken,"api.booktri.site");
+
         return accessToken;
     }
 
@@ -100,6 +102,20 @@ public class TokenService {
 
         httpServletResponse.addHeader("Set-Cookie", cookie.toString());
     }
+
+    public void setCookieHttps(String name, String value,String domain) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .path("/")
+                .domain(domain) // 백엔드의 도메인 주소로 설정
+                .sameSite("Strict")
+                .secure(true)  // HTTPS 연결에서만 쿠키가 전송되도록 설정
+                .httpOnly(true) // JavaScript에서 쿠키 접근을 제한
+                .maxAge(Math.toIntExact(JwtTokenizer.ACCESS_TOKEN_EXPIRE_COUNT / 1000))
+                .build();
+
+        httpServletResponse.addHeader("Set-Cookie", cookie.toString());
+    }
+
 
 
     public void deleteCookie(String name) {

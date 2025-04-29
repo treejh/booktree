@@ -1,7 +1,7 @@
-package com.example.booktree.like_comment.controller;
+package com.example.booktree.likecomment.controller;
 
-import com.example.booktree.like_comment.dto.LikeCommentDto;
-import com.example.booktree.like_comment.service.LikeCommentService;
+import com.example.booktree.likecomment.dto.LikeCommentDto;
+import com.example.booktree.likecomment.service.LikeCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

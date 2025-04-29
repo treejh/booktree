@@ -27,6 +27,7 @@ export default function MyPage() {
     const [isAuthorized, setIsAuthorized] = useState(false)
     const { id: userId } = useParams<{ id: string }>() // URL에서 userId
     const [postCount, setPostCount] = useState()
+    const [blog, setBlog] = useState<{ name: string; profile: string; notice: string; blogId: number } | null>(null)
 
     useEffect(() => {
         const checkAuthorization = () => {
@@ -47,6 +48,29 @@ export default function MyPage() {
 
         checkAuthorization()
     }, [isLogin, loginUser, userId, router])
+
+    useEffect(() => {
+        const fetchBlogData = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (res.ok) {
+                    const data = await res.json()
+                    setBlog(data)
+                }
+            } catch (err) {
+                console.error('Error fetching blog data:', err)
+            }
+        }
+
+        fetchBlogData()
+    }, [])
     const [followCount, setFollowCount] = useState<Follow[]>([])
     const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null)
     const [editedCategoryName, setEditedCategoryName] = useState<string>('')
@@ -218,9 +242,6 @@ export default function MyPage() {
     }, [])
 
     const [isEditing, setIsEditing] = useState(false)
-    const [introduction, setIntroduction] = useState(
-        '안녕하세요! 제 블로그에 오신 것을 환영합니다. 여기서는 일상과 관심사를 공유하고 있습니다.',
-    )
     const [isFollowing, setIsFollowing] = useState(false)
     const [followerCount, setFollowerCount] = useState(128) // 상태 추가
 
@@ -260,7 +281,7 @@ export default function MyPage() {
                             <img
                                 src={
                                     loginUser.image ||
-                                    'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                    'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%89%E1%85%A1%E1%84%8B%E1%85%AD%E1%86%BC%E1%84%8C%E1%85%A1%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5.png'
                                 }
                                 alt="프로필"
                                 className="w-full h-full object-cover"
@@ -268,7 +289,9 @@ export default function MyPage() {
                         </div>
                         <div>
                             <div className="flex items-center">
-                                <h1 className="text-xl font-bold">{loginUser.username}의 블로그</h1>
+                                <h1 className="text-xl font-bold">
+                                    {blog?.name ? blog.name : `${loginUser.username}의 블로그`}
+                                </h1>
                                 <button
                                     onClick={async () => {
                                         try {

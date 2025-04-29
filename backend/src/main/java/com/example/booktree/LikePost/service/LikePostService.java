@@ -1,7 +1,7 @@
-package com.example.booktree.LikePost.service;
+package com.example.booktree.likepost.service;
 
-import com.example.booktree.LikePost.entity.LikePost;
-import com.example.booktree.LikePost.repository.LikePostRepository;
+import com.example.booktree.likepost.entity.LikePost;
+import com.example.booktree.likepost.repository.LikePostRepository;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.entity.Post;

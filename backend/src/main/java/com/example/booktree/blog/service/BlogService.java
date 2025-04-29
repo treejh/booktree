@@ -1,6 +1,7 @@
 package com.example.booktree.blog.service;
 
 import com.example.booktree.blog.dto.request.BlogRequestDto;
+import com.example.booktree.blog.dto.response.BlogResponseDto;
 import com.example.booktree.blog.entity.Blog;
 import com.example.booktree.blog.repository.BlogRepository;
 import com.example.booktree.exception.BusinessLogicException;
@@ -151,6 +152,14 @@ public class BlogService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
 
         return blog.getId();
+    }
+
+
+    public BlogResponseDto getBlogInfo(Long blogId) {
+        Blog blog = blogRepository.findById(blogId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.BLOG_NOT_FOUND));
+
+        return new BlogResponseDto(blog);
     }
 
 

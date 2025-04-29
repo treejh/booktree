@@ -84,4 +84,13 @@ public class BlogController {
                     .build();
         }
     }
+
+    @GetMapping("/get/info")
+    public ResponseEntity<BlogResponseDto> getBlogInfo(@RequestParam(name = "blogId") Long blogId) {
+        BlogResponseDto blogResponse = blogService.getBlogInfo(blogId);
+        return ResponseEntity.ok(blogResponse);
+    }
+
+
+
 }

@@ -1,8 +1,8 @@
-package com.example.booktree.like_comment.service;
+package com.example.booktree.likecomment.service;
 
-import com.example.booktree.like_comment.dto.LikeCommentDto;
-import com.example.booktree.like_comment.entity.LikeComment;
-import com.example.booktree.like_comment.repository.LikeCommentRepository;
+import com.example.booktree.likecomment.dto.LikeCommentDto;
+import com.example.booktree.likecomment.entity.LikeComment;
+import com.example.booktree.likecomment.repository.LikeCommentRepository;
 import com.example.booktree.comment.entity.Comment;
 import com.example.booktree.comment.repository.CommentRepository;
 import com.example.booktree.user.entity.User;
