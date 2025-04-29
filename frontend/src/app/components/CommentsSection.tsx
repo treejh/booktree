@@ -96,6 +96,15 @@ export function CommentsSection({ postId }: { postId: number }) {
                 }))
                 setRawComments(mapped)
                 // 팔로우 상태 세팅…
+                setComments(mapped)
+                console.log('어이어이 ', mapped)
+                const followStatus: { [key: number]: boolean } = {}
+                mapped.forEach((c) => {
+                    followStatus[c.userId] = c.isFollowing
+                })
+                setIsFollowing(followStatus)
+
+                setCommentError(null)
             } catch (e: any) {
                 setCommentError(e.message)
             } finally {
@@ -362,6 +371,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 ...prev,
                 [userId]: !prev[userId],
             }))
+            window.location.reload()
         } catch {
             alert('팔로우/언팔로우 처리에 실패했습니다.')
         }
@@ -666,7 +676,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                                                                 <div className="flex-1 min-w-0">
                                                                     <button
                                                                         onClick={() =>
-                                                                            router.push(`/blog/${reply.userId}`)
+                                                                            router.push(`/mypage/${reply.userId}`)
                                                                         }
                                                                         className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
                                                                     >
