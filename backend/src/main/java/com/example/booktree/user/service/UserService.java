@@ -3,6 +3,8 @@ package com.example.booktree.user.service;
 
 import static com.example.booktree.utils.ImageUtil.DEFAULT_USER_IMAGE;
 
+import com.example.booktree.email.entity.EmailMessage;
+import com.example.booktree.email.service.EmailService;
 import com.example.booktree.enums.RoleType;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
@@ -39,6 +41,8 @@ public class UserService {
     private final TokenService tokenService;
     private final ImageService imageService;
     private static final String USER_IMAGE= DEFAULT_USER_IMAGE;
+    private final EmailService emailService;
+
 
 
 
@@ -114,13 +118,24 @@ public class UserService {
     }
 
     //임시 비밀번호 발급 - 이메일로 비밀번호
-    public String findPasswordByEmail(String email){
+    public void findPasswordByEmail(String email){
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(email)
+                .subject("[BookTree] 임시 비밀번호 발급")
+                .build();
 
+//        String emailType = email.substring(email.indexOf("@") + 1, email.indexOf("."));
+//        if (!emailType.equals("gmail") && !emailType.equals("naver")) {
+//            throw new BusinessLogicException(ExceptionCode.EMAIL_TYPE_NOT_FOUND);
+//        }
+        //System.out.println("email 확인!!" + emailType);
         User user = findUserByEmail(email);
         String randomPassword = CreateRandomNumber.randomNumber();
         user.setPassword(passwordEncoder.encode(randomPassword));
         userRepository.save(user);
-        return randomPassword;
+
+        emailService.sendMail(emailMessage, "password",randomPassword);
+
     }
 
     //임시 비밀번호 발급 - 이메일, 핸드폰으로 비밀번호
