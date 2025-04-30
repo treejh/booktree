@@ -91,6 +91,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query("SELECT COALESCE(MAX(p.id), 0) FROM Post p")
     Long findMaxPostId();
 
+    @Modifying
+    @Query("UPDATE Post p SET p.view = 1 WHERE p.id = :postId")
+    void updateView(@Param("postId") Long postId);
+
 
 
 }

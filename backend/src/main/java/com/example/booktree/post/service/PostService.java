@@ -24,14 +24,17 @@ import com.example.booktree.user.entity.User;
 import com.example.booktree.jwt.service.TokenService;
 import com.example.booktree.user.service.UserService;
 //import jakarta.transaction.Transactional;
+import java.time.Duration;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+//import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 
@@ -68,6 +71,10 @@ public class PostService {
     private final BlogService blogService;
     private final FollowService followService;
     private final CommentRepository commentRepository;
+
+//    private final HttpSession session;
+//    private final RedisTemplate<String, Boolean> redisTemplate;
+
 
     private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
 
@@ -390,6 +397,26 @@ public class PostService {
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
 
         post.setView(post.getView() + 1); // 영속성 상태에서 직접 수정
+        // ✅ 조회수가 1보다 작거나 같을 때만 1로 강제 설정 (최초 조회 시)
+        // ✅ 조회수가 딱 2일 때만 1로 줄이기 (최초 생성 직후 리다이렉트 케이스)
+        // 조회수 보정 로직: createdAt과 modifiedAt이 거의 같으면 첫 조회라고 가정
+        // 첫 조회 시에는 조회수를 1로 설정
+        // 처음 조회 시에만 1로 강제로 초기화
+        // 세션에서 해당 게시글 ID가 조회된 적 있는지 확인
+
+//        Boolean isPostViewed = redisTemplate.opsForValue().get("postViewed_" + postId);
+//
+//        if (isPostViewed == null) {  // 처음 조회일 경우
+//            if (post.getView() == 2) {
+//                post.setView(1L);  // 2로 시작하면 1로 초기화
+//            }
+//            redisTemplate.opsForValue().set("postViewed_" + postId, true);  // 조회된 상태로 Redis에 기록
+//        } else {
+//            post.setView(post.getView() + 1);  // 이미 조회된 경우엔 조회수 1 증가
+//        }
+
+
+
 
         return post;
     }

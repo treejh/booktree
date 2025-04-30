@@ -3,7 +3,7 @@ package com.example.booktree.post.controller;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 //import com.example.booktree.popularpost.service.PopularPostService;
-import com.example.booktree.popularpost.service.PopularPostService;
+//import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 
 import com.example.booktree.post.dto.response.*;
@@ -39,7 +39,7 @@ public class PostController {
 
     private final PostService postService;
 
-    private final PopularPostService popularPostService;
+    //private final PopularPostService popularPostService;
     private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
 
 
@@ -131,7 +131,7 @@ public class PostController {
 
         // 조회수 업데이트
 
-        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+        // popularPostService.increasePopularity(postId, post.getMainCategory().getId());
 
         String mainCategory = post.getMainCategory() != null ? post.getMainCategory().getName() : "기본 카테고리";
         String category = post.getCategory() != null ? post.getCategory().getName() : "기본 서브 카테고리";
