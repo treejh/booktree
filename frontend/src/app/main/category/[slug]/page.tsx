@@ -100,7 +100,7 @@ const CategoryDetailPage = () => {
 
     // 페이지네이션 상태
     const [currentPage, setCurrentPage] = useState(1)
-    const booksPerPage = 8 // 한 페이지당 표시할 게시물 수
+    const booksPerPage = 5 // 한 페이지당 표시할 게시물 수
 
     // 카테고리에 따른 타이틀 설정
     const getCategoryTitle = () => {
