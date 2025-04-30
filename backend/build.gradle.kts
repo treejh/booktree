@@ -59,14 +59,13 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
     // Gson - JSON 메시지를 다루기 위한 라이브러리
-    implementation("com.google.code.gson:gson")
-
+    implementation("com.google.code.gson:gson")//
 
     //Oauth2
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
     // Redis 의존성
-    // implementation ("org.springframework.boot:spring-boot-starter-data-redis")
+     implementation ("org.springframework.boot:spring-boot-starter-data-redis")
 
     //무중단 배포 의존성 추가 ( get 요청 )
     implementation("org.springframework.boot:spring-boot-starter-actuator")
