@@ -4,6 +4,8 @@ package com.example.booktree.user.service;
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.comment.repository.CommentRepository;
+import com.example.booktree.email.entity.EmailMessage;
+import com.example.booktree.email.service.EmailService;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.repository.FollowRepository;
@@ -60,6 +62,7 @@ public class UserService {
 
 
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     private final TokenService tokenService;
     private final ImageService imageService;
     private static final String USER_IMAGE= DEFAULT_USER_IMAGE;
@@ -139,16 +142,19 @@ public class UserService {
 
     }
 
-    //임시 비밀번호 발급 - 이메일로 비밀번호
-    public String findPasswordByEmail(String email){
-
+    public void findPasswordByEmail(String email){
+        EmailMessage emailMessage = EmailMessage.builder()
+                .to(email)
+                .subject("[BookTree] 임시 비밀번호 발급")
+                .build();
         User user = findUserByEmail(email);
         String randomPassword = CreateRandomNumber.randomNumber();
         user.setPassword(passwordEncoder.encode(randomPassword));
         userRepository.save(user);
-        return randomPassword;
-    }
 
+        emailService.sendMail(emailMessage, "password",randomPassword);
+
+    }
     //임시 비밀번호 발급 - 이메일, 핸드폰으로 비밀번호
     public String findPasswordByEmailAndPhone(UserPasswordRequestDto.FindPwByEmailAndPhone findPwByEmailAndPhone){
 
