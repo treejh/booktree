@@ -501,6 +501,7 @@ public class PostService {
                 .viewCount(post.getView())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
+                .imageUrl(post.getImageList().isEmpty() ? null : post.getImageList().get(0).getImageUrl()) // 추가!
                 .build());
     }
 
@@ -550,6 +551,7 @@ public class PostService {
                 .viewCount(post.getView())
                 .createdAt(post.getCreatedAt())
                 .modifiedAt(post.getModifiedAt())
+                .imageUrl(post.getImageList().isEmpty() ? null : post.getImageList().get(0).getImageUrl()) // 추가
                 .build());
     }
 
