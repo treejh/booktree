@@ -231,7 +231,8 @@ public class SecurityConfigBookTree {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "https://www.booktri.site"
+                "https://www.booktri.site",
+                "https://api.booktri.site"
         ));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
