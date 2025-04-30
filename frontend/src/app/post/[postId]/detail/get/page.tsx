@@ -1314,7 +1314,7 @@ export default function DetailPage() {
                                         }}
                                     />
                                 </div> */}
-                                
+
                                 <div className="mb-8">
                                     <div className="flex items-center mb-4">
                                         <input

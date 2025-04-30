@@ -246,68 +246,77 @@ export default function PostWritePage() {
     // Add image input handler
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setSelectedImages((prev) => {
-                const newFiles = prev ? [...prev] : []
-                return [...newFiles, ...Array.from(e.target.files || [])]
-            })
+            setSelectedImages(e.target.files)
 
             Array.from(e.target.files).forEach((file) => {
-                const imageUrl = URL.createObjectURL(file)
-
                 if (editorRef.current) {
+                    // 이미지 요소 생성
+                    const imgElement = document.createElement('img')
+                    imgElement.className = 'max-w-full h-auto my-4 mx-auto'
+                    imgElement.setAttribute('data-filename', file.name)
+
+                    // 임시 URL 생성 및 설정
+                    const imageUrl = URL.createObjectURL(file)
+                    imgElement.src = imageUrl
+
+                    // p 태그로 감싸기
+                    const p = document.createElement('p')
+                    p.className = 'text-center'
+                    p.appendChild(imgElement)
+
+                    // 에디터에 삽입
                     const selection = window.getSelection()
                     const range = selection?.getRangeAt(0)
 
                     if (range) {
-                        // 이미지 요소 생성 및 삽입
-                        const imgElement = document.createElement('img')
-                        imgElement.src = imageUrl
-                        imgElement.className = 'max-w-full h-auto my-4'
-                        imgElement.setAttribute('data-filename', file.name)
-
-                        // 현재 커서 위치에 이미지 삽입
-                        range.insertNode(imgElement)
-
-                        // contentParts 업데이트
-                        const currentContent = editorRef.current.innerHTML
-                        updateContentParts(currentContent)
-
-                        // 커서를 이미지 다음으로 이동
-                        range.setStartAfter(imgElement)
-                        range.setEndAfter(imgElement)
+                        range.insertNode(p)
+                        range.setStartAfter(p)
+                        range.setEndAfter(p)
                         selection?.removeAllRanges()
                         selection?.addRange(range)
+                    }
+
+                    // content 업데이트
+                    if (editorRef.current) {
+                        setContent(editorRef.current.innerHTML)
                     }
                 }
             })
         }
     }
 
-    const updateContentParts = (content: string) => {
+    const generateContentParts = (html: string): ContentPart[] => {
         const tempDiv = document.createElement('div')
-        tempDiv.innerHTML = content
-
-        const parts: Array<{ type: string; data?: string; index?: number }> = []
+        tempDiv.innerHTML = html
+        const parts: ContentPart[] = []
         let imageIndex = 0
 
         const processNode = (node: Node) => {
-            if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+            if (node instanceof HTMLElement) {
+                if (node.tagName === 'P') {
+                    const img = node.querySelector('img')
+                    if (img) {
+                        parts.push({
+                            type: 'image',
+                            index: imageIndex++,
+                        })
+                    } else if (node.textContent?.trim()) {
+                        parts.push({
+                            type: 'text',
+                            data: node.textContent.trim(),
+                        })
+                    }
+                }
+            } else if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
                 parts.push({
                     type: 'text',
                     data: node.textContent.trim(),
                 })
-            } else if (node.nodeName === 'IMG') {
-                parts.push({
-                    type: 'image',
-                    index: imageIndex++,
-                })
-            } else if (node.hasChildNodes()) {
-                Array.from(node.childNodes).forEach(processNode)
             }
         }
 
         Array.from(tempDiv.childNodes).forEach(processNode)
-        setContentParts(parts)
+        return parts
     }
 
     // 이미지 삭제 핸들러 추가
@@ -363,181 +372,49 @@ export default function PostWritePage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // 메인카테고리와 카테고리 유효성 검사 추가
-
-        if (selectedCategoryId === 0) {
-            alert('카테고리를 선택해주세요.')
-            return
-        }
-
-        if (selectedMainCategoryId === 0) {
-            alert('메인 카테고리를 선택해주세요.')
-            return
-        }
-
-        // blogId 체크
         if (!blogInfo.blogId) {
-            console.error('블로그 정보가 없습니다:', blogInfo)
-            alert('블로그 정보를 불러오는데 실패했습니다.')
-
+            alert('블로그 정보를 찾을 수 없습니다.')
             return
-        }
-
-        // 필수값 체크
-        if (!title.trim()) {
-            alert('제목을 입력해주세요.')
-            return
-        }
-
-        // 필수 값 체크
-        /* if (!selectedMainCategoryId) {
-            alert('메인 카테고리를 선택해주세요.')
-            return
-        }   */
-
-        if (!selectedMainCategoryId || selectedMainCategoryId === 0) {
-            alert('메인 카테고리를 선택해주세요.')
-            return
-        }
-
-        const checkPostExists = async (postId: number): Promise<boolean> => {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`, {
-                    method: 'GET',
-                    credentials: 'include',
-                })
-                return response.ok
-            } catch (error) {
-                return false
-            }
-        }
-
-        const findExistingPost = async (startId: number): Promise<number> => {
-            let currentId = startId
-            while (!(await checkPostExists(currentId))) {
-                currentId++
-            }
-            return currentId
         }
 
         try {
-            // 1. 다음 게시글 ID 먼저 가져오기
-            const postIdResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/createdId`, {
-                method: 'GET',
-                credentials: 'include',
-            })
-
-            if (!postIdResponse.ok) {
-                throw new Error('게시글 ID를 가져오는데 실패했습니다.')
-            }
-
-            const createdPostId = await postIdResponse.json()
-            console.log('생성될 게시글 ID:', createdPostId)
-
             const formData = new FormData()
+
+            // 기본 정보 추가
+            formData.append('title', title)
+            formData.append('author', author)
+            formData.append('book', bookTitle)
             formData.append('blogId', blogInfo.blogId.toString())
-            formData.append('title', title.trim())
             formData.append('mainCategoryId', selectedMainCategoryId.toString())
 
-            // content 처리
+            if (selectedCategoryId) {
+                formData.append('categoryId', selectedCategoryId.toString())
+            }
+
+            // 이미지 파일 및 content 처리
             if (editorRef.current) {
-                const tempDiv = document.createElement('div')
-                tempDiv.innerHTML = editorRef.current.innerHTML
+                const contentHtml = editorRef.current.innerHTML
 
-                // blob URL 이미지 제거 및 정리
-                /* tempDiv.querySelectorAll('img').forEach((img) => {
-                    if (img.src.startsWith('blob:')) {
-                        // blob URL 이미지는 제거
-                        img.remove()
-                    }
-                }) */
+                // content가 비어있는지 확인
+                if (!contentHtml.trim()) {
+                    throw new Error('내용을 입력해주세요.')
+                }
 
-                const parts: Array<{ type: string; data?: string; index?: number }> = []
-                let imageIndex = 0
+                formData.append('content', contentHtml)
 
                 // 이미지 파일 추가
-                const imageFiles: File[] = []
                 if (selectedImages) {
                     Array.from(selectedImages).forEach((file) => {
-                        imageFiles.push(file)
                         formData.append('images', file)
                     })
                 }
 
                 // contentParts 생성
-                /* const parts: Array<{ type: string; data?: string; index?: number }> = []
-                let imageIndex = 0 */
-
-                // content와 contentParts 생성
-                const nodes = Array.from(tempDiv.childNodes)
-                for (const node of nodes) {
-                    if (node instanceof HTMLElement) {
-                        if (node.tagName === 'P') {
-                            const img = node.querySelector('img')
-                            if (img) {
-                                const fileName = img.getAttribute('data-filename')
-                                if (fileName) {
-                                    parts.push({
-                                        type: 'image',
-                                        index: imageIndex++,
-                                    })
-                                }
-                            } else if (node.textContent?.trim()) {
-                                parts.push({
-                                    type: 'text',
-                                    data: node.textContent.trim(),
-                                })
-                            }
-                        } else if (node.tagName === 'IMG') {
-                            const fileName = node.getAttribute('data-filename')
-                            if (fileName) {
-                                parts.push({
-                                    type: 'image',
-                                    index: imageIndex++,
-                                })
-                            }
-                        } else if (node.textContent?.trim()) {
-                            parts.push({
-                                type: 'text',
-                                data: node.textContent.trim(),
-                            })
-                        }
-                    } else if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
-                        parts.push({
-                            type: 'text',
-                            data: node.textContent.trim(),
-                        })
-                    }
-                }
-
-                // contentParts JSON 문자열로 변환하여 추가
+                const parts = generateContentParts(contentHtml)
                 formData.append('contentParts', JSON.stringify(parts))
-
-                // 실제 content를 생성할 때는 이미지 플레이스홀더 포함
-                const content = parts
-                    .map((part) => {
-                        if (part.type === 'text') {
-                            return `<p>${part.data}</p>`
-                        } else if (part.type === 'image') {
-                            return `<img src="IMAGE_PLACEHOLDER_${part.index}" />`
-                        }
-                        return ''
-                    })
-                    .join('\n')
-
-                formData.append('content', content)
             }
 
-            // 선택적 필드 추가
-            if (selectedCategoryId) formData.append('categoryId', selectedCategoryId.toString())
-            if (author) formData.append('author', author.trim())
-            if (bookTitle) formData.append('book', bookTitle.trim())
-
-            // FormData 내용 확인
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value instanceof File ? `File: ${value.name}` : value)
-            }
-
+            // API 호출
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/create`, {
                 method: 'POST',
                 credentials: 'include',
@@ -545,38 +422,15 @@ export default function PostWritePage() {
             })
 
             if (!response.ok) {
-                const errorData = await response.text()
-                throw new Error(errorData || '게시글 등록에 실패했습니다.')
+                const errorText = await response.text()
+                throw new Error(errorText || '게시글 작성에 실패했습니다.')
             }
 
-            // 응답 처리를 한 번만 시도
-            const responseText = await response.text()
-            console.log('서버 응답:', responseText)
-
-            // 응답이 JSON인지 확인
-            try {
-                const responseData = JSON.parse(responseText)
-                console.log('생성된 게시글:', responseData)
-                alert('게시글이 성공적으로 등록되었습니다.')
-
-                // 게시글 존재 여부 확인 후 리다이렉트
-                const finalPostId = await findExistingPost(createdPostId)
-                router.push(`/post/${finalPostId}/detail/get`)
-
-                /* if (responseData.id) {
-                    router.push(`/post/${finalPostId}/detail/get`)
-                } else {
-                    router.push(`/blog/post/${blogInfo.blogId}/list`)
-                } */
-            } catch (jsonError) {
-                // JSON 파싱 실패시 (일반 텍스트 응답)
-                alert('게시글이 성공적으로 등록되었습니다.')
-                const finalPostId = await findExistingPost(createdPostId)
-                router.push(`/post/${finalPostId}/detail/get`)
-            }
+            alert('게시글이 성공적으로 작성되었습니다.')
+            router.push('/post')
         } catch (error) {
-            console.error('Error:', error)
-            alert(error instanceof Error ? error.message : '게시글 등록에 실패했습니다.')
+            console.error('게시글 작성 실패:', error)
+            alert(error instanceof Error ? error.message : '게시글 작성에 실패했습니다.')
         }
     }
 
@@ -815,13 +669,13 @@ export default function PostWritePage() {
                         <div
                             ref={editorRef}
                             contentEditable
-                            suppressContentEditableWarning={true}
-                            className="w-full h-full min-h-[300px] p-4 outline-none prose max-w-none
-                                empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
-                            style={{ overflowY: 'auto' }}
-                            data-placeholder="내용을 입력하세요"
+                            suppressContentEditableWarning
+                            className="w-full min-h-[500px] p-6 border border-gray-300 rounded-lg prose max-w-none
+        focus:outline-none focus:ring-1 focus:ring-green-500
+        [&>p]:my-4 [&>p]:text-base [&>img]:max-w-full [&>img]:h-auto [&>img]:mx-auto
+        [&>p]:leading-relaxed [&>p]:text-gray-800"
                             onInput={handleEditorChange}
-                        ></div>
+                        />
                     </div>
                     {/* Submit Buttons */}
                     <div className="flex justify-end space-x-4 mt-6">
