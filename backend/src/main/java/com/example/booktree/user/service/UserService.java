@@ -124,17 +124,17 @@ public class UserService {
                 .subject("[BookTree] 임시 비밀번호 발급")
                 .build();
 
-        String emailType = email.substring(email.indexOf("@") + 1, email.indexOf("."));
-        if (!emailType.equals("gmail") && !emailType.equals("naver")) {
-            throw new BusinessLogicException(ExceptionCode.EMAIL_TYPE_NOT_FOUND);
-        }
-        System.out.println("email 확인!!" + emailType);
+//        String emailType = email.substring(email.indexOf("@") + 1, email.indexOf("."));
+//        if (!emailType.equals("gmail") && !emailType.equals("naver")) {
+//            throw new BusinessLogicException(ExceptionCode.EMAIL_TYPE_NOT_FOUND);
+//        }
+        //System.out.println("email 확인!!" + emailType);
         User user = findUserByEmail(email);
         String randomPassword = CreateRandomNumber.randomNumber();
         user.setPassword(passwordEncoder.encode(randomPassword));
         userRepository.save(user);
 
-        emailService.sendMail(emailMessage, "password",emailType,randomPassword);
+        emailService.sendMail(emailMessage, "password",randomPassword);
 
     }
 

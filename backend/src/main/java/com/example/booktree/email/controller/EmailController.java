@@ -27,7 +27,7 @@ public class EmailController {
                 .subject("[BookTree] 임시 비밀번호 발급")
                 .build();
 
-        emailService.sendMail(emailMessage, "password","naver","hihi");
+        emailService.sendMail(emailMessage, "password","hihi");
 
         return ResponseEntity.ok().build();
     }
