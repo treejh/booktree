@@ -44,6 +44,10 @@ public interface LikePostRepository extends JpaRepository<LikePost, Long> {
 
 
 
+    // 좋아요 상태 게시글 삭제
+    @Modifying
+    @Query("DELETE FROM LikePost lp WHERE lp.post.id = :postId")
+    void deleteByPostId(@Param("postId") Long postId);
 
 
 }
