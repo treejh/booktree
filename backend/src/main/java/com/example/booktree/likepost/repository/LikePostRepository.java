@@ -6,6 +6,7 @@ import com.example.booktree.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -31,7 +32,10 @@ public interface LikePostRepository extends JpaRepository<LikePost, Long> {
     @Query("SELECT lp.post FROM LikePost lp WHERE lp.user.id = :userId")
     Page<Post> findLikedPostsByUser(@Param("userId") Long userId, Pageable pageable);
 
-
+    // 좋아요 상태 게시글 삭제
+    @Modifying
+    @Query("DELETE FROM LikePost lp WHERE lp.post.id = :postId")
+    void deleteByPostId(@Param("postId") Long postId);
 
 
 }

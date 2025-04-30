@@ -292,6 +292,9 @@ public class PostService {
         // 댓글 삭제 (댓글이 Post를 참조하므로 댓글을 먼저 삭제)
         commentRepository.deleteByPostId(postId);  // 댓글 테이블에서 해당 게시글 ID를 참조하는 댓글들 삭제
 
+        // 좋아요게시글 삭제
+        likePostRepository.deleteByPostId(postId);
+
         imageRepository.deleteAll(post.getImageList());
 
         Long mainCategoryId = post.getMainCategory().getId();
