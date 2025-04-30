@@ -84,9 +84,12 @@ export default function DetailPage() {
     const router = useRouter()
     const { postId } = useParams()
     const { isLoginUserPending, isLogin, loginUser } = useGlobalLoginUser()
+    // const [isEditorInitialized, setIsEditorInitialized] = useState(false)
 
     // 2. Ref Hooks
     const editorRef = useRef<HTMLDivElement>(null)
+    const [isInitialized, setIsInitialized] = useState(false)
+    const [isEditorInitialized, setIsEditorInitialized] = useState(false)
 
     // 3. State Hooks
     const [isAuthor, setIsAuthor] = useState(false)
@@ -123,6 +126,8 @@ export default function DetailPage() {
     const [isUnderline, setIsUnderline] = useState(false)
     const [contentParts, setContentParts] = useState<ContentPart[]>([])
     const [currentContent, setCurrentContent] = useState('')
+    // 이미지 URL을 추적하기 위한 state 추가
+    const [imageUrls, setImageUrls] = useState<Set<string>>(new Set())
 
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
 
@@ -440,6 +445,28 @@ export default function DetailPage() {
         }
     }, [])
 
+    /* useEffect(() => {
+        if (!isInitialized && editorRef.current) {
+            editorRef.current.innerHTML = editedPost.content || ''
+            setIsInitialized(true)
+        }
+    }, [isInitialized, editedPost.content])
+
+    useEffect(() => {
+        if (!isEditorInitialized && editorRef.current) {
+            // 초기에만 한 번 초기화
+            editorRef.current.innerHTML = editedPost.content || ''
+            setIsEditorInitialized(true)
+        }
+    }, [editedPost.content, isEditorInitialized]) */
+
+    useEffect(() => {
+        if (editorRef.current && editedPost.content && !isEditorInitialized) {
+            editorRef.current.innerHTML = editedPost.content
+            setIsEditorInitialized(true)
+        }
+    }, [editedPost.content, isEditorInitialized])
+
     // 게시물 좋아요 토글 함수
     const togglePostLike = async () => {
         if (!isLogin) {
@@ -596,7 +623,7 @@ export default function DetailPage() {
     // const toggleList = () => setIsListVisible(!isListVisible)
     // const handlePageChange = (n: number) => setCurrentPage(n)
     // handleImageChange 함수 수정
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    /* const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setSelectedImages(e.target.files)
 
@@ -641,7 +668,74 @@ export default function DetailPage() {
                 }
             })
         }
+    } */
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            // 이미지 파일 처리
+            const newImages = Array.from(e.target.files)
+
+            // 새로운 이미지와 기존 이미지 병합
+            setSelectedImages((prevImages) => {
+                const prevFiles = prevImages ? Array.from(prevImages) : []
+                const dataTransfer = new DataTransfer()
+
+                // 새로운 이미지만 추가
+                newImages.forEach((file) => {
+                    const imageUrl = URL.createObjectURL(file)
+                    // 이미 존재하는 URL이 아닌 경우에만 추가
+                    if (!imageUrls.has(imageUrl)) {
+                        dataTransfer.items.add(file)
+                        setImageUrls((prev) => new Set([...prev, imageUrl]))
+                    }
+                })
+
+                // 기존 이미지 유지
+                prevFiles.forEach((file) => {
+                    dataTransfer.items.add(file)
+                })
+
+                return dataTransfer.files
+            })
+
+            // 에디터에 이미지 삽입
+            newImages.forEach((file) => {
+                const imageUrl = URL.createObjectURL(file)
+                if (!imageUrls.has(imageUrl)) {
+                    if (editorRef.current) {
+                        const selection = window.getSelection()
+                        const range = selection?.getRangeAt(0) || editorRef.current.ownerDocument.createRange()
+
+                        const p = document.createElement('p')
+                        p.className = 'text-center my-4'
+
+                        const img = document.createElement('img')
+                        img.src = imageUrl
+                        img.className = 'max-w-full h-auto mx-auto'
+                        img.setAttribute('data-filename', file.name)
+
+                        p.appendChild(img)
+                        range.insertNode(p)
+
+                        const br = document.createElement('br')
+                        p.after(br)
+
+                        range.setStartAfter(br)
+                        range.setEndAfter(br)
+                        selection?.removeAllRanges()
+                        selection?.addRange(range)
+
+                        setEditedPost((prev) => ({
+                            ...prev,
+                            content: editorRef.current?.innerHTML || prev.content,
+                        }))
+                    }
+                }
+            })
+        }
     }
+
+    // handlePostEdit 함수에서 이미지 처리 부분 수정
 
     // handlePostEdit 함수 수정
     const handlePostEdit = async () => {
@@ -673,6 +767,27 @@ export default function DetailPage() {
                 const tempDiv = document.createElement('div')
                 tempDiv.innerHTML = editorRef.current.innerHTML
 
+                // 기존 이미지 URL 보존
+                const currentImageUrls = Array.from(tempDiv.querySelectorAll('img'))
+                    .map((img) => img.src)
+                    .filter((src) => src.startsWith('http'))
+                // formData.append('existingImageUrls', JSON.stringify(existingUrls))
+                // 새로운 이미지만 FormData에 추가
+                if (selectedImages) {
+                    Array.from(selectedImages).forEach((file) => {
+                        const fileUrl = URL.createObjectURL(file)
+                        // 기존 이미지 URL에 없는 경우에만 추가
+                        if (!currentImageUrls.some((url) => url === fileUrl)) {
+                            formData.append('images', file)
+                        }
+
+                        /* if (!currentImageUrls.includes(fileUrl)) {
+                            // if (!existingUrls.some((url) => url.includes(file.name))) {
+                            formData.append('images', file)
+                        } */
+                    })
+                }
+
                 const parts: Array<{ type: string; data?: string; index?: number }> = []
                 let imageIndex = 0
 
@@ -684,7 +799,7 @@ export default function DetailPage() {
                 }
 
                 // content와 contentParts 생성
-                Array.from(tempDiv.childNodes).forEach((node) => {
+                /* Array.from(tempDiv.childNodes).forEach((node) => {
                     if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
                         parts.push({
                             type: 'text',
@@ -711,11 +826,40 @@ export default function DetailPage() {
                             })
                         }
                     }
-                })
+                }) */
+
+                // contentParts 생성
+                /* const parts: Array<{ type: string; data?: string; index?: number }> = []
+                let imageIndex = 0 */
+
+                const processNode = (node: Node) => {
+                    if (node instanceof HTMLElement) {
+                        if (node.tagName === 'IMG') {
+                            parts.push({
+                                type: 'image',
+                                index: imageIndex++,
+                            })
+                        } else if (node.textContent?.trim()) {
+                            parts.push({
+                                type: 'text',
+                                data: node.textContent.trim(),
+                            })
+                        }
+                        node.childNodes.forEach(processNode)
+                    } else if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                        parts.push({
+                            type: 'text',
+                            data: node.textContent.trim(),
+                        })
+                    }
+                }
+                Array.from(tempDiv.childNodes).forEach(processNode)
 
                 // contentParts와 content 추가
-                formData.append('contentParts', JSON.stringify(parts))
+
                 formData.append('content', editorRef.current.innerHTML)
+                formData.append('existingImageUrls', JSON.stringify(currentImageUrls))
+                formData.append('contentParts', JSON.stringify(parts))
             }
 
             // 선택적 필드 추가
@@ -727,6 +871,11 @@ export default function DetailPage() {
             }
             if (editedPost.book) {
                 formData.append('book', editedPost.book)
+            }
+
+            // 기존 이미지 URLs 추가
+            if (post.imageUrls && post.imageUrls.length > 0) {
+                formData.append('existingImageUrls', JSON.stringify(post.imageUrls))
             }
 
             // FormData 내용 확인
@@ -1192,7 +1341,7 @@ export default function DetailPage() {
                                 </div>
                                 {/* Image Upload */}
                                 <div className="mb-8">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
                                     <input
                                         type="file"
                                         multiple
@@ -1205,7 +1354,7 @@ export default function DetailPage() {
                                             file:bg-green-50 file:text-green-700
                                             hover:file:bg-green-100
                                             cursor-pointer"
-                                    />
+                                    /> */}
                                 </div>
                                 {/* Text Formatting Toolbar */}
                                 <div className="border border-gray-200 rounded-t-lg p-2 bg-gray-50 flex space-x-2">
@@ -1377,7 +1526,7 @@ export default function DetailPage() {
                                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                                                 />
                                             </svg>
-                                            이미지 첨부
+                                            이미지 첨부DDD
                                         </label>
                                     </div>
                                     <div
