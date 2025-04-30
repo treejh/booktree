@@ -25,27 +25,12 @@ public class EmailService {
     @Qualifier("gmailMailSender") // Gmail로 보내고 싶을 때
     private JavaMailSender gmailSender;
 
-    @Autowired
-    @Qualifier("naverMailSender") // 네이버로 보내고 싶을 때
-    private JavaMailSender naverSender;
-
     private final SpringTemplateEngine templateEngine;
 
 
     public String sendMail(EmailMessage emailMessage, String type,String pw) {
         JavaMailSender mailSender;
         mailSender = gmailSender;
-//        if ("gmail".equalsIgnoreCase(mailType)) {
-//            mailSender = gmailSender;
-//        } else if ("naver".equalsIgnoreCase(mailType)) {
-//            mailSender = naverSender;
-//        } else {
-//            log.error("지원하지 않는 메일 타입: {}", mailType);
-//            throw new IllegalArgumentException("지원하지 않는 메일 타입입니다: " + mailType);
-//        }
-//        if (mailSender == null) {
-//            throw new IllegalArgumentException("지원하지 않는 메일 타입: " + type);
-//        }
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
 

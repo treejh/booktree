@@ -16,13 +16,6 @@ public class MailConfig {
 
     @Value("${custom-mail.gmail.password}")
     private String gmailPassword;
-
-    @Value("${custom-mail.naiver.username}")
-    private String naverUsername;
-
-    @Value("${custom-mail.naiver.password}")
-    private String naverPassword;
-
     @Bean
     public JavaMailSender gmailMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
@@ -40,20 +33,4 @@ public class MailConfig {
         return mailSender;
     }
 
-    @Bean
-    public JavaMailSender naverMailSender() {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.naver.com");
-        mailSender.setPort(465);
-        mailSender.setUsername(naverUsername);
-        mailSender.setPassword(naverPassword);
-
-
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.smtp.auth", true);
-        props.put("mail.smtp.ssl.enable", true);
-        props.put("mail.smtp.ssl.trust", "smtp.naver.com");
-
-        return mailSender;
-    }
 }
