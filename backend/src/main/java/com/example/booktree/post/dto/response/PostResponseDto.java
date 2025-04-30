@@ -20,4 +20,9 @@ public class PostResponseDto {
     private String imageUrl;
     private double score;
 
+    private String content; // 추가
+    private String username; // 추가 (user.getNickname() 또는 user.getName())
+    private Long categoryId; // 추가
+    private String category; // 추가 (category.getName())
+
 }
