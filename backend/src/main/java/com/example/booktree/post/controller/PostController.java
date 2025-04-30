@@ -126,7 +126,7 @@ public class PostController {
 
         // 조회수 업데이트
 
-        // popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
 
         String mainCategory = post.getMainCategory() != null ? post.getMainCategory().getName() : "기본 카테고리";
         String category = post.getCategory() != null ? post.getCategory().getName() : "기본 서브 카테고리";
@@ -134,8 +134,6 @@ public class PostController {
 //        List<String> imageUrls = post.getImageList() != null ? post.getImageList().stream()
 //                .map(image -> image.getImageUrl())
 //                .toList() : Collections.emptyList();
-
-
 
 
         PostDetailResponseDto response = PostDetailResponseDto.builder()
