@@ -1,11 +1,51 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, MouseEvent } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import React from 'react'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 import { CommentsSection } from '@/app/components/CommentsSection'
 import Link from 'next/link'
+
+function saveCaretPosition(editableDiv: HTMLDivElement): number | null {
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0) return null
+
+    const range = sel.getRangeAt(0).cloneRange()
+    const pre = range.cloneRange()
+    pre.selectNodeContents(editableDiv)
+    pre.setEnd(range.endContainer, range.endOffset)
+    return pre.toString().length
+}
+
+function restoreCaretPosition(editableDiv: HTMLDivElement, chars: number) {
+    const range = document.createRange()
+    range.selectNodeContents(editableDiv)
+    range.collapse(true)
+
+    let nodeStack: Node[] = [editableDiv],
+        node: Node | undefined,
+        charCount = 0
+    while ((node = nodeStack.pop())) {
+        if (node.nodeType === 3) {
+            const next = charCount + (node.textContent?.length || 0)
+            if (chars <= next) {
+                range.setStart(node, chars - charCount)
+                range.collapse(true)
+                break
+            }
+            charCount = next
+        } else {
+            for (let i = node.childNodes.length - 1; i >= 0; i--) {
+                nodeStack.push(node.childNodes[i])
+            }
+        }
+    }
+
+    const sel = window.getSelection()
+    sel?.removeAllRanges()
+    sel?.addRange(range)
+}
 
 // 1. 카테고리 관련 인터페이스 추가
 interface Category {
@@ -68,13 +108,30 @@ interface PostList {
     replies?: number
 }
 
+interface ContentPart {
+    type: 'text' | 'image'
+    data?: string // type=text일 때 텍스트
+    index?: number
+}
+
+interface ImagePreview {
+    file: File
+    url: string
+}
+
 export default function DetailPage() {
-    // 1. Router와 전역 상태 관련 Hooks
+    const caretOffset = useRef<number | null>(null)
+
+    // 1. Router와 Context Hooks
     const router = useRouter()
     const { postId } = useParams()
     const { isLoginUserPending, isLogin, loginUser } = useGlobalLoginUser()
+    // const [isEditorInitialized, setIsEditorInitialized] = useState(false)
 
-    // 2. 모든 useState Hooks를 여기에 모아서 선언
+    // 2. Ref Hooks
+    const editorRef = useRef<HTMLDivElement>(null)
+
+    // 3. State Hooks
     const [isAuthor, setIsAuthor] = useState(false)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -100,6 +157,40 @@ export default function DetailPage() {
     const [userId, setUserId] = useState<number>()
     const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
     const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
+
+    const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([])
+    const [blogInfo, setBlogInfo] = useState<{ blogId: number | null }>({ blogId: null })
+    const [selectedImages, setSelectedImages] = useState<FileList | null>(null)
+    const [isBold, setIsBold] = useState(false)
+    const [isItalic, setIsItalic] = useState(false)
+    const [isUnderline, setIsUnderline] = useState(false)
+    const [contentParts, setContentParts] = useState<ContentPart[]>([])
+
+    // 이미지 URL을 추적하기 위한 state 추가
+    const [imageUrls, setImageUrls] = useState<Set<string>>(new Set())
+
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (isPostEditing && editorRef.current) {
+            const el = editorRef.current
+            el.innerHTML = editedPost.content
+
+            // 1) 포커스
+            el.focus()
+
+            // 2) 커서 끝으로 이동
+            const range = document.createRange()
+            range.selectNodeContents(el)
+            range.collapse(false)
+            const sel = window.getSelection()
+            sel?.removeAllRanges()
+            sel?.addRange(range)
+
+            // caretOffset 초기화
+            caretOffset.current = null
+        }
+    }, [isPostEditing])
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -130,6 +221,36 @@ export default function DetailPage() {
         }
         fetchUserId()
     }, [postId])
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            if (!post?.causerId) return // post.causerId가 없으면 요청하지 않음
+
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/get/profile/${post.causerId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('프로필 정보를 가져오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                setProfileImageUrl(data.imageUrl) // imageUrl을 상태로 저장
+            } catch (error) {
+                console.error('프로필 이미지 로드 실패:', error)
+                setProfileImageUrl(null) // 실패 시 기본값 설정
+            }
+        }
+
+        fetchUserProfile()
+    }, [post?.causerId])
 
     useEffect(() => {
         const fetchIsFollowing = async () => {
@@ -171,7 +292,6 @@ export default function DetailPage() {
         fetchIsFollowing()
     }, [userId])
 
-    // 3. 모든 useEffect Hooks를 여기에 모아서 선언
     useEffect(() => {
         const fetchPost = async () => {
             try {
@@ -369,6 +489,31 @@ export default function DetailPage() {
         fetchLikeStatus()
     }, [postId])
 
+    useEffect(() => {
+        const handleOutside = (e: MouseEvent) => {
+            if ((showPopover || activePopoverAuthor) && !(e.target as HTMLElement).closest('.relative')) {
+                setShowPopover(false)
+                setActivePopoverAuthor(null)
+            }
+        }
+        document.addEventListener('mousedown', handleOutside)
+        return () => document.removeEventListener('mousedown', handleOutside)
+    }, [showPopover, activePopoverAuthor])
+
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
+        }
+    }, [])
+
+    // 2) content가 업데이트된 직후 caret 복원
+    useEffect(() => {
+        const el = editorRef.current
+        if (el && caretOffset.current !== null) {
+            restoreCaretPosition(el, caretOffset.current)
+        }
+    }, [editedPost.content])
+
     // 게시물 좋아요 토글 함수
     const togglePostLike = async () => {
         if (!isLogin) {
@@ -411,6 +556,7 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('팔로우 요청 실패')
             console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -429,6 +575,8 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('언팔로우 요청 실패')
             console.log(`언팔로우 완료: ${followeeId}`)
+
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -470,17 +618,6 @@ export default function DetailPage() {
 
     const handleProfileClick = (username: string) => router.push('/mypage')
 
-    useEffect(() => {
-        const handleOutside = (e: MouseEvent) => {
-            if ((showPopover || activePopoverAuthor) && !(e.target as HTMLElement).closest('.relative')) {
-                setShowPopover(false)
-                setActivePopoverAuthor(null)
-            }
-        }
-        document.addEventListener('mousedown', handleOutside)
-        return () => document.removeEventListener('mousedown', handleOutside)
-    }, [showPopover, activePopoverAuthor])
-
     // 게시글을 불러오는 함수
 
     // postId가 변경될 때마다 useEffect 실행
@@ -506,6 +643,22 @@ export default function DetailPage() {
 
     // 상태 추가
 
+    const applyFormat = (e: MouseEvent<HTMLButtonElement>, format: string) => {
+        e.preventDefault()
+        if (!editorRef.current) return
+
+        editorRef.current.focus()
+        document.execCommand(format, false)
+
+        // 여기에 caret 위치 저장
+        caretOffset.current = saveCaretPosition(editorRef.current)
+
+        // (기존) 버튼 활성화 토글
+        if (format === 'bold') setIsBold(!isBold)
+        if (format === 'italic') setIsItalic(!isItalic)
+        if (format === 'underline') setIsUnderline(!isUnderline)
+    }
+
     const postsPerPage = 5 // 페이지당 게시글 수
 
     // 페이지 변경 핸들러 추가
@@ -517,85 +670,199 @@ export default function DetailPage() {
 
     // const toggleList = () => setIsListVisible(!isListVisible)
     // const handlePageChange = (n: number) => setCurrentPage(n)
+    // handleImageChange 함수 수정
+    /* const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setSelectedImages(e.target.files)
+
+            Array.from(e.target.files).forEach((file) => {
+                const imageUrl = URL.createObjectURL(file)
+
+                if (editorRef.current) {
+                    const selection = window.getSelection()
+                    const range = selection?.getRangeAt(0)
+
+                    if (range) {
+                        // 이미지 요소 생성
+                        const imgElement = document.createElement('img')
+                        imgElement.src = imageUrl
+                        imgElement.className = 'max-w-full h-auto my-4'
+                        imgElement.setAttribute('data-filename', file.name)
+
+                        // 이미지를 p 태그로 감싸기
+                        const p = document.createElement('p')
+                        p.appendChild(imgElement)
+                        p.className = 'text-center' // 이미지 중앙 정렬
+                        range.insertNode(p)
+
+                        // 커서를 이미지 다음으로 이동
+                        range.setStartAfter(p)
+                        range.setEndAfter(p)
+
+                        // 줄바꿈 추가
+                        const br = document.createElement('br')
+                        range.insertNode(br)
+
+                        // 선택 영역 업데이트
+                        selection?.removeAllRanges()
+                        selection?.addRange(range)
+
+                        // content 업데이트
+                        setEditedPost((prev) => ({
+                            ...prev,
+                            content: editorRef.current?.innerHTML || prev.content,
+                        }))
+                    }
+                }
+            })
+        }
+    } */
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            // 이미지 파일 처리
+            const newImages = Array.from(e.target.files)
+
+            // 새로운 이미지와 기존 이미지 병합
+            setSelectedImages((prevImages) => {
+                const prevFiles = prevImages ? Array.from(prevImages) : []
+                const dataTransfer = new DataTransfer()
+
+                // 새로운 이미지만 추가
+                newImages.forEach((file) => {
+                    const imageUrl = URL.createObjectURL(file)
+                    // 이미 존재하는 URL이 아닌 경우에만 추가
+                    if (!imageUrls.has(imageUrl)) {
+                        dataTransfer.items.add(file)
+                        setImageUrls((prev) => new Set([...prev, imageUrl]))
+                    }
+                })
+
+                // 기존 이미지 유지
+                prevFiles.forEach((file) => {
+                    dataTransfer.items.add(file)
+                })
+
+                return dataTransfer.files
+            })
+
+            // 에디터에 이미지 삽입
+            newImages.forEach((file) => {
+                const imageUrl = URL.createObjectURL(file)
+                if (!imageUrls.has(imageUrl)) {
+                    if (editorRef.current) {
+                        const selection = window.getSelection()
+                        const range = selection?.getRangeAt(0) || editorRef.current.ownerDocument.createRange()
+
+                        const p = document.createElement('p')
+                        p.className = 'text-center my-4'
+
+                        const img = document.createElement('img')
+                        img.src = imageUrl
+                        img.className = 'max-w-full h-auto mx-auto'
+                        img.setAttribute('data-filename', file.name)
+
+                        p.appendChild(img)
+                        range.insertNode(p)
+
+                        const br = document.createElement('br')
+                        p.after(br)
+
+                        range.setStartAfter(br)
+                        range.setEndAfter(br)
+                        selection?.removeAllRanges()
+                        selection?.addRange(range)
+
+                        setEditedPost((prev) => ({
+                            ...prev,
+                            content: editorRef.current?.innerHTML || prev.content,
+                        }))
+                    }
+                }
+            })
+        }
+    }
+
+    // handlePostEdit 함수에서 이미지 처리 부분 수정
 
     // handlePostEdit 함수 수정
     const handlePostEdit = async () => {
         if (!post || !loginUser) return
 
         try {
-            const blogResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
+            // 1) blogId 조회
+            const blogRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 credentials: 'include',
             })
+            if (!blogRes.ok) throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            const { blogId } = await blogRes.json()
 
-            if (!blogResponse.ok) {
-                throw new Error('블로그 정보를 가져오는데 실패했습니다.')
+            // 2) FormData 생성
+            const formData = new FormData()
+            formData.append('blogId', String(blogId))
+            formData.append('title', editedPost.title)
+            formData.append('mainCategoryId', String(editedPost.mainCategoryId))
+            formData.append('categoryId', String(editedPost.categoryId))
+
+            // 3) content + contentParts 처리
+            if (editorRef.current) {
+                const html = editorRef.current.innerHTML
+                formData.append('content', html)
+
+                // contentParts 계산
+                const temp = document.createElement('div')
+                temp.innerHTML = html
+                const parts: Array<{ type: string; data?: string; index?: number }> = []
+                let imgIdx = 0
+                const walk = (node: Node) => {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                        parts.push({ type: 'text', data: node.textContent.trim() })
+                    } else if (node.nodeName === 'IMG') {
+                        parts.push({ type: 'image', index: imgIdx++ })
+                    } else if (node.hasChildNodes()) {
+                        node.childNodes.forEach(walk)
+                    }
+                }
+                Array.from(temp.childNodes).forEach(walk)
+                formData.append('contentParts', JSON.stringify(parts))
             }
 
-            const blogData = await blogResponse.json()
+            // 4) 이미지 파일들 append
+            if (selectedImages) {
+                Array.from(selectedImages).forEach((file) => {
+                    formData.append('images', file)
+                })
+            }
 
-            // FormData 생성
-            const formData = new FormData()
+            // 5) 기존 이미지 URL
+            if (post.imageUrls.length > 0) {
+                formData.append('existingImageUrls', JSON.stringify(post.imageUrls))
+            }
 
-            // 필수 필드들
-            formData.append('blogId', blogData.blogId.toString())
-            formData.append('title', editedPost.title)
-            formData.append('content', editedPost.content)
+            // 6) 선택 필드
+            formData.append('author', editedPost.author || '')
+            formData.append('book', editedPost.book || '')
 
-            // 카테고리 ID 처리 수정
-            const mainCategoryId = parseInt(editedPost.mainCategoryId.toString())
-            const categoryId = parseInt(editedPost.categoryId.toString())
-
-            // 카테고리 ID들 추가 - 명시적으로 숫자로 변환 후 문자열로 변환
-            formData.append('mainCategoryId', Number(editedPost.mainCategoryId).toString())
-            formData.append('categoryId', Number(editedPost.categoryId).toString())
-
-            console.log('전송되는 카테고리 정보:', {
-                mainCategoryId: editedPost.mainCategoryId,
-                categoryId: editedPost.categoryId,
-            })
-
-            // 기타 필드들
-            if (editedPost.author) formData.append('author', editedPost.author)
-            if (editedPost.book) formData.append('book', editedPost.book)
-
-            // 이미지 파일 추가
-            editedPost.images.forEach((file) => {
-                formData.append('images', file)
-            })
-
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/patch/${post.postId}`, {
+            // 7) PATCH 요청
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/patch/${post.postId}`, {
                 method: 'PATCH',
                 credentials: 'include',
                 body: formData,
             })
 
-            if (!response.ok) {
-                const errorData = await response.text()
-                console.error('서버 응답:', errorData)
-                throw new Error('게시글 수정에 실패했습니다.')
+            if (!res.ok) {
+                const text = await res.text()
+                console.error(`[PATCH ${post.postId}]`, res.status, text)
+                throw new Error(text || '게시글 수정에 실패했습니다.')
             }
 
-            alert('게시글이 성공적으로 수정되었습니다.')
+            alert('게시글이 성공적으로 수정되었습니다!')
             setIsPostEditing(false)
             window.location.reload()
-        } catch (error) {
-            console.error('게시글 수정 실패:', error)
-            alert('게시글 수정에 실패했습니다.')
-        }
-    }
-
-    // 이미지 파일 선택 핸들러 추가
-    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files
-        if (files) {
-            setEditedPost((prev) => ({
-                ...prev,
-                images: [...Array.from(files)],
-            }))
+        } catch (err: any) {
+            console.error('게시글 수정 실패:', err)
+            alert(`게시글 수정에 실패했습니다.\n${err.message}`)
         }
     }
 
@@ -628,6 +895,52 @@ export default function DetailPage() {
             images: [],
         })
     }
+
+    // Add image input handler
+
+    // handleImageChange 함수 수정
+    // handleImageChange 함수 수정
+
+    // Content Area 부분 수정
+
+    const updateContentParts = (content: string) => {
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = content
+
+        const parts: Array<{ type: string; data?: string; index?: number }> = []
+        let imageIndex = 0
+
+        const processNode = (node: Node) => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                parts.push({
+                    type: 'text',
+                    data: node.textContent.trim(),
+                })
+            } else if (node.nodeName === 'IMG') {
+                parts.push({
+                    type: 'image',
+                    index: imageIndex++,
+                })
+            } else if (node.hasChildNodes()) {
+                Array.from(node.childNodes).forEach(processNode)
+            }
+        }
+
+        Array.from(tempDiv.childNodes).forEach(processNode)
+        setContentParts(parts)
+    }
+
+    // 이미지 삭제 핸들러 추가
+    const handleRemoveImage = (index: number) => {
+        setImagePreviews((prev) => {
+            const newPreviews = [...prev]
+            URL.revokeObjectURL(newPreviews[index].url)
+            newPreviews.splice(index, 1)
+            return newPreviews
+        })
+    }
+
+    // 컴포넌트 언마운트 시 URL 정리
 
     // handlePostDelete 함수 추가
     const handlePostDelete = async () => {
@@ -696,6 +1009,16 @@ export default function DetailPage() {
         }
     }
 
+    // 타이핑 발생 시: caret 저장 + 상태에 innerHTML 반영
+    const handleEditorChange = () => {
+        const el = editorRef.current!
+        caretOffset.current = saveCaretPosition(el)
+        setEditedPost((prev) => ({
+            ...prev,
+            content: el.innerHTML,
+        }))
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl bg-gray-50">
             <div className="flex gap-8">
@@ -720,7 +1043,6 @@ export default function DetailPage() {
                                         className="w-full py-3 text-4xl font-light border-0 border-b border-gray-200 focus:outline-none focus:border-gray-300 focus:ring-0 placeholder-gray-400"
                                     />
                                 </div>
-
                                 {/* Author & Book Info */}
                                 <div className="space-y-6 mb-8">
                                     <div>
@@ -754,10 +1076,9 @@ export default function DetailPage() {
                                         />
                                     </div>
                                 </div>
-
                                 {/* Image Upload */}
                                 <div className="mb-8">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
+                                    {/* <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
                                     <input
                                         type="file"
                                         multiple
@@ -770,116 +1091,77 @@ export default function DetailPage() {
                                             file:bg-green-50 file:text-green-700
                                             hover:file:bg-green-100
                                             cursor-pointer"
-                                    />
+                                    /> */}
                                 </div>
-
                                 {/* Text Formatting Toolbar */}
                                 <div className="border border-gray-200 rounded-t-lg p-2 bg-gray-50 flex space-x-2">
-                                    <button className="p-2 hover:bg-gray-200 rounded" title="굵게">
-                                        <svg
-                                            className="w-4 h-4"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path
-                                                d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6V4z"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                            <path
-                                                d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6V12z"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
+                                    <button
+                                        onClick={(e) => applyFormat(e, 'bold')}
+                                        className={`p-2 rounded ${isBold ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
+                                        title="굵게"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            {/* ... SVG path ... */}
                                         </svg>
                                     </button>
-                                    <button className="p-2 hover:bg-gray-200 rounded" title="기울임">
-                                        <svg
-                                            className="w-4 h-4"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path
-                                                d="M19 4h-9M14 20H5M15 4L9 20"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
+                                    <button
+                                        onClick={(e) => applyFormat(e, 'italic')}
+                                        className={`p-2 rounded ${isItalic ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
+                                        title="기울임"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            {/* ... SVG path ... */}
                                         </svg>
                                     </button>
-                                    <button className="p-2 hover:bg-gray-200 rounded" title="밑줄">
-                                        <svg
-                                            className="w-4 h-4"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path
-                                                d="M6 3v7a6 6 0 006 6 6 6 0 006-6V3M4 21h16"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
-                                    </button>
-                                    <div className="w-px h-6 bg-gray-300 mx-2"></div>
-                                    <button className="p-2 hover:bg-gray-200 rounded" title="왼쪽 정렬">
-                                        <svg
-                                            className="w-4 h-4"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path
-                                                d="M4 6h16M4 12h10M4 18h14"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
-                                    </button>
-                                    <button className="p-2 hover:bg-gray-200 rounded" title="가운데 정렬">
-                                        <svg
-                                            className="w-4 h-4"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path
-                                                d="M4 6h16M7 12h10M5 18h14"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
+                                    <button
+                                        onClick={(e) => applyFormat(e, 'underline')}
+                                        className={`p-2 rounded ${isUnderline ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
+                                        title="밑줄"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            {/* ... SVG path ... */}
                                         </svg>
                                     </button>
                                 </div>
 
-                                {/* Content Area */}
                                 <div className="mb-8">
-                                    <textarea
-                                        value={editedPost.content}
-                                        onChange={(e) =>
-                                            setEditedPost({
-                                                ...editedPost,
-                                                content: e.target.value,
-                                            })
-                                        }
-                                        placeholder="내용을 입력하세요"
-                                        className="w-full min-h-[500px] p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
+                                    <div className="flex items-center mb-4">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="hidden"
+                                            id="image-upload"
+                                        />
+                                        <label
+                                            htmlFor="image-upload"
+                                            className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md"
+                                        >
+                                            <svg
+                                                className="w-5 h-5 mr-2"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                />
+                                            </svg>
+                                            이미지 첨부
+                                        </label>
+                                    </div>
+                                    <div
+                                        ref={editorRef}
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        className="…"
+                                        onInput={handleEditorChange}
                                     />
                                 </div>
-
                                 {/* Submit Buttons */}
                                 <div className="flex justify-end space-x-3">
                                     <button
@@ -955,7 +1237,10 @@ export default function DetailPage() {
                                 <div className="flex items-center mb-6">
                                     <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 overflow-hidden">
                                         <img
-                                            src="https://randomuser.me/api/portraits/women/44.jpg"
+                                            src={
+                                                profileImageUrl ||
+                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                            } // 기본 이미지 설정
                                             alt="프로필"
                                             className="w-full h-full object-cover"
                                         />
@@ -979,7 +1264,10 @@ export default function DetailPage() {
                                                         <div className="flex items-center min-w-0">
                                                             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                 <img
-                                                                    src="https://randomuser.me/api/portraits/women/44.jpg"
+                                                                    src={
+                                                                        profileImageUrl ||
+                                                                        'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                                                    } // 기본 이미지 설정
                                                                     alt="프로필"
                                                                     className="w-full h-full object-cover"
                                                                 />
@@ -1054,24 +1342,6 @@ export default function DetailPage() {
 
                                 {/* 게시글 내용 */}
                                 <div className="mb-8">
-                                    {post.imageUrls.length > 0 && (
-                                        <div className="flex flex-col gap-4 mb-8">
-                                            {post.imageUrls.map((url, idx) => (
-                                                <div key={idx} className="w-full rounded-lg overflow-hidden">
-                                                    <img
-                                                        src={url}
-                                                        alt={`게시글 이미지 ${idx + 1}`}
-                                                        className="w-full h-auto object-contain max-h-[600px]"
-                                                        onError={(e) => {
-                                                            e.currentTarget.src =
-                                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
-                                                        }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
                                     {isPostEditing ? (
                                         <textarea
                                             value={editedPost.content}
@@ -1085,7 +1355,13 @@ export default function DetailPage() {
                                             rows={15}
                                         />
                                     ) : (
-                                        <div className="mb-6 whitespace-pre-line">{post.content}</div>
+                                        // HTML 컨텐츠를 직접 렌더링
+                                        <div
+                                            className="prose max-w-none"
+                                            dangerouslySetInnerHTML={{
+                                                __html: post.content,
+                                            }}
+                                        />
                                     )}
                                 </div>
 

@@ -2,7 +2,7 @@ package com.example.booktree.comment.entity;
 
 
 import com.example.booktree.auditable.Auditable;
-import com.example.booktree.like_comment.entity.LikeComment;
+import com.example.booktree.likecomment.entity.LikeComment;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.reply.entity.Reply;
 import com.example.booktree.user.entity.User;

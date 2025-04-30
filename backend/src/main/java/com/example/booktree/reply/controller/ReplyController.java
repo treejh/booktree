@@ -37,7 +37,7 @@ public class ReplyController {
 
     // 대댓글 수정 :  /api/v1/replies/update/{replyId}
     @PatchMapping("/update/{replyId}")
-    public ResponseEntity<ReplyDto.Response> updateReply(@PathVariable Long replyId,
+    public ResponseEntity<ReplyDto.Response> updateReply(@PathVariable("replyId") Long replyId,
                                                          @RequestBody ReplyDto.Patch dto) {
         dto.setReplyId(replyId);
         ReplyDto.Response response = replyService.updateReply(dto);
@@ -46,7 +46,7 @@ public class ReplyController {
 
     // 대댓글 삭제 : DELETE /api/v1/replies/delete/{replyId}
     @DeleteMapping("/delete/{replyId}")
-    public ResponseEntity<Void> deleteReply(@PathVariable Long replyId) {
+    public ResponseEntity<Void> deleteReply(@PathVariable("replyId") Long replyId) {
         replyService.deleteReply(replyId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

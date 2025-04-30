@@ -86,19 +86,6 @@ export default function LoginPage() {
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <input
-                                        id="remember"
-                                        name="remember"
-                                        type="checkbox"
-                                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                                        checked={rememberLogin}
-                                        onChange={(e) => setRememberLogin(e.target.checked)}
-                                    />
-                                    <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-                                        로그인 상태 유지
-                                    </label>
-                                </div>
                                 <div className="text-sm">
                                     <Link href="/account/findAccount/findId" className="text-gray-700">
                                         이메일 찾기

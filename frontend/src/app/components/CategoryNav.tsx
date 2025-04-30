@@ -21,7 +21,7 @@ const CategoryNav = ({ currentSlug }: CategoryNavProps) => {
                     currentSlug === 'self-development' ? 'border-black font-medium' : 'border-transparent'
                 }`}
             >
-                자기계발서
+                자기개발서
             </Link>
             <Link
                 href="/main/category/study"

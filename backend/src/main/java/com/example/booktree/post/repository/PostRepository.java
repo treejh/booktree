@@ -1,6 +1,7 @@
 package com.example.booktree.post.repository;
 
 import com.example.booktree.post.entity.Post;
+import com.example.booktree.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post,Long> {
@@ -86,14 +88,24 @@ public interface PostRepository extends JpaRepository<Post,Long> {
 
     Page<Post> findByCategoryId(Long categoryId, Pageable pageable);
 
-
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.imageList WHERE p.id IN :ids")
+    List<Post> findAllByIdWithImages(@Param("ids") List<Long> ids);
 
     @Query("SELECT COALESCE(MAX(p.id), 0) FROM Post p")
     Long findMaxPostId();
 
+
     @Modifying
     @Query("UPDATE Post p SET p.view = 1 WHERE p.id = :postId")
     void updateView(@Param("postId") Long postId);
+
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Post f WHERE f.user = :user")
+    void deleteByUser(@Param("user") User user);
+
+    List<Post> findByUser(User user);
 
 
 

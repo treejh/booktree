@@ -81,11 +81,10 @@ public class S3Uploader {
     public void deleteFile(String imageUrl) {
         try {
             String key = imageUrl.contains(".com/") ? imageUrl.split(".com/")[1] : imageUrl;
-            System.out.println("!! imageurl : " + key);
             amazonS3.deleteObject(bucket, key);
 
         } catch (AmazonServiceException e) {
-            System.err.println(e.getErrorMessage());
+           // System.err.println(e.getErrorMessage());
         } catch (Exception exception) {
             throw new BusinessLogicException(ExceptionCode.S3_DELETE_ERROR);
         }
@@ -120,7 +119,7 @@ public class S3Uploader {
                                 .map(MultipartFile.class::cast)
                                 .findFirst()
                                 .orElse(null);
-                        System.out.println("!! name : " + upload.getOriginalFilename());
+                        //System.out.println("!! name : " + upload.getOriginalFilename());
                         try {
                             uploadFile(upload);
                         } catch (IOException e) {

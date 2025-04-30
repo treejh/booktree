@@ -36,6 +36,12 @@ export interface LoginResponse {
     accessToken: string
 }
 
+interface ContentPart {
+    type: 'text' | 'image'
+    data?: string // type=text일 때 텍스트
+    index?: number
+}
+
 export default function PostWritePage() {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
@@ -84,6 +90,18 @@ export default function PostWritePage() {
 
     // 블로그 정보를 가져오는 상태 추가
     const [blogInfo, setBlogInfo] = useState<{ blogId: number | null }>({ blogId: null })
+
+    // nst [contentParts, setContentParts] = useState<ContentPart[]>([])
+    // contentParts 상태 추가
+    const [contentParts, setContentParts] = useState<
+        Array<{
+            type: string
+            data?: string
+            index?: number
+        }>
+    >([])
+
+    const [currentContent, setCurrentContent] = useState('')
 
     // 로그인 체크
     useEffect(() => {
@@ -214,6 +232,10 @@ export default function PostWritePage() {
     // Initialize editor once it's rendered
     useEffect(() => {
         if (isClient && editorRef.current) {
+            // 초기 내용 설정
+            if (!editorRef.current.innerHTML) {
+                editorRef.current.innerHTML = '<p><br></p>'
+            }
             // Make the editor area focused by default
             editorRef.current.focus()
             // Set default separator for paragraphs
@@ -228,16 +250,154 @@ export default function PostWritePage() {
     // Add image input handler
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setSelectedImages(e.target.files)
+            // 기존 이미지 배열에 새 이미지 추가
+            setSelectedImages((prevImages) => {
+                const prevFiles = prevImages ? Array.from(prevImages) : []
+                const newFiles = Array.from(e.target.files || [])
+                const dataTransfer = new DataTransfer()
 
-            // 이미지 미리보기 생성
-            const newPreviews: ImagePreview[] = []
+                // 기존 파일과 새 파일을 결합
+                const allFiles = prevFiles.concat(newFiles)
+
+                // 모든 파일을 DataTransfer에 추가
+                allFiles.forEach((file) => {
+                    dataTransfer.items.add(file)
+                })
+
+                return dataTransfer.files
+            })
+
+            // 이미지 미리보기 업데이트
             Array.from(e.target.files).forEach((file) => {
                 const imageUrl = URL.createObjectURL(file)
-                newPreviews.push({ file, url: imageUrl })
+                setImagePreviews((prev) => [...prev, { file, url: imageUrl }])
             })
-            setImagePreviews((prev) => [...prev, ...newPreviews])
+
+            // 선택된 각 이미지를 에디터에 삽입
+            Array.from(e.target.files).forEach((file) => {
+                if (editorRef.current) {
+                    const selection = window.getSelection()
+                    const range = selection?.getRangeAt(0) || editorRef.current.ownerDocument.createRange()
+
+                    // 이미지를 감싸는 p 태그 생성
+                    const p = document.createElement('p')
+                    p.className = 'text-center my-4'
+
+                    // 이미지 요소 생성
+                    const img = document.createElement('img')
+                    const imageUrl = URL.createObjectURL(file)
+                    img.src = imageUrl
+                    img.className = 'max-w-full h-auto mx-auto'
+                    img.setAttribute('data-filename', file.name)
+
+                    p.appendChild(img)
+
+                    // 현재 위치에 이미지 삽입
+                    range.insertNode(p)
+
+                    // 줄바꿈 추가
+                    const br = document.createElement('br')
+                    p.after(br)
+
+                    // 커서를 이미지 다음으로 이동
+                    range.setStartAfter(br)
+                    range.setEndAfter(br)
+                    selection?.removeAllRanges()
+                    selection?.addRange(range)
+                }
+            })
+
+            // content 상태 업데이트
+            handleEditorChange()
         }
+    }
+    /* const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            // 기존 이미지 배열에 새 이미지 추가
+            setSelectedImages(prevImages => {
+                const prevFiles = prevImages ? Array.from(prevImages) : []
+                const newFiles = Array.from(e.target.files || [])
+                const dataTransfer = new DataTransfer()
+                
+                // 기존 파일과 새 파일 모두 추가
+                [...prevFiles, ...newFiles].forEach(file => {
+                    dataTransfer.items.add(file)
+                })
+                
+                return dataTransfer.files
+            })
+
+            // 선택된 각 이미지를 에디터에 삽입
+            Array.from(e.target.files).forEach((file) => {
+                if (editorRef.current) {
+                    const selection = window.getSelection()
+                    const range = selection?.getRangeAt(0) || editorRef.current.ownerDocument.createRange()
+
+                    // 이미지를 감싸는 p 태그 생성
+                    const p = document.createElement('p')
+                    p.className = 'text-center my-4'
+
+                    // 이미지 요소 생성
+                    const img = document.createElement('img')
+                    const imageUrl = URL.createObjectURL(file)
+                    img.src = imageUrl
+                    img.className = 'max-w-full h-auto mx-auto'
+                    img.setAttribute('data-filename', file.name)
+
+                    p.appendChild(img)
+
+                    // 현재 위치에 이미지 삽입
+                    range.insertNode(p)
+
+                    // 줄바꿈 추가
+                    const br = document.createElement('br')
+                    p.after(br)
+
+                    // 커서를 이미지 다음으로 이동
+                    range.setStartAfter(br)
+                    range.setEndAfter(br)
+                    selection?.removeAllRanges()
+                    selection?.addRange(range)
+
+                    // content 상태 업데이트
+                    handleEditorChange()
+                }
+            })
+        }
+    } */
+
+    const generateContentParts = (html: string): ContentPart[] => {
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = html
+        const parts: ContentPart[] = []
+        let imageIndex = 0
+
+        const processNode = (node: Node) => {
+            if (node instanceof HTMLElement) {
+                if (node.tagName === 'P') {
+                    const img = node.querySelector('img')
+                    if (img) {
+                        parts.push({
+                            type: 'image',
+                            index: imageIndex++,
+                        })
+                    } else if (node.textContent?.trim()) {
+                        parts.push({
+                            type: 'text',
+                            data: node.textContent.trim(),
+                        })
+                    }
+                }
+            } else if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                parts.push({
+                    type: 'text',
+                    data: node.textContent.trim(),
+                })
+            }
+        }
+
+        Array.from(tempDiv.childNodes).forEach(processNode)
+        return parts
     }
 
     // 이미지 삭제 핸들러 추가
@@ -261,23 +421,18 @@ export default function PostWritePage() {
     const handleEditorChange = () => {
         if (editorRef.current) {
             const content = editorRef.current.innerHTML
-            // 스타일을 적용하기 위한 클래스 추가
-            editorRef.current.querySelectorAll('b, strong').forEach((element) => {
-                element.classList.add('font-bold')
-            })
-            editorRef.current.querySelectorAll('i, em').forEach((element) => {
-                element.classList.add('italic')
-            })
-            editorRef.current.querySelectorAll('u').forEach((element) => {
-                element.classList.add('underline')
-            })
+
+            // 에디터가 완전히 비어있을 때 초기 p 태그 추가
+            if (!content || content === '<br>' || content === '') {
+                editorRef.current.innerHTML = '<p><br></p>'
+            }
+            console.log('현재 에디터 내용:', content) // 디버깅용
+            setContent(content)
         }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-
-        // 메인카테고리와 카테고리 유효성 검사 추가
 
         if (selectedCategoryId === 0) {
             alert('카테고리를 선택해주세요.')
@@ -289,11 +444,8 @@ export default function PostWritePage() {
             return
         }
 
-        // blogId 체크
         if (!blogInfo.blogId) {
-            console.error('블로그 정보가 없습니다:', blogInfo)
-            alert('블로그 정보를 불러오는데 실패했습니다.')
-
+            alert('블로그 정보를 찾을 수 없습니다.')
             return
         }
 
@@ -302,27 +454,6 @@ export default function PostWritePage() {
             alert('제목을 입력해주세요.')
             return
         }
-
-        // 필수 값 체크
-        /* if (!selectedMainCategoryId) {
-            alert('메인 카테고리를 선택해주세요.')
-            return
-        }   */
-
-        if (!selectedMainCategoryId || selectedMainCategoryId === 0) {
-            alert('메인 카테고리를 선택해주세요.')
-            return
-        }
-
-        const editorContent = editorRef.current?.innerHTML || ''
-
-        // blogId 체크 추가
-        /* if (!loginUser?.id) {
-            console.error('사용자 정보가 없습니다:', loginUser)
-            alert('로그인이 필요합니다.')
-            router.push('/account/login')
-            return
-        } */
 
         const checkPostExists = async (postId: number): Promise<boolean> => {
             try {
@@ -358,84 +489,111 @@ export default function PostWritePage() {
             const createdPostId = await postIdResponse.json()
             console.log('생성될 게시글 ID:', createdPostId)
 
-            // FormData 객체 생성
             const formData = new FormData()
 
-            // 필수 필드
-
+            // 기본 정보 추가
+            formData.append('title', title)
+            formData.append('author', author)
+            formData.append('book', bookTitle)
             formData.append('blogId', blogInfo.blogId.toString())
             formData.append('mainCategoryId', selectedMainCategoryId.toString())
 
-            formData.append('title', title.trim())
-            formData.append('content', editorContent)
-
-            // Add optional fields
-            if (selectedCategoryId && selectedCategoryId !== 0) {
+            if (selectedCategoryId) {
                 formData.append('categoryId', selectedCategoryId.toString())
             }
-            if (author.trim()) {
-                formData.append('author', author.trim())
-            }
-            if (bookTitle.trim()) {
-                formData.append('book', bookTitle.trim())
-            }
 
-            // Add images if selected
-            if (selectedImages) {
-                Array.from(selectedImages).forEach((image) => {
-                    formData.append('images', image)
+            // 이미지 파일 및 content 처리
+            if (editorRef.current) {
+                let contentHtml = editorRef.current.innerHTML.trim()
+                const tempDiv = document.createElement('div')
+                tempDiv.innerHTML = contentHtml
+
+                // 불필요한 빈 줄바꿈 정리
+                contentHtml = tempDiv.innerHTML.replace(/(<br\s*\/?>(?:\s*<br\s*\/?>)*)/g, '<br>')
+
+                // content 유효성 검사
+                const hasContent = Array.from(tempDiv.childNodes).some((node) => {
+                    if (node instanceof HTMLElement) {
+                        // 이미지나 텍스트 컨텐츠가 있는지 확인
+                        return (
+                            node.tagName === 'IMG' || node.querySelector('img') || node.textContent?.trim().length > 0
+                        )
+                    }
+                    return node.textContent?.trim().length > 0
                 })
+
+                if (!hasContent) {
+                    throw new Error('내용을 입력해주세요.')
+                }
+
+                // content와 이미지 처리
+                formData.append('content', contentHtml)
+
+                // 이미지 파일 추가
+                if (selectedImages) {
+                    Array.from(selectedImages).forEach((file) => {
+                        formData.append('images', file)
+                    })
+                }
+
+                // contentParts 생성
+                const parts = generateContentParts(contentHtml)
+                console.log('전송할 content:', contentHtml) // 디버깅용
+                console.log('생성된 contentParts:', parts) // 디버깅용
+                formData.append('contentParts', JSON.stringify(parts))
             }
 
-            // 게시글의 ID로 nextPostId를 설정 (필요하다면)
-            //formData.append('postId', nextPostId.toString()) // 여기서 nextPostId를 사용
-
-            // 디버깅용 로그
-            for (let [key, value] of formData.entries()) {
-                console.log(`전송 데이터 - ${key}:`, value)
-            }
-
+            // API 호출
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/create`, {
                 method: 'POST',
-                credentials: 'include', // 쿠키 포함
+                credentials: 'include',
                 body: formData,
             })
 
-            // 응답 상태 로깅
-            console.log('응답 상태:', response.status)
-
             if (!response.ok) {
-                throw new Error('게시글 등록에 실패했습니다.')
+                const errorText = await response.text()
+                console.error('서버 에러 응답:', errorText)
+                throw new Error('게시글 작성에 실패했습니다. 서버 응답: ' + errorText)
             }
 
-            // 응답 처리를 한 번만 시도
-            const responseText = await response.text()
-            console.log('서버 응답:', responseText)
+            // 성공적인 응답 처리
+            /* const responseText = await response.text()
 
-            // 응답이 JSON인지 확인
-            try {
-                const responseData = JSON.parse(responseText)
-                console.log('생성된 게시글:', responseData)
-                alert('게시글이 성공적으로 등록되었습니다.')
-
-                // 게시글 존재 여부 확인 후 리다이렉트
-                const finalPostId = await findExistingPost(createdPostId)
+            if (!responseText) {
+                console.log('서버 응답이 비어있습니다. 성공으로 처리합니다.')
+                alert('게시글이 성공적으로 작성되었습니다.')
                 router.push(`/post/${finalPostId}/detail/get`)
+                return
+            }
 
-                /* if (responseData.id) {
-                    router.push(`/post/${finalPostId}/detail/get`)
-                } else {
-                    router.push(`/blog/post/${blogInfo.blogId}/list`)
-                } */
-            } catch (jsonError) {
-                // JSON 파싱 실패시 (일반 텍스트 응답)
-                alert('게시글이 성공적으로 등록되었습니다.')
+            try {
+                const data = JSON.parse(responseText)
+                console.log('게시글 작성 성공:', data)
+                alert('게시글이 성공적으로 작성되었습니다.')
+                router.push(`/post/${finalPostId}/detail/get`)
+            } catch (e) {
+                // JSON 파싱 실패하더라도 response.ok가 true면 성공으로 처리
+                console.warn('JSON 파싱 실패했지만 요청은 성공:', responseText)
+                alert('게시글이 성공적으로 작성되었습니다.')
                 const finalPostId = await findExistingPost(createdPostId)
                 router.push(`/post/${finalPostId}/detail/get`)
             }
         } catch (error) {
-            console.error('Error:', error)
-            alert('게시글 등록에 실패했습니다.')
+            console.error('게시글 작성 실패:', error)
+            alert(error instanceof Error ? error.message : '게시글 작성에 실패했습니다.')
+        }
+ */
+            if (!response.ok) {
+                const errorText = await response.text()
+                throw new Error(errorText || '게시글 작성에 실패했습니다.')
+            }
+
+            alert('게시글이 성공적으로 작성되었습니다.')
+            const finalPostId = await findExistingPost(createdPostId)
+            router.push(`/post/${finalPostId}/detail/get`)
+        } catch (error) {
+            console.error('게시글 작성 실패:', error)
+            alert(error instanceof Error ? error.message : '게시글 작성에 실패했습니다.')
         }
     }
 
@@ -580,45 +738,6 @@ export default function PostWritePage() {
                             className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
-                    {/* Formatting Toolbar */}
-                    <div className="flex space-x-6 border-t border-b border-gray-200 py-2 mb-4 items-center">
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'bold')}
-                            className={`p-1 font-bold text-xl ${isBold ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            B
-                        </button>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'italic')}
-                            className={`p-1 italic text-xl ${isItalic ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            I
-                        </button>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'underline')}
-                            className={`p-1 underline text-xl ${isUnderline ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            U
-                        </button>
-                        <div className="text-gray-300">|</div>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'insertUnorderedList')}
-                            className={`p-1 text-xl ${isBulletList ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            •
-                        </button>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'insertOrderedList')}
-                            className={`p-1 text-xl ${isNumberedList ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            1.
-                        </button>
-                    </div>
 
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
@@ -674,13 +793,14 @@ export default function PostWritePage() {
                         <div
                             ref={editorRef}
                             contentEditable
-                            suppressContentEditableWarning={true}
-                            className="w-full h-full min-h-[300px] p-4 outline-none prose max-w-none
-                                empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
-                            style={{ overflowY: 'auto' }}
-                            data-placeholder="내용을 입력하세요"
+                            suppressContentEditableWarning
+                            className="w-full min-h-[500px] p-6 border border-gray-300 rounded-lg prose max-w-none
+        focus:outline-none focus:ring-1 focus:ring-green-500
+        [&>p]:my-4 [&>p]:text-base [&>img]:max-w-full [&>img]:h-auto [&>img]:mx-auto
+        [&>p]:leading-relaxed [&>p]:text-gray-800"
                             onInput={handleEditorChange}
-                        ></div>
+                            // placeholder="내용을 입력하세요"
+                        />
                     </div>
                     {/* Submit Buttons */}
                     <div className="flex justify-end space-x-4 mt-6">
@@ -723,7 +843,7 @@ export default function PostWritePage() {
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a 1 1 0 010-1.414z" />
                                     </svg>
                                 </div>
                             </div>
@@ -747,7 +867,7 @@ export default function PostWritePage() {
                                 </select>
                                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a 1 1 0 01-1.414 0l-4-4a 1 1 0 010-1.414z" />
                                     </svg>
                                 </div>
                             </div>

@@ -41,5 +41,7 @@ public class CommentDto {
         private Long userId;
         private long likeCount;
         private Page<ReplyDto.Response> replies;
+        private boolean isFollowing;
+        private boolean isMe;
     }
 }
