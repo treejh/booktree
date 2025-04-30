@@ -701,7 +701,7 @@ export default function PostWritePage() {
                             required
                         />
                     </div>
-                    {/* Author Input */}
+                    {/* Author Input
                     <div>
                         <input
                             type="text"
@@ -722,44 +722,6 @@ export default function PostWritePage() {
                         />
                     </div>
                     {/* Formatting Toolbar */}
-                    <div className="flex space-x-6 border-t border-b border-gray-200 py-2 mb-4 items-center">
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'bold')}
-                            className={`p-1 font-bold text-xl ${isBold ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            B
-                        </button>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'italic')}
-                            className={`p-1 italic text-xl ${isItalic ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            I
-                        </button>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'underline')}
-                            className={`p-1 underline text-xl ${isUnderline ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            U
-                        </button>
-                        <div className="text-gray-300">|</div>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'insertUnorderedList')}
-                            className={`p-1 text-xl ${isBulletList ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            •
-                        </button>
-                        <button
-                            type="button"
-                            onMouseDown={(e) => applyFormat(e, 'insertOrderedList')}
-                            className={`p-1 text-xl ${isNumberedList ? 'text-[#2E804E]' : 'text-black'}`}
-                        >
-                            1.
-                        </button>
-                    </div>
 
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>

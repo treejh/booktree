@@ -1232,7 +1232,7 @@ export default function DetailPage() {
                                         className={`p-2 rounded ${isUnderline ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
                                         title="밑줄"
                                     >
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                        <svg className="w-1 h-1" viewBox="0 0 24 24" fill="none">
                                             {/* ... SVG path ... */}
                                         </svg>
                                     </button>
@@ -1349,7 +1349,7 @@ export default function DetailPage() {
                                         }}
                                     />
                                 </div> */}
-                                
+
                                 <div className="mb-8">
                                     <div className="flex items-center mb-4">
                                         <input
