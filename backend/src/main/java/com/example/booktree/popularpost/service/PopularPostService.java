@@ -84,7 +84,7 @@ public class PopularPostService {
                 .map(id -> {
                     Post post = postMap.get(id);
                     if(post.getImageList().size()>0){
-                        System.out.println("imageUrl : " + post.getImageList().get(0).getImageUrl());
+                        //System.out.println("imageUrl : " + post.getImageList().get(0).getImageUrl());
                     }
 
                     double score = scores.get(ids.indexOf(id)); // score 가져오기
