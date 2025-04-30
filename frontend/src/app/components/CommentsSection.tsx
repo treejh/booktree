@@ -307,6 +307,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 })
             }
             setIsFollowing((prev) => ({ ...prev, [userId]: !prev[userId] }))
+            window.location.reload()
         } catch {
             alert('팔로우/언팔로우 처리에 실패했습니다.')
         }
