@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.booktree.utils.S3Uploader;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -334,7 +335,7 @@ public class PostService {
 
 
         if (followingList.isEmpty()) {
-            System.out.println("여기 들어오나?");
+            //System.out.println("여기 들어오나?");
             return Page.empty(pageable);
         }
         return postRepository.findByUserIdInOrderByCreatedAtDesc(followingList, pageable);
@@ -370,9 +371,6 @@ public class PostService {
     // 게시글 아이디로 해당 게시글 조회 (조회수 증가)
     @Transactional
     public Post findPostById(Long postId) {
-
-        System.out.println("🔥🔥 게시글 조회 서비스 실행됨");
-
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
 

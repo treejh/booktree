@@ -101,7 +101,7 @@ public class User extends Auditable {
     public List<String> getAuthoritiesAsStringList(String role) {
         List<String> authorities = new ArrayList<>();
         authorities.add("ROLE_" + role); // 또는 role.getRoleType().name()
-        System.out.println("역할 잘 있니 ?" + authorities.get(0));
+        //System.out.println("역할 잘 있니 ?" + authorities.get(0));
         return authorities;
     }
 
