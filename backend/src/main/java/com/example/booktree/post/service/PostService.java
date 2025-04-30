@@ -168,6 +168,7 @@ public class PostService {
                 .category(category)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
+                .view(0L)
                 .build();
 
         postRepository.save(post);
@@ -576,6 +577,8 @@ public class PostService {
         Long maxPostId = postRepository.findMaxPostId();
         return maxPostId + 1;
     }
+
+
 
 
 }

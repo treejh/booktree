@@ -2,9 +2,8 @@
 server:
   port: 8080
   tomcat:
-    max-http-form-post-size: 1000000000
-    max-swallow-size: 1000000000       # 60MB
-
+    max-http-form-post-size: -1
+    max-swallow-size: -1
 
 spring:
   security:
