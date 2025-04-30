@@ -52,7 +52,7 @@ public class MainCategoryController {
             description = "권한에 따라 메인 카테고리를 수정하는 메서드",
             tags = "메인카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> updateMainCategory(@PathVariable Long mainCategoryId,@RequestBody CreateMainCaterequestDto createMainCaterequestDto){
+    public ResponseEntity<?> updateMainCategory(@PathVariable("mainCategoryId") Long mainCategoryId,@RequestBody CreateMainCaterequestDto createMainCaterequestDto){
         mainCategortService.updateMainCate(mainCategoryId, createMainCaterequestDto);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -63,7 +63,7 @@ public class MainCategoryController {
             description = "권한에 따라 메인 카테고리를 삭제하는 메서드",
             tags = "메인카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> deleteMainCategory(@PathVariable Long mainCategoryId){
+    public ResponseEntity<?> deleteMainCategory(@PathVariable("mainCategoryId") Long mainCategoryId){
         mainCategortService.deleteMainCate(mainCategoryId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

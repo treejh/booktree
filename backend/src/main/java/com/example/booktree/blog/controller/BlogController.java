@@ -33,7 +33,7 @@ public class BlogController {
     // Read
     //내 블로그는 하나밖에 없다는 가정하에 유저 아이디로 가져옴//
     @GetMapping("/get")
-    public ResponseEntity getBlogByUserId(@Positive @RequestParam Long blogId) {
+    public ResponseEntity getBlogByUserId(@Positive @RequestParam("blogId") Long blogId) {
         BlogResponseDto response = new BlogResponseDto(blogService.findBlogByBlogId(blogId));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -62,7 +62,7 @@ public class BlogController {
     }
 
     @GetMapping("/get/findUserId/{blogId}")
-    public ResponseEntity<?> findUserIdByBlogId(@PathVariable Long blogId) {
+    public ResponseEntity<?> findUserIdByBlogId(@PathVariable("blogId") Long blogId) {
         Long response = blogService.findUserIdByBlogId(blogId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

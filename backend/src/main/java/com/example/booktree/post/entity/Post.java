@@ -48,7 +48,7 @@ public class Post extends Auditable {
     private String title;
 
     // @Lob
-    @NotBlank
+    //@NotBlank
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
