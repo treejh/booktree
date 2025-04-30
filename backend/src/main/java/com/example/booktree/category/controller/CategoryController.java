@@ -8,6 +8,7 @@ import com.example.booktree.jwt.service.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
 @Tag(name = "카테고리 관리 컨트롤러")
+@Slf4j
 public class CategoryController {
 
     public final CategoryService categoryService;
@@ -70,7 +72,7 @@ public class CategoryController {
             description = "인가된 유저의 ID를 통해 특정 카테고리를 수정하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> modCategory(@PathVariable Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
+    public ResponseEntity<?> modCategory(@PathVariable("categoryId") Long categoryId, @RequestBody CreateCategoryRequestDto createCategoryRequestDto) {
         Long userId = tokenService.getIdFromToken();
         String name = createCategoryRequestDto.getCategoryName();
         categoryService.modCategory(categoryId, userId, name);
