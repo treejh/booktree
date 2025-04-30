@@ -2,6 +2,7 @@ package com.example.booktree.post.controller;
 
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
+
 import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
@@ -125,7 +126,7 @@ public class PostController {
 
         // 조회수 업데이트
 
-        popularPostService.increasePopularity(postId, post.getMainCategory().getId());
+        // popularPostService.increasePopularity(postId, post.getMainCategory().getId());
 
         String mainCategory = post.getMainCategory() != null ? post.getMainCategory().getName() : "기본 카테고리";
         String category = post.getCategory() != null ? post.getCategory().getName() : "기본 서브 카테고리";
@@ -340,7 +341,6 @@ public class PostController {
         Long nextId = postService.getNextPostId();
         return ResponseEntity.ok(nextId);
     }
-
 
 
 
