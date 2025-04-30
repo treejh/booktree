@@ -292,25 +292,39 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
         try {
             if (isFollowing[userId]) {
-                await fetch(`${API}/api/v1/follow/delete/unfollow`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ followeeId: userId }),
-                })
+                await unfollowUser(userId)
             } else {
-                await fetch(`${API}/api/v1/follow/create/follow`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ followeeId: userId }),
-                })
+                await followUser(userId)
             }
-            setIsFollowing((prev) => ({ ...prev, [userId]: !prev[userId] }))
+            setIsFollowing((prev) => ({
+                ...prev,
+                [userId]: !prev[userId],
+            }))
             window.location.reload()
         } catch {
             alert('팔로우/언팔로우 처리에 실패했습니다.')
         }
+    }
+
+    const followUser = async (followeeId: number) => {
+        try {
+            await fetch(`${API}/api/v1/follow/create/follow`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+        } catch {}
+    }
+    const unfollowUser = async (followeeId: number) => {
+        try {
+            await fetch(`${API}/api/v1/follow/delete/unfollow`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ followeeId }),
+            })
+        } catch {}
     }
 
     // ─── 클릭 외부 감지 ─────────────────────────────────────────────
@@ -576,16 +590,16 @@ export function CommentsSection({ postId }: { postId: number }) {
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                        {!reply.isMe && (
+                                                        {!comment.isMe && (
                                                             <button
-                                                                onClick={() => handleFollow(reply.userId)}
-                                                                className={`w-full px-4 py-2 text-sm rounded-md ${
-                                                                    isFollowing[reply.userId]
-                                                                        ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border'
+                                                                onClick={() => handleFollow(comment.userId)}
+                                                                className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
+                                                                    isFollowing[comment.userId]
+                                                                        ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
                                                                         : 'text-white bg-[#2E804E] hover:bg-[#246A40]'
                                                                 }`}
                                                             >
-                                                                {isFollowing[reply.userId]
+                                                                {isFollowing[comment.userId]
                                                                     ? '팔로우 취소'
                                                                     : '팔로우 하기'}
                                                             </button>
