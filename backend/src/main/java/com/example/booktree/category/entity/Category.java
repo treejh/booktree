@@ -43,12 +43,12 @@ public class Category extends Auditable {
     private String name;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private User user;
 
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, orphanRemoval = false)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, orphanRemoval = true)
     List<Post> postList = new ArrayList<>();
 
 

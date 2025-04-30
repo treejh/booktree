@@ -23,7 +23,7 @@ INSERT INTO categories (id, name, user_id) VALUES
 
 -- 메인 카테고리 추가
 INSERT INTO main_categories (id, name, created_at, last_modified_at) VALUES (1, '소설', NOW(), NOW());
-INSERT INTO main_categories (id, name, created_at, last_modified_at) VALUES (2, '자기개발', NOW(), NOW());
+INSERT INTO main_categories (id, name, created_at, last_modified_at) VALUES (2, '자기개발서', NOW(), NOW());
 INSERT INTO main_categories (id, name, created_at, last_modified_at) VALUES (3, '공부/자격', NOW(), NOW());
 INSERT INTO main_categories (id, name, created_at, last_modified_at) VALUES (4, '에세이/일상', NOW(), NOW());
 INSERT INTO main_categories (id, name, created_at, last_modified_at) VALUES (5, '실용/취미', NOW(), NOW());

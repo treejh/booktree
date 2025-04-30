@@ -1,9 +1,8 @@
 
 package com.example.booktree.popularpost.controller;
 
-import com.example.booktree.post.dto.response.PostResponseDto;
-import com.example.booktree.post.entity.Post;
 import com.example.booktree.popularpost.service.PopularPostService;
+import com.example.booktree.post.dto.response.PostResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -31,9 +30,9 @@ public class PopularPostController {
             tags = "실시간 인기 게시글 관리 컨트롤러"
     )
     public ResponseEntity<List<PostResponseDto>> getPopularPosts(
-            @RequestParam(defaultValue = "6") int limit, @PathVariable Long mainCategoryId) {
+            @RequestParam(name = "limit", defaultValue = "6") int limit, @PathVariable("mainCategoryId") Long mainCategoryId) {
 
-        log.info("뭔데 : " + mainCategoryId);
+        //log.info("뭔데 : " + mainCategoryId);
         List<PostResponseDto> result = popularPostService.getPopularPosts(limit, mainCategoryId);
 
         return ResponseEntity.ok(result);

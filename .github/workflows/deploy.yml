@@ -9,7 +9,6 @@ on:
       - "backend/Dockerfile"
     branches:
       - main
-      
 jobs:
   makeTagAndRelease:
     runs-on: ubuntu-latest
@@ -39,7 +38,7 @@ jobs:
     needs: makeTagAndRelease
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE_NAME: booktree
+      DOCKER_IMAGE_NAME: booktree 
     outputs:
       DOCKER_IMAGE_NAME: ${{ env.DOCKER_IMAGE_NAME }}
       OWNER_LC: ${{ env.OWNER_LC }}
@@ -102,8 +101,69 @@ jobs:
           working-directory: /
           comment: Deploy
           command: |
-            docker pull ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-            docker stop app1 2>/dev/null
-            docker rm app1 2>/dev/null
-            docker run -d --network common --name app1 -p 8080:8080 ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-            docker rmi $(docker images -f "dangling=true" -q)
+            # 공통 변수
+            IMAGE="ghcr.io/${{ env.OWNER_LC }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
+            VOLUME="/gen:/gen"
+            NETWORK="common"
+            HEALTH_ENDPOINT="/actuator/health"
+            TIMEOUT=60
+
+            # 현재 실행 중인 컨테이너 확인
+            if docker ps --format '{{.Names}}' | grep -q "app1_1"; then
+              CURRENT="app1_1"
+              NEXT="app1_2"
+              CURRENT_PORT=8080
+              NEXT_PORT=8081
+            else
+              CURRENT="app1_2"
+              NEXT="app1_1"
+              CURRENT_PORT=8081
+              NEXT_PORT=8080
+            fi
+
+            # 다음 컨테이너 실행
+            echo "Starting new container: $NEXT on port $NEXT_PORT..."
+            docker pull "$IMAGE"
+            docker stop "$NEXT" 2>/dev/null
+            docker rm "$NEXT" 2>/dev/null
+            docker run -d \
+              -v $VOLUME \
+              --network $NETWORK \
+              --name "$NEXT" \
+              -p "$NEXT_PORT":8080 \
+              "$IMAGE"
+
+            # 헬스체크 대기
+            echo "Waiting for health check..."
+            START_TIME=$(date +%s)
+            while true; do
+              CONTENT=$(curl -s http://localhost:$NEXT_PORT$HEALTH_ENDPOINT)
+
+              if [[ "$CONTENT" == *'"status":"UP"'* ]]; then
+                echo "✅ $NEXT is UP!"
+                break
+              fi
+
+              ELAPSED_TIME=$(( $(date +%s) - START_TIME ))
+              if [[ $ELAPSED_TIME -ge $TIMEOUT ]]; then
+                echo "❌ Timeout: $NEXT did not start in $TIMEOUT seconds."
+                docker stop "$NEXT"
+                docker rm "$NEXT"
+                exit 1
+              fi
+
+              echo "⏳ Waiting for $NEXT to be UP..."
+              sleep 5
+            done
+
+            sleep 10 # ha proxy 가 사용하는 dns 캐시 때문에 서비스가 띄워지고도 10초 후에 발견될 수 도 있다. 그래서 기존 서버를 바로 내리지 않는다.
+
+            # 기존 컨테이너 중지 및 제거
+            echo "Stopping old container: $CURRENT"
+            docker stop "$CURRENT" 2>/dev/null
+            docker rm "$CURRENT" 2>/dev/null
+
+            # dangling image 제거
+            docker rmi $(docker images -f "dangling=true" -q) 2>/dev/null
+
+            echo "✅ Deployment complete. Running container: $NEXT on port $NEXT_PORT"

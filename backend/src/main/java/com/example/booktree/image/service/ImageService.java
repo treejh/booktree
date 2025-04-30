@@ -57,7 +57,7 @@ public class ImageService {
     public List<Image> saveImagesToPost(ImageRequestDto imageRequestDto){
         Post post = postRepository.findById(imageRequestDto.getPostId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.POST_NOT_FOUND));
-        System.out.println(imageRequestDto.getImages().get(0));
+        //System.out.println(imageRequestDto.getImages().get(0));
         List<String> saveImages = saveImages(imageRequestDto.getImages());
         List<Image> resultImages = new ArrayList<>();
 

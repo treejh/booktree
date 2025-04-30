@@ -31,7 +31,7 @@ public class FollowController {
             description = "내가 팔로우 하는 회원들 닉네임을 가져오는 메서드 ",
             tags = "팔로우 관리 컨트롤러"
     )
-    public ResponseEntity<?> allFollow(@PathVariable Long userId) {
+    public ResponseEntity<?> allFollow(@PathVariable("userId") Long userId) {
 
         List<AllFollowListResponseDto> response = followService.getAllFollowerList(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -44,7 +44,7 @@ public class FollowController {
             description = "나를 팔로우하는 회원들 닉네임을 가져오는 메서드",
             tags = "팔로우 관리 컨트롤러"
     )
-    public ResponseEntity<?> allFollowed(@PathVariable Long userId) {
+    public ResponseEntity<?> allFollowed(@PathVariable("userId") Long userId) {
 
         List<AllFollowListResponseDto> response = followService.getAllFollowedList(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -83,7 +83,7 @@ public class FollowController {
             description = "로그인한 ID를 기반으로 팔로워, 팔로잉하는 유저들의 수를 제공하는 메서드",
             tags = "팔로우 관리 컨트롤러"
     )
-    public ResponseEntity<?> getFollowCount(@PathVariable Long userid) {
+    public ResponseEntity<?> getFollowCount(@PathVariable("userid") Long userid) {
 
         FollowCountDto response = followService.getCount(userid);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -103,7 +103,7 @@ public class FollowController {
     }
 
     @GetMapping("/get/isfollowing/{userId}")
-    public ResponseEntity<?> getIsFollowing(@PathVariable Long userId) {
+    public ResponseEntity<?> getIsFollowing(@PathVariable("userId") Long userId) {
         boolean response = followService.isIn(tokenService.getIdFromToken(), userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

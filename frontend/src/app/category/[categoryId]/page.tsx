@@ -54,7 +54,7 @@ export default function CategoryPage() {
                 const response = await fetch(
                     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/get/category/${categoryId}/posts?page=${
                         currentPage - 1
-                    }&size=4`,
+                    }&size=8`,
                 )
                 if (!response.ok) {
                     throw new Error('카테고리 게시글을 가져오는 데 실패했습니다.')

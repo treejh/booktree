@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, MouseEvent } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import React from 'react'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
@@ -68,13 +68,27 @@ interface PostList {
     replies?: number
 }
 
+interface ContentPart {
+    type: 'text' | 'image'
+    data?: string // type=text일 때 텍스트
+    index?: number
+}
+
+interface ImagePreview {
+    file: File
+    url: string
+}
+
 export default function DetailPage() {
-    // 1. Router와 전역 상태 관련 Hooks
+    // 1. Router와 Context Hooks
     const router = useRouter()
     const { postId } = useParams()
     const { isLoginUserPending, isLogin, loginUser } = useGlobalLoginUser()
 
-    // 2. 모든 useState Hooks를 여기에 모아서 선언
+    // 2. Ref Hooks
+    const editorRef = useRef<HTMLDivElement>(null)
+
+    // 3. State Hooks
     const [isAuthor, setIsAuthor] = useState(false)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -100,6 +114,17 @@ export default function DetailPage() {
     const [userId, setUserId] = useState<number>()
     const [editCategories, setEditCategories] = useState<TwoCategory[]>([])
     const [editMainCategories, setEditMainCategories] = useState<TwoMainCategory[]>([])
+
+    const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([])
+    const [blogInfo, setBlogInfo] = useState<{ blogId: number | null }>({ blogId: null })
+    const [selectedImages, setSelectedImages] = useState<FileList | null>(null)
+    const [isBold, setIsBold] = useState(false)
+    const [isItalic, setIsItalic] = useState(false)
+    const [isUnderline, setIsUnderline] = useState(false)
+    const [contentParts, setContentParts] = useState<ContentPart[]>([])
+    const [currentContent, setCurrentContent] = useState('')
+
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -130,6 +155,36 @@ export default function DetailPage() {
         }
         fetchUserId()
     }, [postId])
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            if (!post?.causerId) return // post.causerId가 없으면 요청하지 않음
+
+            try {
+                const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/get/profile/${post.causerId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    },
+                )
+
+                if (!response.ok) {
+                    throw new Error('프로필 정보를 가져오는 데 실패했습니다.')
+                }
+
+                const data = await response.json()
+                setProfileImageUrl(data.imageUrl) // imageUrl을 상태로 저장
+            } catch (error) {
+                console.error('프로필 이미지 로드 실패:', error)
+                setProfileImageUrl(null) // 실패 시 기본값 설정
+            }
+        }
+
+        fetchUserProfile()
+    }, [post?.causerId])
 
     useEffect(() => {
         const fetchIsFollowing = async () => {
@@ -171,7 +226,6 @@ export default function DetailPage() {
         fetchIsFollowing()
     }, [userId])
 
-    // 3. 모든 useEffect Hooks를 여기에 모아서 선언
     useEffect(() => {
         const fetchPost = async () => {
             try {
@@ -369,6 +423,23 @@ export default function DetailPage() {
         fetchLikeStatus()
     }, [postId])
 
+    useEffect(() => {
+        const handleOutside = (e: MouseEvent) => {
+            if ((showPopover || activePopoverAuthor) && !(e.target as HTMLElement).closest('.relative')) {
+                setShowPopover(false)
+                setActivePopoverAuthor(null)
+            }
+        }
+        document.addEventListener('mousedown', handleOutside)
+        return () => document.removeEventListener('mousedown', handleOutside)
+    }, [showPopover, activePopoverAuthor])
+
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
+        }
+    }, [])
+
     // 게시물 좋아요 토글 함수
     const togglePostLike = async () => {
         if (!isLogin) {
@@ -411,6 +482,7 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('팔로우 요청 실패')
             console.log(`팔로우 완료: ${followeeId}`)
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -429,6 +501,8 @@ export default function DetailPage() {
 
             if (!res.ok) throw new Error('언팔로우 요청 실패')
             console.log(`언팔로우 완료: ${followeeId}`)
+
+            window.location.reload()
         } catch (err) {
             console.error(err)
         }
@@ -470,17 +544,6 @@ export default function DetailPage() {
 
     const handleProfileClick = (username: string) => router.push('/mypage')
 
-    useEffect(() => {
-        const handleOutside = (e: MouseEvent) => {
-            if ((showPopover || activePopoverAuthor) && !(e.target as HTMLElement).closest('.relative')) {
-                setShowPopover(false)
-                setActivePopoverAuthor(null)
-            }
-        }
-        document.addEventListener('mousedown', handleOutside)
-        return () => document.removeEventListener('mousedown', handleOutside)
-    }, [showPopover, activePopoverAuthor])
-
     // 게시글을 불러오는 함수
 
     // postId가 변경될 때마다 useEffect 실행
@@ -506,6 +569,21 @@ export default function DetailPage() {
 
     // 상태 추가
 
+    const applyFormat = (
+        event: MouseEvent<HTMLButtonElement>,
+        format: 'bold' | 'italic' | 'underline' | 'insertUnorderedList' | 'insertOrderedList',
+    ) => {
+        event.preventDefault()
+        if (!editorRef.current) return
+
+        editorRef.current.focus()
+        document.execCommand(format, false)
+
+        if (format === 'bold') setIsBold(!isBold)
+        if (format === 'italic') setIsItalic(!isItalic)
+        if (format === 'underline') setIsUnderline(!isUnderline)
+    }
+
     const postsPerPage = 5 // 페이지당 게시글 수
 
     // 페이지 변경 핸들러 추가
@@ -517,12 +595,60 @@ export default function DetailPage() {
 
     // const toggleList = () => setIsListVisible(!isListVisible)
     // const handlePageChange = (n: number) => setCurrentPage(n)
+    // handleImageChange 함수 수정
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setSelectedImages(e.target.files)
+
+            Array.from(e.target.files).forEach((file) => {
+                const imageUrl = URL.createObjectURL(file)
+
+                if (editorRef.current) {
+                    const selection = window.getSelection()
+                    const range = selection?.getRangeAt(0)
+
+                    if (range) {
+                        // 이미지 요소 생성
+                        const imgElement = document.createElement('img')
+                        imgElement.src = imageUrl
+                        imgElement.className = 'max-w-full h-auto my-4'
+                        imgElement.setAttribute('data-filename', file.name)
+
+                        // 이미지를 p 태그로 감싸기
+                        const p = document.createElement('p')
+                        p.appendChild(imgElement)
+                        p.className = 'text-center' // 이미지 중앙 정렬
+                        range.insertNode(p)
+
+                        // 커서를 이미지 다음으로 이동
+                        range.setStartAfter(p)
+                        range.setEndAfter(p)
+
+                        // 줄바꿈 추가
+                        const br = document.createElement('br')
+                        range.insertNode(br)
+
+                        // 선택 영역 업데이트
+                        selection?.removeAllRanges()
+                        selection?.addRange(range)
+
+                        // content 업데이트
+                        setEditedPost((prev) => ({
+                            ...prev,
+                            content: editorRef.current?.innerHTML || prev.content,
+                        }))
+                    }
+                }
+            })
+        }
+    }
 
     // handlePostEdit 함수 수정
     const handlePostEdit = async () => {
         if (!post || !loginUser) return
 
         try {
+            // 먼저 blogId 가져오기
             const blogResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
                 method: 'GET',
                 headers: {
@@ -536,36 +662,215 @@ export default function DetailPage() {
             }
 
             const blogData = await blogResponse.json()
-
-            // FormData 생성
             const formData = new FormData()
 
-            // 필수 필드들
+            // 필수 필드들 추가
             formData.append('blogId', blogData.blogId.toString())
             formData.append('title', editedPost.title)
-            formData.append('content', editedPost.content)
+            formData.append('mainCategoryId', editedPost.mainCategoryId.toString())
 
-            // 카테고리 ID 처리 수정
-            const mainCategoryId = parseInt(editedPost.mainCategoryId.toString())
-            const categoryId = parseInt(editedPost.categoryId.toString())
+            if (editorRef.current) {
+                const tempDiv = document.createElement('div')
+                tempDiv.innerHTML = editorRef.current.innerHTML
 
-            // 카테고리 ID들 추가 - 명시적으로 숫자로 변환 후 문자열로 변환
-            formData.append('mainCategoryId', Number(editedPost.mainCategoryId).toString())
-            formData.append('categoryId', Number(editedPost.categoryId).toString())
+                const parts: Array<{ type: string; data?: string; index?: number }> = []
+                let imageIndex = 0
 
-            console.log('전송되는 카테고리 정보:', {
-                mainCategoryId: editedPost.mainCategoryId,
-                categoryId: editedPost.categoryId,
+                // 이미지가 있다면 추가
+                if (selectedImages) {
+                    Array.from(selectedImages).forEach((file) => {
+                        formData.append('images', file)
+                    })
+                }
+
+                // content와 contentParts 생성
+                Array.from(tempDiv.childNodes).forEach((node) => {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                        parts.push({
+                            type: 'text',
+                            data: node.textContent.trim(),
+                        })
+                    } else if (node instanceof HTMLElement) {
+                        if (node.tagName === 'P') {
+                            const img = node.querySelector('img')
+                            if (img) {
+                                parts.push({
+                                    type: 'image',
+                                    index: imageIndex++,
+                                })
+                            } else if (node.textContent?.trim()) {
+                                parts.push({
+                                    type: 'text',
+                                    data: node.textContent.trim(),
+                                })
+                            }
+                        } else if (node.tagName === 'IMG') {
+                            parts.push({
+                                type: 'image',
+                                index: imageIndex++,
+                            })
+                        }
+                    }
+                })
+
+                // contentParts와 content 추가
+                formData.append('contentParts', JSON.stringify(parts))
+                formData.append('content', editorRef.current.innerHTML)
+            }
+
+            // 선택적 필드 추가
+            if (editedPost.categoryId) {
+                formData.append('categoryId', editedPost.categoryId.toString())
+            }
+            if (editedPost.author) {
+                formData.append('author', editedPost.author)
+            }
+            if (editedPost.book) {
+                formData.append('book', editedPost.book)
+            }
+
+            // FormData 내용 확인
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value instanceof File ? `File: ${value.name}` : value)
+            }
+
+            // 수정 요청 보내기
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/patch/${post.postId}`, {
+                method: 'PATCH',
+                credentials: 'include',
+                body: formData,
             })
 
-            // 기타 필드들
-            if (editedPost.author) formData.append('author', editedPost.author)
-            if (editedPost.book) formData.append('book', editedPost.book)
+            const responseText = await response.text()
+            console.log('서버 응답:', responseText)
 
-            // 이미지 파일 추가
-            editedPost.images.forEach((file) => {
-                formData.append('images', file)
+            if (!response.ok) {
+                throw new Error('게시글 수정에 실패했습니다.')
+            }
+
+            alert('게시글이 성공적으로 수정되었습니다!')
+            setIsPostEditing(false)
+            window.location.reload()
+        } catch (error) {
+            console.error('게시글 수정 실패:', error)
+            alert('게시글 수정에 실패했습니다.')
+        }
+    }
+    // handlePostEdit 함수 수정
+    /* const handlePostEdit = async (e: React.FormEvent) => {
+        if (!post || !loginUser) return
+
+        try {
+            const blogResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/blogs/get/token`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
             })
+
+            const blogData = await blogResponse.json()
+            const formData = new FormData()
+
+            // 기본 필드 추가
+            formData.append('blogId', blogData.blogId.toString())
+            formData.append('title', editedPost.title)
+            formData.append('mainCategoryId', editedPost.mainCategoryId.toString())
+
+            // content와 이미지 처리
+            if (editorRef.current) {
+                const tempDiv = document.createElement('div')
+                tempDiv.innerHTML = editedPost.content
+
+                // contentParts 생성
+                const parts: Array<{ type: string; data?: string; index?: number }> = []
+                let imageIndex = 0
+
+                // 이미지 파일 추가
+                const imageFiles: File[] = []
+                if (selectedImages) {
+                    Array.from(selectedImages).forEach((file) => {
+                        imageFiles.push(file)
+                        formData.append('images', file)
+                    })
+                }
+
+                // content와 contentParts 생성
+                const nodes = Array.from(tempDiv.childNodes)
+                for (const node of nodes) {
+                    if (node instanceof HTMLElement) {
+                        if (node.tagName === 'P') {
+                            const img = node.querySelector('img')
+                            if (img) {
+                                const fileName = img.getAttribute('data-filename')
+                                if (fileName) {
+                                    parts.push({
+                                        type: 'image',
+                                        index: imageIndex++,
+                                    })
+                                }
+                            } else if (node.textContent?.trim()) {
+                                parts.push({
+                                    type: 'text',
+                                    data: node.textContent.trim(),
+                                })
+                            }
+                        } else if (node.tagName == 'IMG') {
+                            const fileName = node.getAttribute('data-filename')
+                            if (fileName) {
+                                parts.push({
+                                    type: 'image',
+                                    index: imageIndex++,
+                                })
+                            }
+                        } else if (node.textContent?.trim()) {
+                            parts.push({
+                                type: 'text',
+                                data: node.textContent.trim(),
+                            })
+                        }
+                    } else if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                        parts.push({
+                            type: 'text',
+                            data: node.textContent.trim(),
+                        })
+                    }
+                }
+
+                // contentParts JSON 문자열로 변환하여 추가
+                formData.append('contentParts', JSON.stringify(parts))
+                formData.append('content', editedPost.content)
+
+                // 실제 content를 생성할 때는 이미지 플레이스홀더 포함
+                const content = parts
+                    .map((part) => {
+                        if (part.type === 'text') {
+                            return `<p>${part.data}</p>`
+                        } else if (part.type === 'image') {
+                            return `<img src="IMAGE_PLACEHOLDER_${part.index}" />`
+                        }
+                        return ''
+                    })
+                    .join('\n')
+
+                formData.append('content', content)
+            }
+
+            // 선택적 필드 추가
+            if (editedPost.categoryId) {
+                formData.append('categoryId', editedPost.categoryId.toString())
+            }
+            if (editedPost.author) {
+                formData.append('author', editedPost.author)
+            }
+            if (editedPost.book) {
+                formData.append('book', editedPost.book)
+            }
+
+            // FormData 내용 확인
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value instanceof File ? `File: ${value.name}` : value)
+            }
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/patch/${post.postId}`, {
                 method: 'PATCH',
@@ -574,19 +879,19 @@ export default function DetailPage() {
             })
 
             if (!response.ok) {
-                const errorData = await response.text()
-                console.error('서버 응답:', errorData)
+                const responseText = await response.text()
+                console.log('서버 응답:', responseText)
                 throw new Error('게시글 수정에 실패했습니다.')
             }
 
-            alert('게시글이 성공적으로 수정되었습니다.')
+            alert('게시글이 성공적으로 수정되었습니다!')
             setIsPostEditing(false)
             window.location.reload()
         } catch (error) {
             console.error('게시글 수정 실패:', error)
             alert('게시글 수정에 실패했습니다.')
         }
-    }
+    } */
 
     // 이미지 파일 선택 핸들러 추가
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -628,6 +933,90 @@ export default function DetailPage() {
             images: [],
         })
     }
+
+    // Add image input handler
+    /* const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            setSelectedImages((prev) => {
+                const newFiles = prev ? [...prev] : []
+                return [...newFiles, ...Array.from(e.target.files || [])]
+            })
+
+            Array.from(e.target.files).forEach((file) => {
+                const imageUrl = URL.createObjectURL(file)
+
+                if (editorRef.current) {
+                    const selection = window.getSelection()
+                    const range = selection?.getRangeAt(0)
+
+                    if (range) {
+                        // 이미지 요소 생성 및 삽입
+                        const imgElement = document.createElement('img')
+                        imgElement.src = imageUrl
+                        imgElement.className = 'max-w-full h-auto my-4'
+                        imgElement.setAttribute('data-filename', file.name)
+
+                        // 현재 커서 위치에 이미지 삽입
+                        range.insertNode(imgElement)
+
+                        // contentParts 업데이트
+                        const currentContent = editorRef.current.innerHTML
+                        updateContentParts(currentContent)
+
+                        // 커서를 이미지 다음으로 이동
+                        range.setStartAfter(imgElement)
+                        range.setEndAfter(imgElement)
+                        selection?.removeAllRanges()
+                        selection?.addRange(range)
+                    }
+                }
+            })
+        }
+    } */
+
+    // handleImageChange 함수 수정
+    // handleImageChange 함수 수정
+
+    // Content Area 부분 수정
+
+    const updateContentParts = (content: string) => {
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = content
+
+        const parts: Array<{ type: string; data?: string; index?: number }> = []
+        let imageIndex = 0
+
+        const processNode = (node: Node) => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+                parts.push({
+                    type: 'text',
+                    data: node.textContent.trim(),
+                })
+            } else if (node.nodeName === 'IMG') {
+                parts.push({
+                    type: 'image',
+                    index: imageIndex++,
+                })
+            } else if (node.hasChildNodes()) {
+                Array.from(node.childNodes).forEach(processNode)
+            }
+        }
+
+        Array.from(tempDiv.childNodes).forEach(processNode)
+        setContentParts(parts)
+    }
+
+    // 이미지 삭제 핸들러 추가
+    const handleRemoveImage = (index: number) => {
+        setImagePreviews((prev) => {
+            const newPreviews = [...prev]
+            URL.revokeObjectURL(newPreviews[index].url)
+            newPreviews.splice(index, 1)
+            return newPreviews
+        })
+    }
+
+    // 컴포넌트 언마운트 시 URL 정리
 
     // handlePostDelete 함수 추가
     const handlePostDelete = async () => {
@@ -696,6 +1085,54 @@ export default function DetailPage() {
         }
     }
 
+    /* const handleEditorChange = () => {
+        if (editorRef.current) {
+            const content = editorRef.current.innerHTML
+            setCurrentContent(content)
+
+            // contentParts 업데이트
+            const textPart: ContentPart = {
+                type: 'text',
+                data: content,
+            }
+            setContentParts((prev) => [...prev, textPart])
+        }
+    } */
+
+    const handleEditorChange = () => {
+        if (editorRef.current) {
+            setEditedPost((prev) => ({
+                ...prev,
+                content: editorRef.current.innerHTML,
+            }))
+
+            // contentParts 업데이트
+            const tempDiv = document.createElement('div')
+            tempDiv.innerHTML = editorRef.current.innerHTML
+
+            const parts: ContentPart[] = []
+            let imageIndex = 0
+
+            Array.from(tempDiv.childNodes).forEach((node) => {
+                if (node instanceof HTMLElement) {
+                    if (node.tagName === 'IMG') {
+                        parts.push({
+                            type: 'image',
+                            index: imageIndex++,
+                        })
+                    } else if (node.textContent?.trim()) {
+                        parts.push({
+                            type: 'text',
+                            data: node.textContent.trim(),
+                        })
+                    }
+                }
+            })
+
+            setContentParts(parts)
+        }
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-7xl bg-gray-50">
             <div className="flex gap-8">
@@ -720,7 +1157,6 @@ export default function DetailPage() {
                                         className="w-full py-3 text-4xl font-light border-0 border-b border-gray-200 focus:outline-none focus:border-gray-300 focus:ring-0 placeholder-gray-400"
                                     />
                                 </div>
-
                                 {/* Author & Book Info */}
                                 <div className="space-y-6 mb-8">
                                     <div>
@@ -754,7 +1190,6 @@ export default function DetailPage() {
                                         />
                                     </div>
                                 </div>
-
                                 {/* Image Upload */}
                                 <div className="mb-8">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">이미지 첨부</label>
@@ -772,9 +1207,38 @@ export default function DetailPage() {
                                             cursor-pointer"
                                     />
                                 </div>
-
                                 {/* Text Formatting Toolbar */}
                                 <div className="border border-gray-200 rounded-t-lg p-2 bg-gray-50 flex space-x-2">
+                                    <button
+                                        onClick={(e) => applyFormat(e, 'bold')}
+                                        className={`p-2 rounded ${isBold ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
+                                        title="굵게"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            {/* ... SVG path ... */}
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={(e) => applyFormat(e, 'italic')}
+                                        className={`p-2 rounded ${isItalic ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
+                                        title="기울임"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            {/* ... SVG path ... */}
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={(e) => applyFormat(e, 'underline')}
+                                        className={`p-2 rounded ${isUnderline ? 'bg-gray-200' : 'hover:bg-gray-200'}`}
+                                        title="밑줄"
+                                    >
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                            {/* ... SVG path ... */}
+                                        </svg>
+                                    </button>
+                                </div>
+                                {/* Text Formatting Toolbar */}
+                                {/* <div className="border border-gray-200 rounded-t-lg p-2 bg-gray-50 flex space-x-2">
                                     <button className="p-2 hover:bg-gray-200 rounded" title="굵게">
                                         <svg
                                             className="w-4 h-4"
@@ -863,23 +1327,71 @@ export default function DetailPage() {
                                             />
                                         </svg>
                                     </button>
-                                </div>
-
+                                </div> */}
                                 {/* Content Area */}
+                                {/* Content Area */}
+                                {/* <div className="mb-8">
+                                    <div
+                                        ref={editorRef}
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        className="w-full min-h-[500px] p-4 border border-gray-300 rounded-lg prose max-w-none
+            focus:outline-none focus:ring-1 focus:ring-green-500
+            [&>p]:my-4 [&>img]:max-w-full [&>img]:h-auto"
+                                        dangerouslySetInnerHTML={{ __html: editedPost.content }}
+                                        onInput={() => {
+                                            if (editorRef.current) {
+                                                setEditedPost((prev) => ({
+                                                    ...prev,
+                                                    content: editorRef.current?.innerHTML || prev.content,
+                                                }))
+                                            }
+                                        }}
+                                    />
+                                </div> */}
+
                                 <div className="mb-8">
-                                    <textarea
-                                        value={editedPost.content}
-                                        onChange={(e) =>
-                                            setEditedPost({
-                                                ...editedPost,
-                                                content: e.target.value,
-                                            })
-                                        }
-                                        placeholder="내용을 입력하세요"
-                                        className="w-full min-h-[500px] p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
+                                    <div className="flex items-center mb-4">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="hidden"
+                                            id="image-upload"
+                                        />
+                                        <label
+                                            htmlFor="image-upload"
+                                            className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md"
+                                        >
+                                            <svg
+                                                className="w-5 h-5 mr-2"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                />
+                                            </svg>
+                                            이미지 첨부
+                                        </label>
+                                    </div>
+                                    <div
+                                        ref={editorRef}
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        className="w-full min-h-[500px] p-6 border border-gray-300 rounded-lg prose max-w-none
+    focus:outline-none focus:ring-1 focus:ring-green-500
+    [&>p]:my-1 [&>p]:text-base [&>img]:max-w-full [&>img]:h-auto [&>img]:mx-auto
+    [&>p]:leading-none [&>p]:text-gray-800"
+                                        dangerouslySetInnerHTML={{ __html: editedPost.content }}
+                                        onInput={handleEditorChange}
                                     />
                                 </div>
-
                                 {/* Submit Buttons */}
                                 <div className="flex justify-end space-x-3">
                                     <button
@@ -955,7 +1467,10 @@ export default function DetailPage() {
                                 <div className="flex items-center mb-6">
                                     <div className="w-8 h-8 rounded-full bg-gray-300 mr-2 overflow-hidden">
                                         <img
-                                            src="https://randomuser.me/api/portraits/women/44.jpg"
+                                            src={
+                                                profileImageUrl ||
+                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                            } // 기본 이미지 설정
                                             alt="프로필"
                                             className="w-full h-full object-cover"
                                         />
@@ -979,7 +1494,10 @@ export default function DetailPage() {
                                                         <div className="flex items-center min-w-0">
                                                             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                 <img
-                                                                    src="https://randomuser.me/api/portraits/women/44.jpg"
+                                                                    src={
+                                                                        profileImageUrl ||
+                                                                        'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                                                    } // 기본 이미지 설정
                                                                     alt="프로필"
                                                                     className="w-full h-full object-cover"
                                                                 />
@@ -1054,24 +1572,6 @@ export default function DetailPage() {
 
                                 {/* 게시글 내용 */}
                                 <div className="mb-8">
-                                    {post.imageUrls.length > 0 && (
-                                        <div className="flex flex-col gap-4 mb-8">
-                                            {post.imageUrls.map((url, idx) => (
-                                                <div key={idx} className="w-full rounded-lg overflow-hidden">
-                                                    <img
-                                                        src={url}
-                                                        alt={`게시글 이미지 ${idx + 1}`}
-                                                        className="w-full h-auto object-contain max-h-[600px]"
-                                                        onError={(e) => {
-                                                            e.currentTarget.src =
-                                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
-                                                        }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
                                     {isPostEditing ? (
                                         <textarea
                                             value={editedPost.content}
@@ -1085,7 +1585,13 @@ export default function DetailPage() {
                                             rows={15}
                                         />
                                     ) : (
-                                        <div className="mb-6 whitespace-pre-line">{post.content}</div>
+                                        // HTML 컨텐츠를 직접 렌더링
+                                        <div
+                                            className="prose max-w-none"
+                                            dangerouslySetInnerHTML={{
+                                                __html: post.content,
+                                            }}
+                                        />
                                     )}
                                 </div>
 

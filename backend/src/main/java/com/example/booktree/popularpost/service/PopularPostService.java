@@ -1,19 +1,18 @@
 
 package com.example.booktree.popularpost.service;
 
+
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.post.dto.response.PostResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
-import com.example.booktree.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -22,15 +21,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PopularPostService {
 
     private final StringRedisTemplate redisTemplate;
-    private final PostService postService;
     private static final String REDIS_KEY = "popular:posts:";
-    private final String defaultImageUrl = "https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png";
+    private final String defaultImageUrl = DEFAULT_POST_IMAGE;
+    private final PostRepository postRepository;
 
 
     // 메인 카테고리 별 게시글 조회 시 인기순위에 반영
@@ -72,7 +73,7 @@ public class PopularPostService {
         }
 
         // 순서 보장을 안해줌
-        List<Post> posts = postService.findAllById(ids);
+        List<Post> posts = postRepository.findAllByIdWithImages(ids);
 
         // 순서 보장을 위해 Redis에 있던 순서대로 정렬
         Map<Long, Post> postMap = posts.stream()
@@ -82,6 +83,10 @@ public class PopularPostService {
         List<PostResponseDto> response = ids.stream()
                 .map(id -> {
                     Post post = postMap.get(id);
+                    if(post.getImageList().size()>0){
+                        //System.out.println("imageUrl : " + post.getImageList().get(0).getImageUrl());
+                    }
+
                     double score = scores.get(ids.indexOf(id)); // score 가져오기
                     return PostResponseDto.builder()
                             .postId(post.getId())
@@ -104,6 +109,19 @@ public class PopularPostService {
         LocalDate now = LocalDate.now();
         String monthKey = now.format(DateTimeFormatter.ofPattern("yyyy-MM"));
         return REDIS_KEY + mainCategoryId + ":month:" + monthKey;
+    }
+
+
+    // 게시글 삭제 시 Redis 인기 데이터 삭제
+    public void removePostFromPopularity(Long postId, Long mainCategoryId) {
+        String key = getMonthlyKey(mainCategoryId);
+        // ZREM 명령어 사용: 지정된 Sorted Set에서 멤버 제거
+        Long removedCount = redisTemplate.opsForZSet().remove(key, postId.toString());
+        if (removedCount != null && removedCount > 0) {
+            log.info("Removed post {} from Redis popular list key: {}", postId, key);
+        } else {
+            log.warn("Post {} not found in Redis popular list key: {}", postId, key);
+        }
     }
 }
 

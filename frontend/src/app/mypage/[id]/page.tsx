@@ -81,6 +81,7 @@ export default function MyPage() {
     }
 
     const saveEditedCategory = async (categoryId: number) => {
+        console.log(editedCategoryName)
         try {
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/categories/patch/${categoryId}`,
@@ -141,7 +142,7 @@ export default function MyPage() {
             alert('카테고리가 성공적으로 삭제되었습니다!')
         } catch (error) {
             console.error(error)
-            alert('카테고리 삭제 중 오류가 발생했습니다. 다시 시도해주세요.')
+            alert('해당 카테고리를 사용중인 게시글이 있습니다. 해당 게시글들을 삭제 후 시도해주세요.')
         }
     }
 
@@ -281,7 +282,7 @@ export default function MyPage() {
                             <img
                                 src={
                                     loginUser.image ||
-                                    'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/default_profile.png'
+                                    'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%89%E1%85%A1%E1%84%8B%E1%85%AD%E1%86%BC%E1%84%8C%E1%85%A1%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5.png'
                                 }
                                 alt="프로필"
                                 className="w-full h-full object-cover"
@@ -482,56 +483,72 @@ export default function MyPage() {
                     </Link>
                 </div>
                 <div>
-                    {categories.map((category) => (
-                        <div
-                            key={category.id}
-                            className="p-6 hover:bg-gray-50 transition cursor-pointer flex justify-between items-center"
-                            onClick={() => router.push(`/category/${category.id}`)} // 카테고리 클릭 시 이동
-                        >
-                            <div className="flex-1">
-                                {editingCategoryId === category.id ? (
-                                    <input
-                                        type="text"
-                                        value={editedCategoryName}
-                                        onChange={(e) => setEditedCategoryName(e.target.value)}
-                                        className="border p-2 rounded w-full"
-                                    />
-                                ) : (
-                                    <h3 className="font-medium">{category.name}</h3>
-                                )}
-                            </div>
-                            <div className="flex space-x-2 text-gray-500">
-                                {editingCategoryId === category.id ? (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
-                                            saveEditedCategory(category.id)
-                                        }}
-                                        className="text-green-600 font-semibold"
-                                    >
-                                        완료
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
-                                            startEditingCategory(category.id, category.name)
-                                        }}
-                                    >
-                                        수정
-                                    </button>
-                                )}
-                                <button
+                    {categories.map((category) => {
+                        const isEditing = editingCategoryId === category.id
+
+                        return (
+                            <div
+                                key={category.id}
+                                className={`p-6 transition flex justify-between items-center ${
+                                    isEditing ? '' : 'hover:bg-gray-50 cursor-pointer'
+                                }`}
+                                onClick={() => {
+                                    if (!isEditing) {
+                                        console.log('category clicked', category.name)
+                                        router.push(`/category/${category.id}`)
+                                    }
+                                }}
+                            >
+                                <div
+                                    className="flex-1"
                                     onClick={(e) => {
-                                        e.stopPropagation() // 부모의 onClick 이벤트 전파 방지
-                                        handleDeleteCategory(category.id)
+                                        if (isEditing) e.stopPropagation()
                                     }}
                                 >
-                                    삭제
-                                </button>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            value={editedCategoryName}
+                                            onChange={(e) => setEditedCategoryName(e.target.value)}
+                                            className="border p-2 rounded w-full"
+                                        />
+                                    ) : (
+                                        <h3 className="font-medium">{category.name}</h3>
+                                    )}
+                                </div>
+                                <div className="flex space-x-2 text-gray-500">
+                                    {isEditing ? (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                saveEditedCategory(category.id)
+                                            }}
+                                            className="text-green-600 font-semibold"
+                                        >
+                                            완료
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                startEditingCategory(category.id, category.name)
+                                            }}
+                                        >
+                                            수정
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDeleteCategory(category.id)
+                                        }}
+                                    >
+                                        삭제
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             </div>
 

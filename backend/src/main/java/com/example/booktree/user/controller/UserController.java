@@ -189,6 +189,7 @@ public class UserController {
         // accessToken 쿠키 삭제
         Cookie accessTokenCookie = new Cookie("accessToken", null);
         accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setSecure(true);
         accessTokenCookie.setPath("/");  // 쿠키의 경로 지정
         accessTokenCookie.setMaxAge(0);  // 쿠키의 유효 기간을 0으로 설정하여 삭제
         response.addCookie(accessTokenCookie);
@@ -220,14 +221,12 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+
+    //이것만 사용하도록 수정 ( 이메일 인증 보내기까지 구현하기)
     @PostMapping("/find/pw/email")
-    public ResponseEntity findPwByEmail(@Valid @RequestParam String email) {
-        String password = userService.findPasswordByEmail(email) ;
-        ApiResponseDto response = ApiResponseDto.builder()
-                .data(password)
-                .message("임시 비밀번호 입니다.")
-                .build();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity findPwByEmail(@Valid @RequestBody UserPasswordRequestDto.FindPwToEmail findPwToEmail) {
+       userService.findPasswordByEmail(findPwToEmail.getEmail());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
