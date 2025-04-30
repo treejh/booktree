@@ -166,6 +166,7 @@ public class PostService {
                 .category(category)
                 .createdAt(LocalDateTime.now())
                 .modifiedAt(LocalDateTime.now())
+                .view(0L)
                 .build();
 
         postRepository.save(post);
@@ -182,8 +183,6 @@ public class PostService {
         }
 
 
-
-
         // 이미지 업로드
 
 
@@ -197,7 +196,7 @@ public class PostService {
 //                imageRepository.save(image); // 이미지 저장
 //            }
 //        }
-    }
+        }
 
 
     @Transactional
