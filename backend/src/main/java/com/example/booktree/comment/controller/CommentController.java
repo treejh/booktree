@@ -2,8 +2,8 @@ package com.example.booktree.comment.controller;
 
 import com.example.booktree.comment.dto.CommentDto;
 import com.example.booktree.comment.service.CommentService;
-import com.example.booktree.like_comment.dto.LikeCommentDto;
-import com.example.booktree.like_comment.service.LikeCommentService;
+import com.example.booktree.likecomment.dto.LikeCommentDto;
+import com.example.booktree.likecomment.service.LikeCommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

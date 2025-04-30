@@ -53,6 +53,11 @@ public class SecurityConfigBookTree {
                                 "/api/v1/users/get/profile/**"
 
                         ).permitAll()
+                        //무중단 배포 추가, 이메일 추가
+                        .requestMatchers("/actuator/health","/api/v1/email/**")
+                        .permitAll()
+
+
                         //회원 /api/v1/users
                         .requestMatchers("/api/v1/users/get/profile/**", "/api/v1/users/create","api/v1/users/create/admin"
                                 ,"/api/v1/users/login","/api/v1/users/find/**"
@@ -226,7 +231,8 @@ public class SecurityConfigBookTree {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "https://www.booktri.site"
+                "https://www.booktri.site",
+                "https://api.booktri.site"
         ));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

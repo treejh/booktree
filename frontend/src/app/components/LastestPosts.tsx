@@ -123,8 +123,10 @@ export default function LatestPosts({ blogId }: LatestPostsProps) {
                 {Array.from({ length: totalPages }, (_, i) => (
                     <button
                         key={i + 1}
-                        className={`px-4 py-2 border rounded ${
-                            currentPage === i + 1 ? 'bg-gray-900 text-white' : 'hover:bg-gray-50'
+                        className={`w-10 h-10 border border-gray-200 rounded flex items-center justify-center mx-1 text-sm font-medium transition ${
+                            currentPage === i + 1
+                                ? 'bg-[#247040] text-white'
+                                : 'bg-white text-gray-700 hover:bg-gray-100'
                         }`}
                         onClick={() => handlePageChange(i + 1)}
                     >

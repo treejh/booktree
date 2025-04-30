@@ -68,7 +68,16 @@ dependencies {
     // Redis 의존성
     implementation ("org.springframework.boot:spring-boot-starter-data-redis")
 
+    //무중단 배포 의존성 추가 ( get 요청 )
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    //이메일 의존성 추가
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+
+
+    //// thymeleaf
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
 
 }
 
