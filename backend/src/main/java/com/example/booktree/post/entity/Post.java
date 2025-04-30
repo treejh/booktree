@@ -67,9 +67,8 @@ public class Post extends Auditable {
     private Category category; //개인 카테고리
 
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY,orphanRemoval = true)
     List<Image> imageList = new ArrayList<>();
-
 
 
     // 게시글 좋아요 필드 추가

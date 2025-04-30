@@ -4,6 +4,7 @@ package com.example.booktree.user.entity;
 import com.example.booktree.auditable.Auditable;
 import com.example.booktree.blog.entity.Blog;
 import com.example.booktree.category.entity.Category;
+import com.example.booktree.follow.entity.Follow;
 import com.example.booktree.likecomment.entity.LikeComment;
 import com.example.booktree.likereply.entity.LikeReply;
 import jakarta.persistence.CascadeType;
@@ -36,7 +37,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@ToString
 public class User extends Auditable {
 
     @Id
@@ -79,17 +79,19 @@ public class User extends Auditable {
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
     List<Blog> blogList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
     List<Category> categoryList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
     List<LikeComment> likeCommentList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = false,  fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true,  fetch = FetchType.LAZY)
     List<LikeReply> likeReplyList = new ArrayList<>();
+
+
 
     public User(long id, String email, String username, Collection<? extends GrantedAuthority> authorities) {
         this.id=id;
