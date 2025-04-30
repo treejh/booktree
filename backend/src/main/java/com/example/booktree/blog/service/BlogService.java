@@ -69,6 +69,7 @@ public class BlogService {
         return verifiedBlog(blog.getId());
     }
 
+    @Transactional
     public Blog updateBlog(BlogRequestDto blogRequestDto) {
         Long userId = tokenService.getIdFromToken();
 
