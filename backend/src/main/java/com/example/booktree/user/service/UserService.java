@@ -1,12 +1,9 @@
 package com.example.booktree.user.service;
 
 
-import static com.example.booktree.utils.ImageUtil.DEFAULT_USER_IMAGE;
-
 import com.example.booktree.category.entity.Category;
 import com.example.booktree.category.repository.CategoryRepository;
 import com.example.booktree.comment.repository.CommentRepository;
-import com.example.booktree.enums.RoleType;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.follow.repository.FollowRepository;
@@ -14,35 +11,35 @@ import com.example.booktree.image.entity.Image;
 import com.example.booktree.image.repository.ImageRepository;
 import com.example.booktree.image.service.ImageService;
 import com.example.booktree.jwt.service.TokenService;
-import com.example.booktree.likecomment.entity.LikeComment;
 import com.example.booktree.likecomment.repository.LikeCommentRepository;
 import com.example.booktree.likepost.repository.LikePostRepository;
 import com.example.booktree.likereply.repository.LikeReplyRepository;
+import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.repository.PostRepository;
 import com.example.booktree.reply.repository.ReplyRepository;
 import com.example.booktree.role.entity.Role;
 import com.example.booktree.role.repository.RoleRepository;
 import com.example.booktree.user.dto.request.UserPasswordRequestDto;
-
 import com.example.booktree.user.dto.request.UserPatchRequestDto;
 import com.example.booktree.user.dto.request.UserPhoneNumberRequestDto;
 import com.example.booktree.user.dto.request.UserPostRequestDto;
 import com.example.booktree.user.entity.User;
 import com.example.booktree.user.repository.UserRepository;
 import com.example.booktree.utils.CreateRandomNumber;
-import com.example.booktree.utils.ImageUtil;
-import com.example.booktree.utils.S3Uploader;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static com.example.booktree.utils.ImageUtil.DEFAULT_USER_IMAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +63,7 @@ public class UserService {
     private final TokenService tokenService;
     private final ImageService imageService;
     private static final String USER_IMAGE= DEFAULT_USER_IMAGE;
-
+    private final PopularPostService popularPostService;
 
 
     public User findById(Long userId) {
@@ -290,6 +287,8 @@ public class UserService {
         for (Post post : userPosts) {
             // 해당 게시글에 연결된 이미지들 목록을 가져옴
             List<Image> imageList = post.getImageList();
+            Long categoryId = post.getMainCategory().getId(); // 게시글의 메인 카테고리
+            popularPostService.removePostFromPopularity(post.getId(), categoryId); // Redis 정
 
             for (Image image : imageList) {
                 imageService.deleteFile(image.getImageUrl());

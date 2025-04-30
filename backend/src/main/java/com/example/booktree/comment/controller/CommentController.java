@@ -46,7 +46,7 @@ public class CommentController {
 
     // 댓글 수정
     @PatchMapping("/update/{commentId}")
-    public ResponseEntity<CommentDto.Response> updateComment(@PathVariable Long commentId,
+    public ResponseEntity<CommentDto.Response> updateComment(@PathVariable("commentId") Long commentId,
                                                              @RequestBody CommentDto.Patch dto) {
         dto.setCommentId(commentId);
         CommentDto.Response response = commentService.updateComment(dto);
@@ -55,14 +55,14 @@ public class CommentController {
 
     // 댓글 삭제
     @DeleteMapping("/delete/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<Void> deleteComment(@PathVariable("commentId") Long commentId) {
         commentService.deleteComment(commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /** 댓글 좋아요 토글 */
     @PostMapping("/{commentId}/like")
-    public ResponseEntity<Map<String, Long>> toggleLike(@PathVariable Long commentId) {
+    public ResponseEntity<Map<String, Long>> toggleLike(@PathVariable("commentId") Long commentId) {
         // likeCommentService.toggleLike를 직접 호출하거나, commentService에 위임해도 됩니다.
         // 여기서는 LikeCommentService를 직접 사용한다고 가정:
         LikeCommentDto.Response dto = likeCommentService.toggleLike(
