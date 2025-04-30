@@ -1314,7 +1314,7 @@ export default function DetailPage() {
                                         }}
                                     />
                                 </div> */}
-                                // Content Area 부분 수정
+                                
                                 <div className="mb-8">
                                     <div className="flex items-center mb-4">
                                         <input
