@@ -357,8 +357,9 @@ public class UserService {
 
     public User createSocialUser(String email, String password, String username,String provider,String socialId){
 
-        Role role = roleRepository.findByRole(RoleType.USER)
-                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.ROLE_NOT_FOUND));
+
+        Role role = roleRepository.findById(1L)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ROLE_NOT_FOUND)); // 직접 예외 처리
 
 
         User user = User.builder()
