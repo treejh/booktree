@@ -125,7 +125,7 @@ public class PostController {
     @GetMapping("/get/{postId}")
     public ResponseEntity<PostDetailResponseDto> getPostById(@PathVariable("postId") Long postId) {
 
-        System.out.println("📥📥 컨트롤러 진입");
+        //System.out.println("📥📥 컨트롤러 진입");
 
         Post post = postService.findPostById(postId);
 

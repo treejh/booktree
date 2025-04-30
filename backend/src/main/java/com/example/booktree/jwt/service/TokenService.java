@@ -85,15 +85,12 @@ public class TokenService {
        // setCookie("refreshToken", user.getRefreshToken());
         setCookie("accessToken", accessToken);
 
-        setCookieHttps("accessToken", accessToken,"api.booktri.site");
-
         return accessToken;
     }
 
     public void setCookie(String name, String value) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                .domain("localhost")
                 .sameSite("Strict")
                 .secure(true)
                 .httpOnly(true)
@@ -121,7 +118,6 @@ public class TokenService {
     public void deleteCookie(String name) {
         ResponseCookie cookie = ResponseCookie.from(name, null)
                 .path("/")
-                .domain("localhost")
                 .sameSite("Strict")
                 .secure(true)
                 .httpOnly(true)
