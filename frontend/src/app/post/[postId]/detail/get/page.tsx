@@ -223,6 +223,7 @@ export default function DetailPage() {
     }, [postId])
 
     useEffect(() => {
+        if (!post?.causerId) return
         const fetchUserProfile = async () => {
             if (!post?.causerId) return // post.causerId가 없으면 요청하지 않음
 
