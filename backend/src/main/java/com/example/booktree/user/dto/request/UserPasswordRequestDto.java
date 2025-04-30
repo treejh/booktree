@@ -55,6 +55,7 @@ public class UserPasswordRequestDto {
         private String password;
     }
 
+
     @Getter
     @AllArgsConstructor
     public static class FindPwByEmailAndPhone {
@@ -67,6 +68,15 @@ public class UserPasswordRequestDto {
         @Pattern(regexp = "^\\d{3}-\\d{4}-\\d{4}$", message = "전화번호 형식은 010-1234-5678이어야 합니다.")
         private String phoneNumber;
 
+
+    }
+    @Getter
+    @AllArgsConstructor
+    public static class FindPwToEmail {
+
+        @NotBlank
+        @Email
+        private String email;
 
     }
 
