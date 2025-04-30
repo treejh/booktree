@@ -82,6 +82,7 @@ export default function RegisterPage() {
         // requestDto 객체 생성
         const requestData = {
             roleId: 1, // 예시로 roleId가 1이라고 가정
+            username: username, // 닉네임
             email: fullEmail, // 생성된 이메일
             password: password, // 비밀번호
             phoneNumber: phoneNumber, // 전화번호
