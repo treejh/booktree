@@ -1,20 +1,15 @@
 package com.example.booktree.post.controller;
 
-import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
 import com.example.booktree.exception.BusinessLogicException;
 import com.example.booktree.exception.ExceptionCode;
 import com.example.booktree.popularpost.service.PopularPostService;
 import com.example.booktree.post.dto.request.PostRequestDto;
-
-import com.example.booktree.post.dto.response.*;
-
-
 import com.example.booktree.post.dto.response.PostDetailResponseDto;
 import com.example.booktree.post.dto.response.PostFollowingPageDto;
-
+import com.example.booktree.post.dto.response.PostResponseDto;
+import com.example.booktree.post.dto.response.PostTop3ResponseDto;
 import com.example.booktree.post.entity.Post;
 import com.example.booktree.post.service.PostService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,14 +17,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static com.example.booktree.utils.ImageUtil.DEFAULT_POST_IMAGE;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -45,7 +39,7 @@ public class PostController {
 
     // 카테고리 별 최신순 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/{value}")
-    public ResponseEntity<?> getPostByMainCategory(@PathVariable Long maincategoryId,
+    public ResponseEntity<?> getPostByMainCategory(@PathVariable("maincategoryId") Long maincategoryId,
                                                     @RequestParam(name = "page", defaultValue = "1") int page,
                                                     @RequestParam(name="size", defaultValue = "8") int size,
                                                     @PathVariable int value) {
@@ -76,7 +70,7 @@ public class PostController {
 
     // 카테고리 별 조회수순으로 글 가지고 오기
     @GetMapping("/get/maincategory/{maincategoryId}/view")
-    public ResponseEntity<?> getPostByViews(@PathVariable Long maincategoryId,
+    public ResponseEntity<?> getPostByViews(@PathVariable("maincategoryId") Long maincategoryId,
                                                     @RequestParam(name = "page", defaultValue = "1") int page,
                                                     @RequestParam(name="size", defaultValue = "5") int size
                                                     ) {

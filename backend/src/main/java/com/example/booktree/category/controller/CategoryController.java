@@ -46,7 +46,7 @@ public class CategoryController {
             description = "선택한 유저의 ID를 통해 유저가 등록한 모든 카테고리를 반환하는 메서드 (게시글 상세 보기)",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> getAllCategory(@PathVariable Long userid) {
+    public ResponseEntity<?> getAllCategory(@PathVariable("userid") Long userid) {
 
         // 인가 로직
         List<AllCategoryResponseDto> response = categoryService.findAllcategory(userid);
@@ -59,7 +59,7 @@ public class CategoryController {
             description = "인가된 유저의 ID를 통해 특정 카테고리를 삭제하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> deleteCategory(@PathVariable Long categoryId) {
+    public ResponseEntity<?> deleteCategory(@PathVariable("categoryId") Long categoryId) {
 
         Long userId = tokenService.getIdFromToken();
         categoryService.deleteCategory(categoryId, userId);
@@ -98,7 +98,7 @@ public class CategoryController {
             description = "유저 아이디와 카테고리 작성자 ID를 비교 후 게시글 정보를 가공해 사용자에게 제공하는 메서드",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> getPosts(@PathVariable Long categoryId) {
+    public ResponseEntity<?> getPosts(@PathVariable("categoryId") Long categoryId) {
 
         Long userId= tokenService.getIdFromToken();
         List<PostByCategoryResponseDto> response = categoryService.getPostByCategory(categoryId, userId);
@@ -112,7 +112,7 @@ public class CategoryController {
             description = "카테고리 아이디를 통해서 게시글을 사용자에게 제공하는 메서드 ",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> getPostsByCategoryId(@PathVariable Long categoryId,
+    public ResponseEntity<?> getPostsByCategoryId(@PathVariable("categoryId") Long categoryId,
         @RequestParam(name = "page", defaultValue = "0") int page,
         @RequestParam(name = "size", defaultValue = "8") int size) {
 
@@ -127,7 +127,7 @@ public class CategoryController {
             description = "카테고리 아이디를 통해서 카테고리 정보를 사용자에게 제공하는 기능 ",
             tags = "카테고리 관리 컨트롤러"
     )
-    public ResponseEntity<?> getCategoryByCategoryId(@PathVariable Long categoryId) {
+    public ResponseEntity<?> getCategoryByCategoryId(@PathVariable("categoryId") Long categoryId) {
         AllCategoryResponseDto response = categoryService.getCategoryByCategoryID(categoryId);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
