@@ -1,6 +1,7 @@
 package com.example.booktree.user.dto.response;
 
 import com.example.booktree.user.entity.User;
+import com.example.booktree.utils.ImageUtil;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,10 +20,12 @@ public class UserMyPageResponseDto {
 
     private String username;
     private LocalDateTime createdAt;
+    private String imageUrl;
 
     public UserMyPageResponseDto(User user){
         this.username  = user.getUsername();
         this.createdAt=user.getCreatedAt();
+        this.imageUrl= ImageUtil.getValidProfileImage(user.getImage());
     }
 
 }

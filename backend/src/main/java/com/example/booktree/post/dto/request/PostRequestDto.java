@@ -39,5 +39,19 @@ public class PostRequestDto {
 
     private List<MultipartFile> images = new ArrayList<>(); // 이미지 안보내도 되도록
 
+    @NotNull
+    private String contentParts; // 추가
+
+    @Getter
+    @Setter
+    public static class ContentPart {
+        private String type; // "text" or "image"
+        private String data; // text일 때는 텍스트, image일 때는 null
+        private Integer index; // image일 때는 이미지 번호
+    }
+
+
+
+
 
 }

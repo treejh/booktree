@@ -26,12 +26,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageController {
     private final ImageService imageService;
 
-
     //기본 이미지 파일 업로드
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<String>> uploadFile(@RequestParam("files") List<MultipartFile> multipartFiles) {
         return ResponseEntity.ok(imageService.saveImages(multipartFiles));
     }
+
 
     //포스트에 이미지 파일 업로드
     @PostMapping(value="/post",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

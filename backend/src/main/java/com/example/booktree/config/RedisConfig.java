@@ -29,7 +29,15 @@ public class RedisConfig {
         return factory;
     }
 
-    @Bean
+//    @Bean
+//    public RedisConnectionFactory redisConnectionFactory() {
+//        return new LettuceConnectionFactory(); // localhost:6379 기본 설정
+//
+//        // return new LettuceConnectionFactory("127.0.0.1", 6379); -> 커스터마이징
+//
+//    }
+
+        @Bean
     public StringRedisTemplate redisTemplate(RedisConnectionFactory connectionFactory) {
         return new StringRedisTemplate(connectionFactory);
     }
