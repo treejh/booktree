@@ -335,9 +335,12 @@ export function CommentsSection({ postId }: { postId: number }) {
 
     // ─── 프로필 이미지 불러오기 ────────────────────────────────────
     useEffect(() => {
-        if (!comments.length) return
+        if (!rawComments.length) return
         const ids = Array.from(
-            new Set([...comments.map((c) => c.userId), ...comments.flatMap((c) => c.replies.map((r) => r.userId))]),
+            new Set([
+                ...rawComments.map((c) => c.userId),
+                ...rawComments.flatMap((c) => c.replies.map((r) => r.userId)),
+            ]),
         )
         async function fetchUserImages() {
             const map: Record<number, string> = {}
@@ -354,7 +357,7 @@ export function CommentsSection({ postId }: { postId: number }) {
             setUserImages(map)
         }
         fetchUserImages()
-    }, [comments])
+    }, [rawComments])
 
     // ─── 렌더링 ────────────────────────────────────────────────────
     return (
