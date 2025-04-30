@@ -170,6 +170,8 @@ export default function RegisterPage() {
                                         <option value="">도메인 선택</option>
                                         <option value="gmail.com">gmail.com</option>
                                         <option value="naver.com">naver.com</option>
+                                        <option value="daum.net">daum.net</option>
+                                        <option value="custom">직접 입력</option>
                                     </select>
                                 </div>
                                 {emailDomain === 'custom' && (
