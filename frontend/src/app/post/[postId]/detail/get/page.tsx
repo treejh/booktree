@@ -1349,7 +1349,7 @@ export default function DetailPage() {
                                         }}
                                     />
                                 </div> */}
-                                
+
                                 <div className="mb-8">
                                     <div className="flex items-center mb-4">
                                         <input
@@ -1385,9 +1385,9 @@ export default function DetailPage() {
                                         contentEditable
                                         suppressContentEditableWarning
                                         className="w-full min-h-[500px] p-6 border border-gray-300 rounded-lg prose max-w-none
-            focus:outline-none focus:ring-1 focus:ring-green-500
-            [&>p]:my-4 [&>p]:text-base [&>img]:max-w-full [&>img]:h-auto [&>img]:mx-auto
-            [&>p]:leading-relaxed [&>p]:text-gray-800"
+    focus:outline-none focus:ring-1 focus:ring-green-500
+    [&>p]:my-1 [&>p]:text-base [&>img]:max-w-full [&>img]:h-auto [&>img]:mx-auto
+    [&>p]:leading-none [&>p]:text-gray-800"
                                         dangerouslySetInnerHTML={{ __html: editedPost.content }}
                                         onInput={handleEditorChange}
                                     />
