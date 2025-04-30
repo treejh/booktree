@@ -33,7 +33,7 @@ public class PopularPostController {
     public ResponseEntity<List<PostResponseDto>> getPopularPosts(
             @RequestParam(defaultValue = "6") int limit, @PathVariable Long mainCategoryId) {
 
-        log.info("뭔데 : " + mainCategoryId);
+        //log.info("뭔데 : " + mainCategoryId);
         List<PostResponseDto> result = popularPostService.getPopularPosts(limit, mainCategoryId);
 
         return ResponseEntity.ok(result);
