@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, FormEvent } from 'react'
+import React, { useState, useEffect, useRef, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGlobalLoginUser } from '@/stores/auth/loginMember'
 
@@ -9,6 +9,7 @@ export interface Reply {
     userId: number
     author: string
     date: string
+    authorImage: string
     content: string
     likes: number
     isMe: boolean
@@ -18,6 +19,7 @@ export interface Comment {
     id: number
     userId: number
     author: string
+    authorImage: string
     date: string
     content: string
     likes: number
@@ -30,80 +32,85 @@ export function CommentsSection({ postId }: { postId: number }) {
     const router = useRouter()
     const { isLogin, loginUser } = useGlobalLoginUser()
     const API = process.env.NEXT_PUBLIC_API_BASE_URL
+    const popoverRef = useRef<HTMLDivElement>(null)
+    const replyPopoverRef = useRef<HTMLDivElement>(null)
 
-    // ─── 1) 로딩/에러 상태 ─────────────────────────────────────────────
-    const [loading, setLoading] = useState(false)
-    const [commentError, setCommentError] = useState<string | null>(null)
-
-    // ─── 2) 댓글·대댓글 상태 ─────────────────────────────────────────
+    // ─── 상태 선언 ───────────────────────────────────────────────────
+    const [userImages, setUserImages] = useState<Record<number, string>>({})
+    const [rawComments, setRawComments] = useState<Omit<Comment, 'authorImage'>[]>([])
     const [comments, setComments] = useState<Comment[]>([])
     const [commentInput, setCommentInput] = useState('')
     const [replyInputs, setReplyInputs] = useState<Record<number, string>>({})
-    const [likedComments, setLikedComments] = useState<Record<number, boolean>>({})
-    const [likedReplies, setLikedReplies] = useState<Record<number, boolean>>({})
+    const [loading, setLoading] = useState(false)
+    const [commentError, setCommentError] = useState<string | null>(null)
     const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
     const [editedCommentContent, setEditedCommentContent] = useState('')
     const [activeReplyId, setActiveReplyId] = useState<number | null>(null)
     const [editingReplyId, setEditingReplyId] = useState<number | null>(null)
     const [editedReplyContent, setEditedReplyContent] = useState('')
-    const [hasReplied, setHasReplied] = useState<Record<number, boolean>>({})
-
-    // ─── 2.1) 팝오버 상태 ───────────────────────────────────────────────
     const [activeCommentId, setActiveCommentId] = useState<number | null>(null)
     const [activeReplyPopoverId, setActiveReplyPopoverId] = useState<number | null>(null)
     const [isFollowing, setIsFollowing] = useState<{ [key: number]: boolean }>({})
 
-    // ─── 공통 헬퍼
     const ensureLogin = () => {
         if (!isLogin) router.push('/login')
     }
 
-    // ─── 3) 댓글 불러오기 ────────────────────────────────────────────
-    useEffect(() => {
-        async function fetchComments() {
-            try {
-                setLoading(true)
-                const res = await fetch(`${API}/api/v1/comments/get?postId=${postId}&page=1&size=10`, {
-                    credentials: 'include',
-                })
-                if (!res.ok) throw new Error('댓글을 불러오지 못했습니다.')
-                const json = await res.json()
-                const mapped: Comment[] = json.content.map((c: any) => ({
-                    id: c.commentId,
-                    userId: c.userId,
-                    author: c.username ?? c.userEmail,
-                    date: new Date(c.createdAt).toLocaleDateString(),
-                    content: c.content,
-                    likes: c.likeCount || 0,
-                    isFollowing: c.following,
-                    isMe: loginUser?.id === c.userId,
-                    replies: c.replies.content.map((r: any) => ({
-                        id: r.replyId,
-                        userId: r.userId,
-                        author: r.username ?? r.userEmail,
-                        date: new Date(r.createdAt).toLocaleDateString(),
-                        content: r.content,
-                        likes: r.likeCount || 0,
-                        isMe: loginUser?.id === r.userId,
-                    })),
-                }))
-                setComments(mapped)
-                console.log('어이어이 ', mapped)
-                const followStatus: { [key: number]: boolean } = {}
-                mapped.forEach((c) => {
-                    followStatus[c.userId] = c.isFollowing
-                })
-                setIsFollowing(followStatus)
-
-                setCommentError(null)
-            } catch (e: any) {
-                setCommentError(e.message)
-            } finally {
-                setLoading(false)
-            }
+    // ─── 댓글 불러오기 함수 ─────────────────────────────────────────
+    const fetchComments = async () => {
+        setLoading(true)
+        try {
+            const res = await fetch(`${API}/api/v1/comments/get?postId=${postId}&page=1&size=10`, {
+                credentials: 'include',
+            })
+            if (!res.ok) throw new Error('댓글을 불러오지 못했습니다.')
+            const json = await res.json()
+            const mapped = json.content.map((c: any) => ({
+                id: c.commentId,
+                userId: c.userId,
+                author: c.username ?? c.userEmail,
+                date: new Date(c.createdAt).toLocaleDateString(),
+                content: c.content,
+                likes: c.likeCount || 0,
+                isFollowing: c.following,
+                isMe: loginUser?.id === c.userId,
+                replies: c.replies.content.map((r: any) => ({
+                    id: r.replyId,
+                    userId: r.userId,
+                    author: r.username ?? r.userEmail,
+                    date: new Date(r.createdAt).toLocaleDateString(),
+                    content: r.content,
+                    likes: r.likeCount || 0,
+                    isMe: loginUser?.id === r.userId,
+                })),
+            }))
+            setRawComments(mapped)
+            console.log('어이어이 ', mapped)
+        } catch (e: any) {
+            setCommentError(e.message)
+        } finally {
+            setLoading(false)
         }
+    }
+
+    // ─── 초기 렌더링 및 로그인 유저 변경 시 ──────────────────────────
+    useEffect(() => {
         fetchComments()
     }, [postId, loginUser])
+
+    // ─── rawComments 또는 프로필 이미지 변경 시 병합 ────────────────
+    useEffect(() => {
+        if (rawComments.length === 0) return
+        const merged = rawComments.map((c) => ({
+            ...c,
+            authorImage: userImages[c.userId] ?? loginUser.image,
+            replies: c.replies.map((r) => ({
+                ...r,
+                authorImage: userImages[r.userId] ?? loginUser.image,
+            })),
+        }))
+        setComments(merged)
+    }, [rawComments, userImages, loginUser.image])
 
     // ─── 4) 댓글 등록 ───────────────────────────────────────────────
     const handleCommentSubmit = async (e: FormEvent) => {
@@ -119,27 +126,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 body: JSON.stringify({ postId, content: commentInput.trim() }),
             })
             if (!res.ok) throw new Error('댓글 생성 실패')
-            const raw = await res.json()
-            const newComment: Comment = {
-                id: raw.commentId,
-                userId: raw.userId,
-                author: raw.username ?? raw.userEmail,
-                date: new Date(raw.createdAt).toLocaleDateString(),
-                content: raw.content,
-                likes: raw.likeCount || 0,
-                isFollowing: raw.following,
-                isMe: loginUser?.id === raw.userId,
-                replies: raw.replies.content.map((r: any) => ({
-                    id: r.replyId,
-                    userId: r.userId,
-                    author: r.username ?? r.userEmail,
-                    date: new Date(r.createdAt).toLocaleDateString(),
-                    content: r.content,
-                    likes: r.likeCount || 0,
-                    isMe: loginUser?.id === r.userId,
-                })),
-            }
-            setComments((prev) => [newComment, ...prev])
+            await fetchComments()
             setCommentInput('')
         } catch (e: any) {
             setCommentError(e.message)
@@ -148,17 +135,19 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
     }
 
-    // ─── 5) 댓글 좋아요 토글 ───────────────────────────────────────
+    // ─── 5) 댓글 좋아요 ─────────────────────────────────────────────
     const handleCommentLike = async (cid: number) => {
         ensureLogin()
-        const res = await fetch(`${API}/api/v1/comments/${cid}/like`, {
-            method: 'POST',
-            credentials: 'include',
-        })
-        if (!res.ok) return alert('좋아요 실패')
-        const { likeCount } = await res.json()
-        setComments((cs) => cs.map((c) => (c.id === cid ? { ...c, likes: likeCount } : c)))
-        setLikedComments((l) => ({ ...l, [cid]: !l[cid] }))
+        try {
+            const res = await fetch(`${API}/api/v1/comments/${cid}/like`, {
+                method: 'POST',
+                credentials: 'include',
+            })
+            if (!res.ok) throw new Error('좋아요 실패')
+            await fetchComments()
+        } catch {
+            alert('좋아요 처리에 실패했습니다.')
+        }
     }
 
     // ─── 6) 댓글 수정/삭제 ─────────────────────────────────────────
@@ -177,8 +166,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 body: JSON.stringify({ commentId: cid, content: editedCommentContent }),
             })
             if (!res.ok) throw new Error('댓글 수정 실패')
-            const updated = await res.json()
-            setComments((cs) => cs.map((c) => (c.id === updated.commentId ? { ...c, content: updated.content } : c)))
+            await fetchComments()
             setEditingCommentId(null)
         } catch (e: any) {
             setCommentError(e.message)
@@ -196,7 +184,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 credentials: 'include',
             })
             if (!res.ok) throw new Error('댓글 삭제 실패')
-            setComments((cs) => cs.filter((c) => c.id !== cid))
+            await fetchComments()
         } catch (e: any) {
             setCommentError(e.message)
         } finally {
@@ -204,7 +192,7 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
     }
 
-    // ─── 7) 대댓글 토글·등록·좋아요 ─────────────────────────────────
+    // ─── 7) 대댓글 등록 ─────────────────────────────────────────────
     const toggleReplyForm = (cid: number) => {
         setActiveReplyId((a) => (a === cid ? null : cid))
         setReplyInputs((ri) => ({ ...ri, [cid]: ri[cid] || '' }))
@@ -223,17 +211,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 body: JSON.stringify({ commentId: cid, content }),
             })
             if (!res.ok) throw new Error('답글 등록 실패')
-            const raw = await res.json()
-            const newR: Reply = {
-                id: raw.replyId,
-                userId: raw.userId,
-                author: raw.username ?? raw.userEmail,
-                date: new Date(raw.createdAt).toLocaleDateString(),
-                content: raw.content,
-                likes: 0,
-                isMe: loginUser?.id === raw.userId,
-            }
-            setComments((cs) => cs.map((c) => (c.id === cid ? { ...c, replies: [...c.replies, newR] } : c)))
+            await fetchComments()
             setReplyInputs((ri) => ({ ...ri, [cid]: '' }))
             setActiveReplyId(null)
         } catch (e: any) {
@@ -243,7 +221,7 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
     }
 
-    // ─── 대댓글 좋아요 토글 ─────────────────────────────────────
+    // ─── 8) 대댓글 좋아요 ───────────────────────────────────────────
     const handleReplyLike = async (cid: number, rid: number) => {
         ensureLogin()
         try {
@@ -254,24 +232,13 @@ export function CommentsSection({ postId }: { postId: number }) {
                 body: JSON.stringify({ replyId: rid }),
             })
             if (!res.ok) throw new Error('좋아요 처리 실패')
-            const { likeCount } = await res.json()
-            setComments((cs) =>
-                cs.map((c) =>
-                    c.id === cid
-                        ? {
-                              ...c,
-                              replies: c.replies.map((r) => (r.id === rid ? { ...r, likes: likeCount } : r)),
-                          }
-                        : c,
-                ),
-            )
-            setLikedReplies((l) => ({ ...l, [rid]: !l[rid] }))
+            await fetchComments()
         } catch {
             alert('대댓글 좋아요 처리에 실패했습니다.')
         }
     }
 
-    // ─── 8) 대댓글 수정/삭제 ─────────────────────────────────────
+    // ─── 9) 대댓글 수정/삭제 ────────────────────────────────────────
     const handleReplyEdit = (cid: number, rid: number, content: string) => {
         setEditingReplyId(rid)
         setEditedReplyContent(content)
@@ -291,19 +258,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 }),
             })
             if (!res.ok) throw new Error('대댓글 수정 실패')
-            const updated = await res.json()
-            setComments((cs) =>
-                cs.map((c) =>
-                    c.id === cid
-                        ? {
-                              ...c,
-                              replies: c.replies.map((r) =>
-                                  r.id === updated.replyId ? { ...r, content: updated.content } : r,
-                              ),
-                          }
-                        : c,
-                ),
-            )
+            await fetchComments()
             setEditingReplyId(null)
         } catch (e: any) {
             setCommentError(e.message)
@@ -321,9 +276,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                 credentials: 'include',
             })
             if (!res.ok) throw new Error('대댓글 삭제 실패')
-            setComments((cs) =>
-                cs.map((c) => (c.id === cid ? { ...c, replies: c.replies.filter((r) => r.id !== rid) } : c)),
-            )
+            await fetchComments()
         } catch (e: any) {
             setCommentError(e.message)
         } finally {
@@ -331,6 +284,7 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
     }
 
+    // ─── 10) 팔로우/언팔로우 ───────────────────────────────────────
     const handleFollow = async (userId: number) => {
         if (!isLogin) {
             router.push('/login')
@@ -338,43 +292,70 @@ export function CommentsSection({ postId }: { postId: number }) {
         }
         try {
             if (isFollowing[userId]) {
-                await unfollowUser(userId)
+                await fetch(`${API}/api/v1/follow/delete/unfollow`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ followeeId: userId }),
+                })
             } else {
-                await followUser(userId)
+                await fetch(`${API}/api/v1/follow/create/follow`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ followeeId: userId }),
+                })
             }
-            setIsFollowing((prev) => ({
-                ...prev,
-                [userId]: !prev[userId],
-            }))
-            window.location.reload()
+            setIsFollowing((prev) => ({ ...prev, [userId]: !prev[userId] }))
         } catch {
             alert('팔로우/언팔로우 처리에 실패했습니다.')
         }
     }
 
-    // ─── ?) 팔로우/언팔로우 요청 ───────────────────────────────────
-    const followUser = async (followeeId: number) => {
-        try {
-            await fetch(`${API}/api/v1/follow/create/follow`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ followeeId }),
-            })
-        } catch {}
-    }
-    const unfollowUser = async (followeeId: number) => {
-        try {
-            await fetch(`${API}/api/v1/follow/delete/unfollow`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ followeeId }),
-            })
-        } catch {}
-    }
+    // ─── 클릭 외부 감지 ─────────────────────────────────────────────
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (activeCommentId !== null && popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+                setActiveCommentId(null)
+            }
+            if (
+                activeReplyPopoverId !== null &&
+                replyPopoverRef.current &&
+                !replyPopoverRef.current.contains(event.target as Node)
+            ) {
+                setActiveReplyPopoverId(null)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [activeCommentId, activeReplyPopoverId])
 
-    // ─── 9) 렌더링 ─────────────────────────────────────────────────
+    // ─── 프로필 이미지 불러오기 ────────────────────────────────────
+    useEffect(() => {
+        if (!comments.length) return
+        const ids = Array.from(
+            new Set([...comments.map((c) => c.userId), ...comments.flatMap((c) => c.replies.map((r) => r.userId))]),
+        )
+        async function fetchUserImages() {
+            const map: Record<number, string> = {}
+            await Promise.all(
+                ids.map(async (id) => {
+                    try {
+                        const res = await fetch(`${API}/api/v1/users/get/profile/${id}`)
+                        if (!res.ok) return
+                        const { imageUrl } = await res.json()
+                        map[id] = imageUrl
+                    } catch {}
+                }),
+            )
+            setUserImages(map)
+        }
+        fetchUserImages()
+    }, [comments])
+
+    // ─── 렌더링 ────────────────────────────────────────────────────
     return (
         <div>
             {loading && <div className="text-center py-4">Loading...</div>}
@@ -383,7 +364,7 @@ export function CommentsSection({ postId }: { postId: number }) {
             {isLogin ? (
                 <form onSubmit={handleCommentSubmit} className="mb-6">
                     <textarea
-                        className="w-full p-2 border border-gray-400 rounded mb-2"
+                        className="w-full p-2 border border-gray-300 rounded mb-2 bg-white"
                         rows={3}
                         placeholder="댓글을 작성하세요."
                         value={commentInput}
@@ -399,64 +380,57 @@ export function CommentsSection({ postId }: { postId: number }) {
 
             {comments.map((comment) => (
                 <div key={comment.id} className="border-b border-gray-300 pb-6 mb-6">
-                    {/* 댓글 상단 (작성자/팝오버) */}
+                    {/* 댓글 상단 */}
                     <div className="flex justify-between items-center">
-                        <div className="relative">
+                        <div className="relative flex items-center">
+                            <img
+                                src={userImages[comment.userId] ?? comment.authorImage}
+                                alt={`${comment.author} 프로필`}
+                                className="w-6 h-6 rounded-full mr-2 object-cover"
+                            />
                             <button
                                 onClick={() => setActiveCommentId((id) => (id === comment.id ? null : comment.id))}
                                 className="font-medium hover:text-[#2E804E]"
                             >
                                 {comment.author}
                             </button>
-
-                            {/* 댓글 작성자 팝오버 미니창 */}
                             {activeCommentId === comment.id && (
-                                <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
+                                <div
+                                    ref={popoverRef}
+                                    className="absolute z-10 mt-2 min-w-[12rem] w-auto bg-white rounded-lg shadow-lg border border-gray-200 left-0"
+                                >
                                     <div className="p-4">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center min-w-0">
-                                                <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
+                                                <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                     <img
-                                                        src="https://randomuser.me/api/portraits/women/44.jpg"
-                                                        alt="프로필"
+                                                        src={userImages[comment.userId] ?? comment.authorImage}
+                                                        alt={`${comment.author} 프로필`}
                                                         className="w-full h-full object-cover"
                                                     />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <button
-                                                        onClick={() => router.push(`/mypage/${comment.userId}`)}
-                                                        className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
+                                                        onClick={() => router.push(`/blog/${comment.userId}`)}
+                                                        className="font-medium hover:text-[#2E804E] truncate block"
                                                     >
                                                         {comment.author}
                                                     </button>
                                                 </div>
                                                 <button
                                                     onClick={() => router.push(`/blog/${comment.userId}`)}
-                                                    className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200 ml-2 flex-shrink-0"
+                                                    className="text-gray-500 hover:text-[#2E804E] ml-2"
                                                 >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-5 w-5"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                        />
-                                                    </svg>
+                                                    {/* 아이콘 */}
                                                 </button>
                                             </div>
                                         </div>
                                         {!comment.isMe && (
                                             <button
                                                 onClick={() => handleFollow(comment.userId)}
-                                                className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
+                                                className={`w-full px-4 py-2 text-sm rounded-md ${
                                                     isFollowing[comment.userId]
-                                                        ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
+                                                        ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border'
                                                         : 'text-white bg-[#2E804E] hover:bg-[#246A40]'
                                                 }`}
                                             >
@@ -470,7 +444,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                         <span className="text-xs text-gray-500">{comment.date}</span>
                     </div>
 
-                    {/* 댓글 내용/편집 */}
+                    {/* 댓글 내용 / 편집 */}
                     {editingCommentId === comment.id ? (
                         <div className="mt-2">
                             <textarea
@@ -501,7 +475,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                                 <button onClick={() => toggleReplyForm(comment.id)} className="hover:text-gray-800">
                                     💬 답글
                                 </button>
-                                {loginUser && loginUser.id === comment.userId && (
+                                {loginUser?.id === comment.userId && (
                                     <>
                                         <button
                                             onClick={() => handleCommentEdit(comment.id, comment.content)}
@@ -545,14 +519,18 @@ export function CommentsSection({ postId }: { postId: number }) {
                         </div>
                     )}
 
-                    {/* 대댓글 리스트 (팝오버 + 수정/삭제) */}
+                    {/* 대댓글 리스트 */}
                     {comment.replies.length > 0 && (
                         <div className="mt-4 ml-6 space-y-4">
                             {comment.replies.map((reply) => (
                                 <div key={reply.id} className="border-l border-gray-300 pl-4">
-                                    {/* 작성자·날짜·팝오버 */}
                                     <div className="flex justify-between items-center">
-                                        <div className="relative">
+                                        <div className="relative flex items-center">
+                                            <img
+                                                src={reply.authorImage}
+                                                alt={`${reply.author} 프로필`}
+                                                className="w-6 h-6 rounded-full mr-2 object-cover"
+                                            />
                                             <button
                                                 onClick={() =>
                                                     setActiveReplyPopoverId((id) => (id === reply.id ? null : reply.id))
@@ -561,56 +539,48 @@ export function CommentsSection({ postId }: { postId: number }) {
                                             >
                                                 {reply.author}
                                             </button>
-                                            {/* 대댓글 작성자 팝오버 미니창 수정 */}
                                             {activeReplyPopoverId === reply.id && (
-                                                <div className="absolute z-10 mt-2 min-w-[12rem] w-auto whitespace-nowrap bg-white rounded-lg shadow-lg border border-gray-200 left-0">
+                                                <div
+                                                    ref={replyPopoverRef}
+                                                    className="absolute z-10 mt-2 min-w-[12rem] w-auto bg-white rounded-lg shadow-lg border border-gray-200 left-0"
+                                                >
                                                     <div className="p-4">
                                                         <div className="flex items-center justify-between mb-3">
                                                             <div className="flex items-center min-w-0">
-                                                                <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-300 mr-3 overflow-hidden">
+                                                                <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
                                                                     <img
-                                                                        src="https://randomuser.me/api/portraits/women/44.jpg"
-                                                                        alt="프로필"
+                                                                        src={
+                                                                            userImages[reply.userId] ??
+                                                                            reply.authorImage
+                                                                        }
+                                                                        alt={`${reply.author} 프로필`}
                                                                         className="w-full h-full object-cover"
                                                                     />
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <button
                                                                         onClick={() =>
-                                                                            router.push(`/mypage/${reply.userId}`)
+                                                                            router.push(`/blog/${reply.userId}`)
                                                                         }
-                                                                        className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
+                                                                        className="font-medium hover:text-[#2E804E] truncate block"
                                                                     >
                                                                         {reply.author}
                                                                     </button>
                                                                 </div>
                                                                 <button
                                                                     onClick={() => router.push(`/blog/${reply.userId}`)}
-                                                                    className="text-gray-500 hover:text-[#2E804E] transition-colors duration-200 ml-2 flex-shrink-0"
+                                                                    className="text-gray-500 hover:text-[#2E804E] ml-2"
                                                                 >
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        className="h-5 w-5"
-                                                                        fill="none"
-                                                                        viewBox="0 0 24 24"
-                                                                        stroke="currentColor"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth={2}
-                                                                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                                        />
-                                                                    </svg>
+                                                                    {/* 아이콘 */}
                                                                 </button>
                                                             </div>
                                                         </div>
                                                         {!reply.isMe && (
                                                             <button
                                                                 onClick={() => handleFollow(reply.userId)}
-                                                                className={`w-full px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
+                                                                className={`w-full px-4 py-2 text-sm rounded-md ${
                                                                     isFollowing[reply.userId]
-                                                                        ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300'
+                                                                        ? 'text-gray-700 bg-gray-100 hover:bg-gray-200 border'
                                                                         : 'text-white bg-[#2E804E] hover:bg-[#246A40]'
                                                                 }`}
                                                             >
@@ -626,7 +596,6 @@ export function CommentsSection({ postId }: { postId: number }) {
                                         <span className="text-xs text-gray-500">{reply.date}</span>
                                     </div>
 
-                                    {/* 내용/수정 모드 */}
                                     {editingReplyId === reply.id ? (
                                         <div className="mt-2">
                                             <textarea
@@ -660,7 +629,7 @@ export function CommentsSection({ postId }: { postId: number }) {
                                                 >
                                                     ❤️ 좋아요 {reply.likes}
                                                 </button>
-                                                {loginUser && loginUser.id === reply.userId && (
+                                                {loginUser?.id === reply.userId && (
                                                     <>
                                                         <button
                                                             onClick={() =>

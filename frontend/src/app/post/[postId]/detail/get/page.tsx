@@ -1094,24 +1094,6 @@ export default function DetailPage() {
 
                                 {/* 게시글 내용 */}
                                 <div className="mb-8">
-                                    {post.imageUrls.length > 0 && (
-                                        <div className="flex flex-col gap-4 mb-8">
-                                            {post.imageUrls.map((url, idx) => (
-                                                <div key={idx} className="w-full rounded-lg overflow-hidden">
-                                                    <img
-                                                        src={url}
-                                                        alt={`게시글 이미지 ${idx + 1}`}
-                                                        className="w-full h-auto object-contain max-h-[600px]"
-                                                        onError={(e) => {
-                                                            e.currentTarget.src =
-                                                                'https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/BookTree+%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB+%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5+%E1%84%8E%E1%85%AC%E1%84%8C%E1%85%A9%E1%86%BC%E1%84%87%E1%85%A9%E1%86%AB.png'
-                                                        }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
                                     {isPostEditing ? (
                                         <textarea
                                             value={editedPost.content}
@@ -1125,7 +1107,13 @@ export default function DetailPage() {
                                             rows={15}
                                         />
                                     ) : (
-                                        <div className="mb-6 whitespace-pre-line">{post.content}</div>
+                                        // HTML 컨텐츠를 직접 렌더링
+                                        <div
+                                            className="prose max-w-none"
+                                            dangerouslySetInnerHTML={{
+                                                __html: post.content,
+                                            }}
+                                        />
                                     )}
                                 </div>
 
