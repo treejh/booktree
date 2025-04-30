@@ -108,6 +108,8 @@ export default function DetailPage() {
         imageUrls: [] as string[],
         images: [] as File[],
     })
+    const hasInitializedContentRef = useRef(false)
+
     const [postLiked, setPostLiked] = useState(false)
     const [showPopover, setShowPopover] = useState(false)
     const [isFollowing, setIsFollowing] = useState(false)
@@ -126,10 +128,39 @@ export default function DetailPage() {
     const [isUnderline, setIsUnderline] = useState(false)
     const [contentParts, setContentParts] = useState<ContentPart[]>([])
     const [currentContent, setCurrentContent] = useState('')
+    const [editorContent, setEditorContent] = useState(editedPost.content)
     // 이미지 URL을 추적하기 위한 state 추가
     const [imageUrls, setImageUrls] = useState<Set<string>>(new Set())
 
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
+
+    //추가
+    const [isComposing, setIsComposing] = useState(false)
+
+    const handleInput = () => {
+        if (editorRef.current) {
+            const newContent = editorRef.current.innerHTML
+            setEditedPost((prev) => ({ ...prev, content: newContent }))
+        }
+    }
+    useEffect(() => {
+        if (editorRef.current && editedPost.content) {
+            editorRef.current.innerHTML = editedPost.content
+        }
+    }, []) // 최초 한 번만 실행
+
+    useEffect(() => {
+        if (isPostEditing && editorRef.current && editedPost.content) {
+            editorRef.current.innerHTML = editedPost.content
+        }
+    }, [isPostEditing, editedPost.content])
+
+    useEffect(() => {
+        if (isPostEditing && editorRef.current && editedPost.content && !hasInitializedContentRef.current) {
+            editorRef.current.innerHTML = editedPost.content
+            hasInitializedContentRef.current = true
+        }
+    }, [isPostEditing, editedPost.content])
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -236,19 +267,10 @@ export default function DetailPage() {
             try {
                 setLoading(true)
 
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                })
-
-                if (!response.ok) {
-                    throw new Error('게시글을 불러오는 데 실패했습니다.')
-                }
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/posts/get/${postId}`)
+                if (!response.ok) throw new Error('게시글을 불러오는 데 실패했습니다.')
 
                 const data = await response.json()
-                console.log('API Response:', data) // 응답 확인용
 
                 const formattedPost: PostDetail = {
                     postId: data.postId,
@@ -261,35 +283,40 @@ export default function DetailPage() {
                     likeCount: data.likeCount,
                     createdAt: new Date(data.createdAt).toLocaleDateString(),
                     modifiedAt: new Date(data.modifiedAt).toLocaleDateString(),
-                    author: data.author || '', // author는 기본값으로 빈 문자열 설정
-                    mainCategory: data.mainCategory || '', // mainCategory 값 처리
-                    mainCategoryId: data.mainCategoryId || 0, // 수정
-                    categoryId: data.categoryId || 0, // 수정
-                    category: data.category || '', // category 값 처리
-                    book: data.book || '', // book 값 처리
+                    author: data.author || '',
+                    mainCategory: data.mainCategory || '',
+                    mainCategoryId: data.mainCategoryId || 0,
+                    categoryId: data.categoryId || 0,
+                    category: data.category || '',
+                    book: data.book || '',
                 }
+
                 setPost(formattedPost)
                 setEditedPost({
                     title: formattedPost.title,
                     content: formattedPost.content,
                     author: formattedPost.author,
                     book: formattedPost.book,
-                    mainCategoryId: formattedPost.mainCategoryId, // 수정
-                    categoryId: formattedPost.categoryId, // 수정
-                    //mainCategoryId: parseInt(formattedPost.mainCategory) || 0,
-                    //categoryId: parseInt(formattedPost.category) || 0,
+                    mainCategoryId: formattedPost.mainCategoryId,
+                    categoryId: formattedPost.categoryId,
                     imageUrls: [...formattedPost.imageUrls],
                     images: [],
                 })
             } catch (error) {
                 console.error('게시글 로드 실패:', error)
-                // 에러 시 UI에 표시하지 않음
             } finally {
                 setLoading(false)
             }
         }
+
         if (postId) fetchPost()
     }, [postId])
+
+    useEffect(() => {
+        if (editorRef.current && editedPost.content) {
+            editorRef.current.innerHTML = editedPost.content
+        }
+    }, [editedPost.content])
 
     useEffect(() => {
         if (post && loginUser) {
@@ -564,6 +591,18 @@ export default function DetailPage() {
             console.error('팔로우/언팔로우 실패:', error)
         }
     }
+    //잠깐
+    // const handleCompositionEnd = () => {
+    //     if (editorRef.current) {
+    //         const selection = window.getSelection()
+    //         const range = document.createRange()
+
+    //         range.selectNodeContents(editorRef.current)
+    //         range.collapse(false) // 커서를 텍스트 끝으로 이동
+    //         selection?.removeAllRanges()
+    //         selection?.addRange(range)
+    //     }
+    // }
 
     const handleCategoryClick = (path: string) => router.push(path)
     const toggleCategory = (idx: number) =>
@@ -1248,11 +1287,38 @@ export default function DetailPage() {
         }
     } */
 
+    const moveCursorToEnd = () => {
+        const editor = editorRef.current
+        const selection = window.getSelection()
+        const range = document.createRange()
+
+        range.selectNodeContents(editor)
+        range.collapse(false) // false로 설정하면 텍스트 끝으로 커서를 이동시킴
+
+        selection.removeAllRanges()
+        selection.addRange(range)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (!isComposing && e.key === 'Enter') {
+            e.preventDefault()
+            document.execCommand('insertHTML', false, '<br>')
+        }
+    }
+
+    const handleCompositionStart = () => {
+        setIsComposing(true)
+    }
+    const handleCompositionEnd = () => {
+        setIsComposing(false)
+    }
+
     const handleEditorChange = () => {
         if (editorRef.current) {
+            const newContent = editorRef.current.innerHTML
             setEditedPost((prev) => ({
                 ...prev,
-                content: editorRef.current.innerHTML,
+                content: newContent,
             }))
 
             // contentParts 업데이트
@@ -1526,19 +1592,22 @@ export default function DetailPage() {
                                                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                                                 />
                                             </svg>
-                                            이미지 첨부DDD
+                                            이미지 첨부
                                         </label>
                                     </div>
                                     <div
                                         ref={editorRef}
                                         contentEditable
                                         suppressContentEditableWarning
+                                        spellCheck="false"
                                         className="w-full min-h-[500px] p-6 border border-gray-300 rounded-lg prose max-w-none
-    focus:outline-none focus:ring-1 focus:ring-green-500
-    [&>p]:my-1 [&>p]:text-base [&>img]:max-w-full [&>img]:h-auto [&>img]:mx-auto
-    [&>p]:leading-none [&>p]:text-gray-800"
-                                        dangerouslySetInnerHTML={{ __html: editedPost.content }}
-                                        onInput={handleEditorChange}
+        focus:outline-none focus:ring-1 focus:ring-green-500
+        [&>p]:my-1 [&>p]:text-base [&>img]:max-w-full [&>img]:h-auto [&>img]:mx-auto
+        [&>p]:leading-none [&>p]:text-gray-800"
+                                        onInput={handleInput}
+                                        onKeyDown={handleKeyDown}
+                                        onCompositionStart={handleCompositionStart}
+                                        onCompositionEnd={handleCompositionEnd}
                                     />
                                 </div>
                                 {/* Submit Buttons */}
