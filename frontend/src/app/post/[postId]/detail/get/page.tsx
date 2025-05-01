@@ -1274,7 +1274,7 @@ export default function DetailPage() {
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <button
-                                                                    onClick={() => handleBlogMainClick(post.author)}
+                                                                    onClick={() => handleBlogMainClick(post.username)}
                                                                     className="font-medium hover:text-[#2E804E] transition-colors duration-200 truncate block"
                                                                 >
                                                                     {post.username}
