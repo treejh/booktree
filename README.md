@@ -4,8 +4,11 @@
 <br/>
 <br/>
 
-# 0. 서비스 주소  
-[서비스 링크](https://www.booktri.site/)
+# 📚 BookTree - 독서 기록 공유 플랫폼
+
+🔗 **서비스 접속하기**: [https://www.booktri.site](https://www.booktri.site)  
+🎥 **서비스 영상 보기**: [YouTube 링크](https://youtu.be/dzWKdEcuflM)
+
 
 <br/>
 <br/>
