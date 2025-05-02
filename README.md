@@ -70,7 +70,7 @@
 # 2. Team Members (팀원 및 팀 소개)
 | 장지현 | 백선영 | 김건호 | 이현석 |
 |:------:|:------:|:------:|:------:|
-| <img src="https://github.com/user-attachments/assets/c1c2b1e3-656d-4712-98ab-a15e91efa2da" alt="이동규" width="150"> | <img src="https://github.com/user-attachments/assets/78ec4937-81bb-4637-975d-631eb3c4601e" alt="신유승" width="150"> | <img src="https://github.com/user-attachments/assets/78ce1062-80a0-4edb-bf6b-5efac9dd992e" alt="김나연" width="150"> | <img src="https://github.com/user-attachments/assets/beea8c64-19de-4d91-955f-ed24b813a638" alt="이승준" width="150"> |
+| <img src="https://hackmd.io/_uploads/Syp9xC-lxg.png" alt="장지현" width="150"> | <img src="https://hackmd.io/_uploads/BkjjbAbele.png" alt="백선영" width="150"> | <img src="https://hackmd.io/_uploads/SygUG0-llg.png" alt="김건호" width="150"> | <img src="https://hackmd.io/_uploads/HkfDfAZgxe.png" alt="이현석" width="150"> |
 | BE,FE | BE,FE | BE,FE | BE,FE |
 | [GitHub](https://github.com/treejh) | [GitHub](https://github.com/backsunyoung) | [GitHub](https://github.com/KIMKEONHO) | [GitHub](https://github.com/hsle95) |
 
