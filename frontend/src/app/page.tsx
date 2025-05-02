@@ -52,7 +52,7 @@ export default function Home() {
             <div className="w-full px-0 py-4">
                 <div className="w-full h-96 rounded-lg overflow-hidden mb-12">
                     <img
-                        src="https://images.unsplash.com/photo-1507842217343-583bb7270b66"
+                        src="https://booktree-s3-bucket.s3.ap-northeast-2.amazonaws.com/%E1%84%87%E1%85%A2%E1%84%82%E1%85%A5%E3%85%85%E1%84%89%E1%85%A1%E1%84%8C%E1%85%B5%E1%86%AB.png"
                         alt="도서관 이미지"
                         className="w-full h-full object-cover"
                     />
