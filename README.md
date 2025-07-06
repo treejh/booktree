@@ -71,7 +71,7 @@
 | 장지현 | 백선영 | 김건호 | 이현석 |
 |:------:|:------:|:------:|:------:|
 | <img src="https://hackmd.io/_uploads/Syp9xC-lxg.png" alt="장지현" width="150"> | <img src="https://hackmd.io/_uploads/BkjjbAbele.png" alt="백선영" width="150"> | <img src="https://hackmd.io/_uploads/SygUG0-llg.png" alt="김건호" width="150"> | <img src="https://hackmd.io/_uploads/HkfDfAZgxe.png" alt="이현석" width="150"> |
-| BE,FE | BE,FE | BE,FE | BE,FE |
+| BE,FE(팀장) | BE,FE | BE,FE | BE,FE |
 | [GitHub](https://github.com/treejh) | [GitHub](https://github.com/backsunyoung) | [GitHub](https://github.com/KIMKEONHO) | [GitHub](https://github.com/hsle95) |
 
 <br/>
